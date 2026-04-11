@@ -303,10 +303,10 @@
         <div class="box-sub">This shows as a banner on the customer website. Use it for closures, promos, holiday hours, or anything you want customers to see.</div>
         <div class="fg">
           <div class="ff" style="grid-column:1/-1"><label>Message</label>
-            <textarea id="ann-msg" placeholder="e.g. Closed December 25th — Merry Christmas! OR 20% off oil changes this week only." style="min-height:70px;resize:vertical"></textarea>
+            <textarea id="new-ann-message" placeholder="e.g. Closed December 25th — Merry Christmas! OR 20% off oil changes this week only." style="min-height:70px;resize:vertical"></textarea>
           </div>
           <div class="ff"><label>Type</label>
-            <select id="ann-type">
+            <select id="new-ann-type">
               <option value="info">Info (blue) — general notice</option>
               <option value="promo">Promo (green) — special offer</option>
               <option value="warning">Warning (yellow) — closure or urgent</option>
@@ -748,13 +748,16 @@ async function loadAnnouncements(){
 }
 
 async function addAnnouncement(){
-  const msg=document.getElementById('ann-msg').value.trim();
-  const type=document.getElementById('ann-type').value;
+  const msg=document.getElementById('new-ann-message').value.trim();
+  const type=document.getElementById('new-ann-type').value;
   if(!msg){alert('Please write a message.');return;}
   const {error}=await db.from('announcements').insert([{message:msg,type,active:'true',shop_id:SHOP_ID}]);
   if(!error){
-    document.getElementById('ann-msg').value='';
+    document.getElementById('new-ann-message').value='';
     toast('Posted to website!','#16a34a'); loadAnnouncements();
+  } else {
+    alert('Error posting. Check your connection and try again.');
+    console.error(error);
   }
 }
 
