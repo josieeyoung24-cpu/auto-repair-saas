@@ -228,6 +228,12 @@
       </div>
 
       <div class="box">
+        <div class="box-title">Service pricing</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set the price range displayed to customers for each service.</p>
+        <div id="pricing-list"><div class="loading">Loading...</div></div>
+      </div>
+
+      <div class="box">
         <div class="box-title">Shop hours</div>
         <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Edit your open and close times for each day.</p>
         <div id="hours-list"><div class="loading">Loading...</div></div>
@@ -248,6 +254,23 @@
 
   // Default service durations (minutes) — overridden by DB if saved
   let SERVICE_DURATIONS = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
+
+  // Default pricing — stored in localStorage per shop
+  let SERVICE_PRICES = {
+    'Oil change': { low: 49, high: 79 },
+    'Brake service': { low: 120, high: 220 },
+    'Tire rotation': { low: 25, high: 45 },
+    'Engine diagnostic': { low: 89, high: 149 },
+    'AC service': { low: 95, high: 175 },
+    'Transmission service': { low: 180, high: 340 },
+    'Other / not sure': { low: 0, high: 0 }
+  };
+
+  // Load saved prices from localStorage
+  try {
+    const saved = localStorage.getItem(SHOP_ID + '-prices');
+    if (saved) SERVICE_PRICES = { ...SERVICE_PRICES, ...JSON.parse(saved) };
+  } catch(e) {}
 
   db.from('bookings').select('id').limit(1).then(() => console.log('DB ready'));
 
@@ -345,9 +368,19 @@
     el.innerHTML = '<div class="loading">Loading...</div>';
     const { data } = await db.from('tickets').select('*').eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
     if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No active repair tickets.</div>'; return; }
-    const sLabels = { 'checked-in':'Checked in','diagnosing':'Diagnosing','in-repair':'In repair','ready':'Ready' };
-    const sBadge = { 'checked-in':'badge-new','diagnosing':'badge-in','in-repair':'badge-in','ready':'badge-ready' };
-    el.innerHTML = data.map(t => `
+    el.innerHTML = data.map(t => {
+      const sLabels = { 'checked-in':'Checked in','diagnosing':'Diagnosing','in-repair':'In repair','ready':'Ready' };
+      const sBadge = { 'checked-in':'badge-new','diagnosing':'badge-in','in-repair':'badge-in','ready':'badge-ready' };
+      const statusBtns = [
+        { key: 'checked-in', label: 'Checked in' },
+        { key: 'diagnosing', label: 'Diagnosing' },
+        { key: 'in-repair', label: 'In repair' },
+      ].map(s => {
+        const isActive = t.status === s.key;
+        return `<button class="action-btn${isActive ? ' confirm' : ''}" onclick="updateStatus(${t.id},'${s.key}')">${s.label}</button>`;
+      }).join('');
+      const readyActive = t.status === 'ready';
+      return `
       <div class="card">
         <div class="card-header">
           <div>
@@ -357,14 +390,13 @@
           <div class="card-time">${timeAgo(t.created_at)}</div>
         </div>
         <div class="card-actions">
-          <button class="action-btn" onclick="updateStatus(${t.id},'checked-in')">Checked in</button>
-          <button class="action-btn" onclick="updateStatus(${t.id},'diagnosing')">Diagnosing</button>
-          <button class="action-btn" onclick="updateStatus(${t.id},'in-repair')">In repair</button>
-          <button class="action-btn confirm" onclick="updateStatus(${t.id},'ready')">Mark ready</button>
+          ${statusBtns}
+          <button class="action-btn" style="${readyActive ? 'background:#16a34a;color:#fff;border-color:#16a34a' : 'background:#16a34a;color:#fff;border-color:#16a34a;opacity:.5'}" onclick="updateStatus(${t.id},'ready')">Mark ready</button>
           <button class="action-btn" onclick="updateETA(${t.id})">Set ETA</button>
           <button class="action-btn deny" onclick="deleteTicket(${t.id})">Close</button>
         </div>
-      </div>`).join('');
+      </div>`;
+    }).join('');
   }
 
   async function addTicket() {
@@ -559,7 +591,32 @@
   // ── SETTINGS ──
   async function loadSettings() {
     loadServiceDurations();
+    loadServicePricing();
     loadHours();
+  }
+
+  function loadServicePricing() {
+    const el = document.getElementById('pricing-list');
+    const services = Object.keys(SERVICE_PRICES).filter(s => s !== 'Other / not sure');
+    el.innerHTML = services.map(svc => `
+      <div class="svc-row">
+        <div class="svc-name">${svc}</div>
+        <span style="font-size:13px;color:var(--muted)">$</span>
+        <input class="svc-dur-input" type="number" id="plo-${svc.replace(/\s+/g,'_')}" value="${SERVICE_PRICES[svc].low}" min="0" step="1" style="width:72px">
+        <span style="font-size:13px;color:var(--muted)">– $</span>
+        <input class="svc-dur-input" type="number" id="phi-${svc.replace(/\s+/g,'_')}" value="${SERVICE_PRICES[svc].high}" min="0" step="1" style="width:72px">
+        <button class="svc-save-btn" onclick="savePrice('${svc}')">Save</button>
+      </div>`).join('');
+  }
+
+  function savePrice(svc) {
+    const key = svc.replace(/\s+/g,'_');
+    const low = parseInt(document.getElementById('plo-' + key).value) || 0;
+    const high = parseInt(document.getElementById('phi-' + key).value) || 0;
+    if (high < low) { alert('Max price must be higher than min price.'); return; }
+    SERVICE_PRICES[svc] = { low, high };
+    try { localStorage.setItem(SHOP_ID + '-prices', JSON.stringify(SERVICE_PRICES)); } catch(e) {}
+    toast(svc + ' → $' + low + ' – $' + high, '#16a34a');
   }
 
   async function loadServiceDurations() {
