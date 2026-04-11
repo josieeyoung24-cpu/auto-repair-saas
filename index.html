@@ -189,6 +189,12 @@
         </div>
         <div class="field"><label>Preferred date</label><input type="date" id="b-date"></div>
       </div>
+      <div style="margin-top:14px;max-width:600px">
+        <div class="field">
+          <label>Notes for Neil (optional)</label>
+          <textarea id="b-notes" placeholder="e.g. Dropping off early at 7am, key in drop box. Car makes a grinding noise when braking at high speed. Also noticed a small oil leak." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.6"></textarea>
+        </div>
+      </div>
       <div style="margin-top:20px">
         <button class="btn btn-primary" onclick="submitBooking()" id="book-btn">Confirm appointment</button>
       </div>
@@ -332,11 +338,12 @@
     const vehicle = document.getElementById('b-vehicle').value.trim();
     const service = document.getElementById('b-service').value;
     const date = document.getElementById('b-date').value;
+    const notes = document.getElementById('b-notes').value.trim();
     if (!first || !phone || !service) { alert('Please fill in your name, phone, and service.'); return; }
     const btn = document.getElementById('book-btn');
     btn.textContent = 'Submitting...'; btn.disabled = true;
     const { error } = await db.from('bookings').insert([{
-      name: first + ' ' + last, phone, email, vehicle, service, date, shop_id: SHOP_ID
+      name: first + ' ' + last, phone, email, vehicle, service, date, notes, shop_id: SHOP_ID
     }]);
     if (error) {
       btn.textContent = 'Confirm appointment'; btn.disabled = false;
@@ -346,7 +353,7 @@
     fetch('/.netlify/functions/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'booking', customerName: first + ' ' + last, customerEmail: email, customerPhone: phone, vehicle, service, date })
+      body: JSON.stringify({ type: 'booking', customerName: first + ' ' + last, customerEmail: email, customerPhone: phone, vehicle, service, date, notes })
     });
     document.getElementById('book-form-wrap').style.display = 'none';
     const details = document.getElementById('book-success-details');
@@ -355,13 +362,14 @@
       '<div><span style="opacity:.7">Service</span>&nbsp;&nbsp;' + service + '</div>' +
       (date ? '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + date + '</div>' : '') +
       '<div><span style="opacity:.7">Phone</span>&nbsp;&nbsp;' + phone + '</div>' +
-      (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '');
+      (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '') +
+      (notes ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.2)"><span style="opacity:.7">Notes</span>&nbsp;&nbsp;' + notes + '</div>' : '');
     document.getElementById('book-success-screen').style.display = 'block';
     btn.textContent = 'Confirm appointment'; btn.disabled = false;
   }
 
   function resetBookingForm() {
-    ['b-first','b-last','b-phone','b-email','b-vehicle','b-date'].forEach(id => document.getElementById(id).value = '');
+    ['b-first','b-last','b-phone','b-email','b-vehicle','b-date','b-notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('b-service').selectedIndex = 0;
     document.getElementById('book-form-wrap').style.display = 'block';
     document.getElementById('book-success-screen').style.display = 'none';
