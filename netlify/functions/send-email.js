@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
-  const { type, customerName, customerEmail, customerPhone, vehicle, service, date, eta } = body;
+  const { type, customerName, customerEmail, customerPhone, vehicle, service, date, eta, notes } = body;
 
   try {
     if (type === 'booking') {
@@ -34,6 +34,7 @@ exports.handler = async (event) => {
                 <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
                 <tr><td style="padding:10px 0;color:#888">Requested date</td><td style="padding:10px 0">${date || 'Flexible'}</td></tr>
               </table>
+              ${notes ? `<div style="margin-top:16px;padding:14px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;font-size:13px;color:#555"><strong style="color:#333">Customer notes:</strong><br>${notes}</div>` : ''}
               <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#888">
                 Log into your admin panel to confirm or update this booking.
               </div>
