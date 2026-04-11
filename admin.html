@@ -456,13 +456,22 @@
       if (isSel) classes += ' selected';
       if (isClosed) classes += ' closed';
       const dots = dayAppts.slice(0,3).map(a => `<div class="cal-appt-dot">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`).join('');
-      html += `<div class="${classes}" onclick="${isClosed?'':'selectCalDay(\''+dateStr+'\')'}">
+      html += `<div class="${classes}" data-date="${dateStr}" data-closed="${isClosed}">
         <div class="cal-day-num">${day}</div>
         ${dots}
         ${dayAppts.length > 3 ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>` : ''}
       </div>`;
     }
     document.getElementById('cal-days').innerHTML = html;
+
+    // Event delegation — handles all day clicks cleanly
+    document.getElementById('cal-days').onclick = function(e) {
+      const day = e.target.closest('.cal-day');
+      if (!day || day.dataset.closed === 'true') return;
+      selectedDate = day.dataset.date;
+      renderCalendar();
+    };
+
     if (selectedDate) showDayDetail(selectedDate);
   }
 
