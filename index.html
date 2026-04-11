@@ -147,6 +147,8 @@
   <a class="nav-phone" href="tel:2063678833">(206) 367-8833</a>
 </nav>
 
+<div id="ann-banner" style="display:none"></div>
+
 <section class="hero">
   <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
   <h1>Neil fixes it.<br><em>Fair price.</em> Same day.</h1>
@@ -564,6 +566,28 @@
 
   // Wake up Supabase immediately on page load so first action is instant
   db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
+
+  // Load announcements banner
+  async function loadBanner() {
+    const { data } = await db.from('announcements').select('*')
+      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id', { ascending: false });
+    const banner = document.getElementById('ann-banner');
+    if (!data || data.length === 0) { banner.style.display = 'none'; return; }
+    const colors = {
+      info: { bg: '#e8f0fe', border: '#93b4f5', text: '#1a3a8b' },
+      promo: { bg: '#f0faf4', border: '#6fcf97', text: '#1a6b3a' },
+      warning: { bg: '#fff8e1', border: '#f0d070', text: '#7a5500' }
+    };
+    banner.innerHTML = data.map(a => {
+      const c = colors[a.type] || colors.info;
+      return `<div style="background:${c.bg};border-bottom:1px solid ${c.border};padding:12px 40px;font-size:14px;color:${c.text};display:flex;align-items:center;gap:10px">
+        <span style="font-weight:500">${a.type === 'promo' ? 'Special offer' : a.type === 'warning' ? 'Notice' : 'Info'}:</span>
+        <span>${a.message}</span>
+      </div>`;
+    }).join('');
+    banner.style.display = 'block';
+  }
+  loadBanner();
 </script>
 </body>
 </html>
