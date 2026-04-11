@@ -111,6 +111,7 @@
     <div class="tabs">
       <button class="tab active" onclick="switchTab('bookings')">Bookings</button>
       <button class="tab" onclick="switchTab('repairs')">Repair tracker</button>
+      <button class="tab" onclick="switchTab('calendar')">Calendar</button>
     </div>
 
     <!-- BOOKINGS PANEL -->
@@ -128,7 +129,6 @@
         <div class="section-title">Repair tracker</div>
         <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
       </div>
-
       <div class="new-ticket">
         <div class="new-ticket-title">Add a new repair ticket</div>
         <div class="ticket-form">
@@ -139,8 +139,35 @@
         </div>
         <button class="add-ticket-btn" onclick="addTicket()">Create ticket</button>
       </div>
-
       <div id="tickets-list"><div class="loading">Loading tickets...</div></div>
+    </div>
+
+    <!-- CALENDAR PANEL -->
+    <div class="panel" id="panel-calendar">
+      <div class="section-head">
+        <div class="section-title">Appointment calendar</div>
+        <button class="refresh-btn" onclick="loadCalendar()">Refresh</button>
+      </div>
+
+      <div class="new-ticket" style="margin-bottom:24px">
+        <div class="new-ticket-title">Block off time / add manual appointment</div>
+        <div class="ticket-form">
+          <div class="ticket-field"><label>Customer name</label><input type="text" id="cal-name" placeholder="Mike Torres or 'Blocked'"></div>
+          <div class="ticket-field"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
+          <div class="ticket-field"><label>Date</label><input type="date" id="cal-date"></div>
+          <div class="ticket-field"><label>Start time</label><input type="time" id="cal-start"></div>
+          <div class="ticket-field"><label>End time</label><input type="time" id="cal-end"></div>
+        </div>
+        <button class="add-ticket-btn" onclick="addCalendarEntry()">Add to calendar</button>
+      </div>
+
+      <div id="cal-date-picker" style="margin-bottom:20px;display:flex;align-items:center;gap:12px">
+        <button onclick="changeCalDate(-1)" style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:14px">←</button>
+        <div id="cal-date-label" style="font-size:15px;font-weight:500;min-width:160px;text-align:center"></div>
+        <button onclick="changeCalDate(1)" style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:14px">→</button>
+      </div>
+
+      <div id="calendar-view"><div class="loading">Loading calendar...</div></div>
     </div>
   </div>
 </div>
@@ -176,11 +203,81 @@
   }
 
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['bookings','repairs'][i] === name));
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['bookings','repairs','calendar'][i] === name));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'bookings') loadBookings();
-    else loadTickets();
+    else if (name === 'repairs') loadTickets();
+    else if (name === 'calendar') loadCalendar();
+  }
+
+  // ── CALENDAR ──
+  let calViewDate = new Date();
+
+  function changeCalDate(dir) {
+    calViewDate.setDate(calViewDate.getDate() + dir);
+    loadCalendar();
+  }
+
+  function formatTime12(t) {
+    if (!t) return '';
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+
+  async function loadCalendar() {
+    const dateStr = calViewDate.toISOString().split('T')[0];
+    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    document.getElementById('cal-date-label').textContent = days[calViewDate.getDay()] + ', ' + dateStr;
+
+    const { data: appts } = await db.from('appointments').select('*')
+      .eq('shop_id', SHOP_ID).eq('booking_date', dateStr).order('start_time');
+
+    const el = document.getElementById('calendar-view');
+    if (!appts || appts.length === 0) {
+      el.innerHTML = '<div class="empty">No appointments on this day.</div>';
+      return;
+    }
+
+    el.innerHTML = appts.map(a => `
+      <div class="card" style="margin-bottom:10px">
+        <div class="card-header">
+          <div>
+            <div class="card-name">${a.customer_name || '—'} <span class="badge ${a.status === 'cancelled' ? 'badge-denied' : 'badge-confirmed'}">${a.status || 'scheduled'}</span></div>
+            <div class="card-details">${a.service || '—'} · ${formatTime12(a.start_time)} – ${formatTime12(a.end_time)}</div>
+          </div>
+        </div>
+        <div class="card-actions">
+          <button class="action-btn deny" onclick="cancelAppt(${a.id})">Cancel slot</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function addCalendarEntry() {
+    const name = document.getElementById('cal-name').value.trim();
+    const service = document.getElementById('cal-service').value.trim();
+    const date = document.getElementById('cal-date').value;
+    const start = document.getElementById('cal-start').value;
+    const end = document.getElementById('cal-end').value;
+    if (!name || !date || !start || !end) { alert('Please fill in all fields.'); return; }
+    const { error } = await db.from('appointments').insert([{
+      customer_name: name, service, booking_date: date,
+      start_time: start, end_time: end, shop_id: SHOP_ID, status: 'scheduled'
+    }]);
+    if (!error) {
+      ['cal-name','cal-service','cal-date','cal-start','cal-end'].forEach(id => document.getElementById(id).value = '');
+      toast('Added to calendar');
+      calViewDate = new Date(date + 'T00:00:00');
+      loadCalendar();
+    }
+  }
+
+  async function cancelAppt(id) {
+    if (!confirm('Cancel this appointment slot?')) return;
+    await db.from('appointments').update({ status: 'cancelled' }).eq('id', id);
+    toast('Slot cancelled — now available for booking');
+    loadCalendar();
   }
 
   function toast(msg) {
