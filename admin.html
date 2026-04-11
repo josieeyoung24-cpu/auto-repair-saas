@@ -219,20 +219,34 @@
           <div class="card-time">${timeAgo(b.created_at)}</div>
         </div>
         <div class="card-actions">
-          <button class="action-btn confirm" onclick="confirmBooking(${b.id}, '${b.name}', '${b.vehicle}', '${b.service}')">Confirm & create ticket</button>
+          <button class="action-btn confirm" onclick="confirmBooking(${b.id}, '${b.name}', '${b.vehicle}', '${b.service}', '${b.phone}', '${b.email || ''}')">Confirm & create ticket</button>
           <button class="action-btn" onclick="callCustomer('${b.phone}')">Call ${b.phone}</button>
           <button class="action-btn deny" onclick="deleteBooking(${b.id})">Remove</button>
         </div>
       </div>`).join('');
   }
 
-  async function confirmBooking(id, name, vehicle, service) {
+  async function confirmBooking(id, name, vehicle, service, phone, email) {
     const { error } = await db.from('tickets').insert([{
-      customer_name: name, vehicle, service, status: 'checked-in', eta: '', shop_id: SHOP_ID
+      customer_name: name, vehicle, service, status: 'checked-in',
+      eta: '', shop_id: SHOP_ID, customer_email: email || ''
     }]);
     if (!error) {
       await deleteBooking(id, true);
-      toast('Ticket created for ' + name);
+      // Send confirmation email to customer
+      if (email) {
+        fetch('/.netlify/functions/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            type: 'confirmed',
+            customerName: name,
+            customerEmail: email,
+            vehicle, service
+          })
+        });
+      }
+      toast('Confirmed! Ticket created for ' + name);
       switchTab('repairs');
     }
   }
