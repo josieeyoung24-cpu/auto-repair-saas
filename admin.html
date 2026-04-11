@@ -87,8 +87,8 @@
   .ss{padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;font-family:var(--font)}
   /* ANNOUNCEMENTS */
   .ann-card{border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;background:var(--white);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-  .ann-msg{font-size:14px;flex:1}
-  .ann-type{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500;flex-shrink:0}
+  .ann-card-msg{font-size:14px;flex:1}
+  .ann-card-type{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500;flex-shrink:0}
   .ann-info{background:#e8f0fe;color:#1a4a8b}
   .ann-promo{background:#f0faf4;color:#1a6b3a}
   .ann-warning{background:#fff8e1;color:#8a6000}
@@ -230,6 +230,55 @@
     <!-- SERVICES -->
     <div class="panel" id="panel-services">
       <div class="sh"><div class="st">Services & pricing</div><button class="rbtn" onclick="loadServices()">Refresh</button></div>
+      <div class="box">
+        <div class="box-title">Edit default services</div>
+        <div class="box-sub">Update the pricing and duration for your existing services. Changes show on the customer site immediately.</div>
+        <div id="default-services-list">
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">Oil change</div>
+            <input class="si" type="number" id="d-ol-low" placeholder="49" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-ol-high" placeholder="79" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-ol-dur" placeholder="60" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('Oil change','d-ol')">Save</button>
+          </div>
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">Brake service</div>
+            <input class="si" type="number" id="d-br-low" placeholder="120" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-br-high" placeholder="220" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-br-dur" placeholder="120" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('Brake service','d-br')">Save</button>
+          </div>
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">Tire rotation</div>
+            <input class="si" type="number" id="d-tr-low" placeholder="25" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-tr-high" placeholder="45" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-tr-dur" placeholder="45" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('Tire rotation','d-tr')">Save</button>
+          </div>
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">Engine diagnostic</div>
+            <input class="si" type="number" id="d-ed-low" placeholder="89" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-ed-high" placeholder="149" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-ed-dur" placeholder="90" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('Engine diagnostic','d-ed')">Save</button>
+          </div>
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">AC service</div>
+            <input class="si" type="number" id="d-ac-low" placeholder="95" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-ac-high" placeholder="175" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-ac-dur" placeholder="90" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('AC service','d-ac')">Save</button>
+          </div>
+          <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+            <div style="flex:1;min-width:140px;font-size:14px;font-weight:500">Transmission service</div>
+            <input class="si" type="number" id="d-ts-low" placeholder="180" style="width:68px"> <span style="font-size:12px;color:var(--muted)">to</span>
+            <input class="si" type="number" id="d-ts-high" placeholder="340" style="width:68px"> <span style="font-size:12px;color:var(--muted)">$</span>
+            <input class="si" type="number" id="d-ts-dur" placeholder="120" style="width:68px"> <span style="font-size:12px;color:var(--muted)">min</span>
+            <button class="ss" onclick="saveDefaultService('Transmission service','d-ts')">Save</button>
+          </div>
+        </div>
+      </div>
+
       <div class="box">
         <div class="box-title">Add new service</div>
         <div class="fg">
@@ -619,6 +668,23 @@ async function cancelAppt(id){
 }
 
 // ── SERVICES ──
+async function saveDefaultService(name, prefix) {
+  const low = document.getElementById(prefix+'-low').value;
+  const high = document.getElementById(prefix+'-high').value;
+  const dur = document.getElementById(prefix+'-dur').value;
+  if (!low || !dur) { alert('Price and duration required.'); return; }
+  // Check if already exists in services table
+  const { data: existing } = await db.from('services').select('*')
+    .eq('shop_id', SHOP_ID).eq('name', name);
+  if (existing && existing.length > 0) {
+    await db.from('services').update({ price_low: low, price_high: high || low, duration_mins: dur, active: 'true' }).eq('id', existing[0].id);
+  } else {
+    await db.from('services').insert([{ name, price_low: low, price_high: high || low, duration_mins: dur, shop_id: SHOP_ID, active: 'true' }]);
+  }
+  toast(name + ' updated on customer site', '#16a34a');
+  loadServices();
+}
+
 async function loadServices(){
   const el=document.getElementById('services-list');
   const {data}=await db.from('services').select('*').eq('shop_id',SHOP_ID).order('id');
@@ -671,8 +737,8 @@ async function loadAnnouncements(){
   el.innerHTML=data.map(a=>`
     <div class="ann-card">
       <div>
-        <span class="ann-type ${typeClass[a.type]||'ann-info'}">${a.type||'info'}</span>
-        <div class="ann-msg" style="margin-top:6px">${a.message}</div>
+        <span class="ann-card-type ${typeClass[a.type]||'ann-info'}">${a.type||'info'}</span>
+        <div class="ann-card-msg" style="margin-top:6px">${a.message}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="ss" style="background:${a.active==='true'?'#888':'#16a34a'}" onclick="toggleAnn(${a.id},'${a.active}')">${a.active==='true'?'Hide':'Show'}</button>
