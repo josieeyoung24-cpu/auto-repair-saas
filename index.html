@@ -294,7 +294,7 @@
 
 <section class="services-section" id="services">
   <div class="section-header"><h2>Common services</h2><p>Transparent pricing on every job — no surprises.</p></div>
-  <div class="services-grid">
+  <div class="services-grid" id="services-grid">
     <div class="service-card"><div class="service-name">Oil change</div><div class="service-desc">Conventional, synthetic blend, or full synthetic</div><div class="service-price">From $49</div></div>
     <div class="service-card"><div class="service-name">Brake service</div><div class="service-desc">Pads, rotors, calipers — full inspection included</div><div class="service-price">$120 – $220</div></div>
     <div class="service-card"><div class="service-name">Tire rotation</div><div class="service-desc">Extends tire life, improves handling</div><div class="service-price">From $25</div></div>
@@ -588,6 +588,21 @@
     banner.style.display = 'block';
   }
   loadBanner();
+
+  // Load services from Supabase — falls back to hardcoded if none added yet
+  async function loadServicesGrid() {
+    const { data } = await db.from('services').select('*')
+      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id');
+    if (!data || data.length === 0) return; // keep hardcoded defaults
+    const grid = document.getElementById('services-grid');
+    grid.innerHTML = data.map(s => `
+      <div class="service-card">
+        <div class="service-name">${s.name}</div>
+        <div class="service-desc">${s.duration_mins} min service</div>
+        <div class="service-price">${s.price_low && s.price_high && s.price_low !== s.price_high ? '$'+s.price_low+' – $'+s.price_high : s.price_low ? 'From $'+s.price_low : 'Call for pricing'}</div>
+      </div>`).join('');
+  }
+  loadServicesGrid();
 </script>
 </body>
 </html>
