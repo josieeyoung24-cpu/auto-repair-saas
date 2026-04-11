@@ -1,0 +1,106 @@
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return { statusCode: 405, body: 'Method not allowed' };
+  }
+
+  const RESEND_KEY = 're_NdQSmbr8_DLAEADNqhzyWTUYrfamsqzHz';
+  const SHOP_EMAIL = 'josieeyoung24@gmail.com';
+  const FROM = 'Aurora Auto Repair <onboarding@resend.dev>';
+
+  let body;
+  try { body = JSON.parse(event.body); }
+  catch { return { statusCode: 400, body: 'Invalid JSON' }; }
+
+  const { type, customerName, customerEmail, customerPhone, vehicle, service, date, eta } = body;
+
+  try {
+    if (type === 'booking') {
+      // Email to Neil
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [SHOP_EMAIL],
+          subject: `New booking — ${customerName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <h2 style="font-size:20px;font-weight:600;margin-bottom:4px">New appointment request</h2>
+              <p style="color:#888;font-size:14px;margin-bottom:24px">Aurora Auto Repair</p>
+              <table style="width:100%;font-size:14px;border-collapse:collapse">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Customer</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:500">${customerName}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Phone</td><td style="padding:10px 0;border-bottom:1px solid #eee"><a href="tel:${customerPhone}" style="color:#111">${customerPhone}</a></td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle || 'Not specified'}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
+                <tr><td style="padding:10px 0;color:#888">Requested date</td><td style="padding:10px 0">${date || 'Flexible'}</td></tr>
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#888">
+                Log into your admin panel to confirm or update this booking.
+              </div>
+            </div>`
+        })
+      });
+
+      // Confirmation email to customer (only if they provided an email)
+      if (customerEmail) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: FROM,
+            to: [customerEmail],
+            subject: `Your appointment request — Aurora Auto Repair`,
+            html: `
+              <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+                <h2 style="font-size:20px;font-weight:600;margin-bottom:4px">We got your request, ${customerName.split(' ')[0]}!</h2>
+                <p style="color:#888;font-size:14px;margin-bottom:24px">Aurora Auto Repair will confirm your appointment shortly.</p>
+                <table style="width:100%;font-size:14px;border-collapse:collapse">
+                  <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle || 'Not specified'}</td></tr>
+                  <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
+                  <tr><td style="padding:10px 0;color:#888">Requested date</td><td style="padding:10px 0">${date || 'Flexible'}</td></tr>
+                </table>
+                <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                  Questions? Call us at <strong>(206) 367-8833</strong><br>
+                  10712 Aurora Ave N, Seattle WA 98133
+                </div>
+              </div>`
+          })
+        });
+      }
+    }
+
+    if (type === 'ready') {
+      if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [customerEmail],
+          subject: `Your car is ready for pickup — Aurora Auto Repair`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <div style="background:#16a34a;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
+                <h2 style="color:#fff;font-size:22px;font-weight:600;margin-bottom:8px">Your car is ready!</h2>
+                <p style="color:rgba(255,255,255,0.85);font-size:14px;margin:0">Head over whenever you're ready — we're open and waiting.</p>
+              </div>
+              <table style="width:100%;font-size:14px;border-collapse:collapse">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle || 'Your vehicle'}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service || 'Service complete'}</td></tr>
+                ${eta ? `<tr><td style="padding:10px 0;color:#888">Ready since</td><td style="padding:10px 0">${eta}</td></tr>` : ''}
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                <strong>Aurora Auto Repair</strong><br>
+                10712 Aurora Ave N, Seattle WA 98133<br>
+                <a href="tel:2063678833" style="color:#111">(206) 367-8833</a>
+              </div>
+            </div>`
+        })
+      });
+    }
+
+    return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+  } catch (err) {
+    return { statusCode: 500, body: JSON.stringify({ error: err.message }) };
+  }
+};
