@@ -96,6 +96,9 @@
   .status-note strong { color: var(--text); }
   .status-not-found { display: none; font-size: 14px; color: var(--muted); padding: 16px 0; }
   .status-not-found.show { display: block; }
+  .slot-btn { padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all .15s; font-family: var(--font-main); }
+  .slot-btn:hover { background: var(--off); border-color: var(--accent); }
+  .slot-btn.selected { background: var(--accent); color: var(--white); border-color: var(--accent); }
   .quote-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; max-width: 600px; margin-bottom: 20px; }
   .quote-result { display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 480px; margin-top: 8px; }
   .quote-result.show { display: block; }
@@ -181,18 +184,34 @@
         <div class="field"><label>Email (for confirmation)</label><input type="email" id="b-email" placeholder="mike@email.com"></div>
         <div class="field"><label>Vehicle</label><input type="text" id="b-vehicle" placeholder="2019 Toyota Camry"></div>
         <div class="field"><label>Service needed</label>
-          <select id="b-service">
-            <option value="">Select a service</option>
-            <option>Oil change</option><option>Brake service</option><option>Tire rotation</option>
-            <option>Engine diagnostic</option><option>AC service</option><option>Transmission service</option><option>Other / not sure</option>
+          <select id="b-service" onchange="onServiceChange()">
+            <option value="" data-duration="0">Select a service</option>
+            <option value="Oil change" data-duration="60">Oil change (~1 hr)</option>
+            <option value="Brake service" data-duration="120">Brake service (~2 hrs)</option>
+            <option value="Tire rotation" data-duration="45">Tire rotation (~45 min)</option>
+            <option value="Engine diagnostic" data-duration="90">Engine diagnostic (~1.5 hrs)</option>
+            <option value="AC service" data-duration="90">AC service (~1.5 hrs)</option>
+            <option value="Transmission service" data-duration="120">Transmission service (~2 hrs)</option>
+            <option value="Other / not sure" data-duration="60">Other / not sure (~1 hr)</option>
           </select>
         </div>
-        <div class="field"><label>Preferred date</label><input type="date" id="b-date"></div>
+      </div>
+      <div id="slot-picker" style="display:none;margin-top:20px;max-width:600px">
+        <div class="field" style="margin-bottom:14px">
+          <label>Select a date</label>
+          <input type="date" id="b-date" onchange="loadTimeSlots()" style="max-width:220px">
+        </div>
+        <div id="slots-wrap" style="display:none">
+          <label style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;font-family:var(--font-mono);display:block;margin-bottom:10px">Available times</label>
+          <div id="slots-grid" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+          <div id="slots-empty" style="display:none;font-size:14px;color:var(--muted);padding:12px 0">No available slots on this day. Please pick another date.</div>
+        </div>
+        <input type="hidden" id="b-time">
       </div>
       <div style="margin-top:14px;max-width:600px">
         <div class="field">
           <label>Notes for Neil (optional)</label>
-          <textarea id="b-notes" placeholder="e.g. Dropping off early at 7am, key in drop box. Car makes a grinding noise when braking at high speed. Also noticed a small oil leak." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.6"></textarea>
+          <textarea id="b-notes" placeholder="e.g. Dropping off early at 7am, key in drop box. Car makes a grinding noise when braking at high speed." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.6"></textarea>
         </div>
       </div>
       <div style="margin-top:20px">
@@ -201,7 +220,7 @@
       <div class="msg msg-error" id="book-error">Something went wrong. Please call us at (206) 367-8833.</div>
     </div>
     <div id="book-success-screen" style="display:none;max-width:560px">
-      <div style="background:#16a34a;border-radius:var(--radius-lg);padding:32px 28px;text-align:center;margin-bottom:0">
+      <div style="background:#16a34a;border-radius:var(--radius-lg);padding:32px 28px;text-align:center">
         <div style="width:56px;height:56px;background:rgba(255,255,255,0.2);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px">✓</div>
         <div style="font-size:22px;font-weight:500;color:#fff;letter-spacing:-0.3px;margin-bottom:8px">Appointment requested!</div>
         <div style="font-size:14px;color:rgba(255,255,255,0.85);line-height:1.6;margin-bottom:20px">You'll get an email confirmation once Neil reviews your request. We'll see you soon.</div>
@@ -338,29 +357,43 @@
     const vehicle = document.getElementById('b-vehicle').value.trim();
     const service = document.getElementById('b-service').value;
     const date = document.getElementById('b-date').value;
+    const timeVal = document.getElementById('b-time').value;
     const notes = document.getElementById('b-notes').value.trim();
     if (!first || !phone || !service) { alert('Please fill in your name, phone, and service.'); return; }
+    if (!date || !timeVal) { alert('Please select a date and time slot.'); return; }
+    const [startTime, endTime] = timeVal.split('|');
     const btn = document.getElementById('book-btn');
     btn.textContent = 'Submitting...'; btn.disabled = true;
+
+    // Save booking
     const { error } = await db.from('bookings').insert([{
-      name: first + ' ' + last, phone, email, vehicle, service, date, notes, shop_id: SHOP_ID
+      name: first + ' ' + last, phone, email, vehicle, service, date,
+      notes, shop_id: SHOP_ID
     }]);
     if (error) {
       btn.textContent = 'Confirm appointment'; btn.disabled = false;
       document.getElementById('book-error').classList.add('show');
       return;
     }
+
+    // Block the time slot immediately
+    await db.from('appointments').insert([{
+      booking_date: date, start_time: startTime, end_time: endTime,
+      service, customer_name: first + ' ' + last, shop_id: SHOP_ID, status: 'pending'
+    }]);
+
     fetch('/.netlify/functions/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'booking', customerName: first + ' ' + last, customerEmail: email, customerPhone: phone, vehicle, service, date, notes })
+      body: JSON.stringify({ type: 'booking', customerName: first + ' ' + last, customerEmail: email, customerPhone: phone, vehicle, service, date: date + ' at ' + formatTime(startTime), notes })
     });
+
     document.getElementById('book-form-wrap').style.display = 'none';
     const details = document.getElementById('book-success-details');
     details.innerHTML =
       (vehicle ? '<div><span style="opacity:.7">Vehicle</span>&nbsp;&nbsp;' + vehicle + '</div>' : '') +
       '<div><span style="opacity:.7">Service</span>&nbsp;&nbsp;' + service + '</div>' +
-      (date ? '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + date + '</div>' : '') +
+      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + date + ' at ' + formatTime(startTime) + '</div>' +
       '<div><span style="opacity:.7">Phone</span>&nbsp;&nbsp;' + phone + '</div>' +
       (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '') +
       (notes ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.2)"><span style="opacity:.7">Notes</span>&nbsp;&nbsp;' + notes + '</div>' : '');
@@ -369,11 +402,20 @@
   }
 
   function resetBookingForm() {
-    ['b-first','b-last','b-phone','b-email','b-vehicle','b-date','b-notes'].forEach(id => document.getElementById(id).value = '');
+    ['b-first','b-last','b-phone','b-email','b-vehicle','b-notes'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('b-service').selectedIndex = 0;
+    document.getElementById('b-date').value = '';
+    document.getElementById('b-time').value = '';
+    document.getElementById('slot-picker').style.display = 'none';
+    document.getElementById('slots-wrap').style.display = 'none';
     document.getElementById('book-form-wrap').style.display = 'block';
     document.getElementById('book-success-screen').style.display = 'none';
   }
+
+  // Set min date to tomorrow
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  const minDate = d.toISOString().split('T')[0];
+  document.getElementById('b-date').min = minDate;
 
   async function lookupStatus() {
     const val = document.getElementById('status-input').value.trim();
@@ -421,8 +463,104 @@
     document.getElementById('quote-result').classList.add('show');
   }
 
-  const d = new Date(); d.setDate(d.getDate() + 1);
-  document.getElementById('b-date').min = d.toISOString().split('T')[0];
+  const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  const SERVICE_DURATION = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
+
+  function onServiceChange() {
+    const svc = document.getElementById('b-service').value;
+    const picker = document.getElementById('slot-picker');
+    if (svc) {
+      picker.style.display = 'block';
+      document.getElementById('slots-wrap').style.display = 'none';
+      document.getElementById('b-date').value = '';
+      document.getElementById('b-time').value = '';
+    } else {
+      picker.style.display = 'none';
+    }
+  }
+
+  async function loadTimeSlots() {
+    const dateVal = document.getElementById('b-date').value;
+    const svc = document.getElementById('b-service').value;
+    if (!dateVal || !svc) return;
+
+    const date = new Date(dateVal + 'T00:00:00');
+    const dayName = DAYS[date.getDay()];
+    const duration = SERVICE_DURATION[svc] || 60;
+
+    const slotsWrap = document.getElementById('slots-wrap');
+    const slotsGrid = document.getElementById('slots-grid');
+    const slotsEmpty = document.getElementById('slots-empty');
+    slotsGrid.innerHTML = '<span style="font-size:13px;color:var(--muted)">Loading...</span>';
+    slotsWrap.style.display = 'block';
+    slotsEmpty.style.display = 'none';
+
+    // Get availability for this day
+    const { data: avail } = await db.from('availability')
+      .select('*').eq('shop_id', SHOP_ID).eq('day_of_week', dayName).single();
+
+    if (!avail || avail.is_closed === 'true') {
+      slotsGrid.innerHTML = '';
+      slotsEmpty.textContent = 'We\'re closed on this day. Please pick another date.';
+      slotsEmpty.style.display = 'block';
+      return;
+    }
+
+    // Get existing appointments for this date
+    const { data: appts } = await db.from('appointments')
+      .select('*').eq('shop_id', SHOP_ID).eq('booking_date', dateVal).neq('status','cancelled');
+
+    // Generate slots every 30 minutes within open hours
+    const slots = [];
+    const [openH, openM] = avail.open_time.split(':').map(Number);
+    const [closeH, closeM] = avail.close_time.split(':').map(Number);
+    const openMins = openH * 60 + openM;
+    const closeMins = closeH * 60 + closeM;
+
+    for (let m = openMins; m + duration <= closeMins; m += 30) {
+      const endM = m + duration;
+      const startStr = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+      const endStr = `${String(Math.floor(endM/60)).padStart(2,'0')}:${String(endM%60).padStart(2,'0')}`;
+
+      // Check if this slot overlaps any existing appointment
+      const taken = (appts || []).some(a => {
+        const aStart = a.start_time.slice(0,5);
+        const aEnd = a.end_time.slice(0,5);
+        const aStartM = parseInt(aStart.split(':')[0])*60 + parseInt(aStart.split(':')[1]);
+        const aEndM = parseInt(aEnd.split(':')[0])*60 + parseInt(aEnd.split(':')[1]);
+        return m < aEndM && endM > aStartM;
+      });
+
+      if (!taken) slots.push({ start: startStr, end: endStr });
+    }
+
+    if (slots.length === 0) {
+      slotsGrid.innerHTML = '';
+      slotsEmpty.textContent = 'No available slots on this day. Please pick another date.';
+      slotsEmpty.style.display = 'block';
+      return;
+    }
+
+    slotsEmpty.style.display = 'none';
+    slotsGrid.innerHTML = slots.map(s => {
+      const label = formatTime(s.start) + ' – ' + formatTime(s.end);
+      return `<button class="slot-btn" onclick="selectSlot(this,'${s.start}','${s.end}')">${formatTime(s.start)}</button>`;
+    }).join('');
+    document.getElementById('b-time').value = '';
+  }
+
+  function formatTime(t) {
+    const [h, m] = t.split(':').map(Number);
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = h % 12 || 12;
+    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
+  }
+
+  function selectSlot(btn, start, end) {
+    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    document.getElementById('b-time').value = start + '|' + end;
+  }
 
   // Wake up Supabase immediately on page load so first action is instant
   db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
