@@ -6,107 +6,117 @@
 <title>Aurora Auto — Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root { --accent: #111; --white: #fff; --off: #f7f7f5; --border: #e8e8e4; --muted: #888880; --text: #111; --radius: 10px; --radius-lg: 16px; --font: system-ui, sans-serif; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font); background: var(--off); color: var(--text); font-size: 15px; -webkit-font-smoothing: antialiased; }
-  .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
-  .login-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; width: 100%; max-width: 380px; }
-  .login-title { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
-  .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
-  .lfield { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-  .lfield label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .lfield input { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; width: 100%; }
-  .lfield input:focus { outline: none; border-color: var(--accent); }
-  .lbtn { width: 100%; padding: 12px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
-  .login-err { display: none; font-size: 13px; color: #8b1a1a; margin-top: 12px; }
-  .login-err.show { display: block; }
-  .app { display: none; }
-  .app.show { display: block; }
-  .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
-  .topbar-logo { font-size: 16px; font-weight: 500; }
-  .logout-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: none; padding: 6px 12px; border-radius: var(--radius); }
-  .logout-btn:hover { background: var(--off); color: var(--text); }
-  .main { padding: 28px 24px; max-width: 960px; margin: 0 auto; }
-  .tabs { display: flex; gap: 4px; background: #ececea; padding: 4px; border-radius: var(--radius); width: fit-content; margin-bottom: 28px; flex-wrap: wrap; }
-  .tab { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: var(--font); }
-  .tab.active { background: var(--white); color: var(--text); border: 1px solid var(--border); }
-  .panel { display: none; }
-  .panel.active { display: block; }
-  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
-  .section-title { font-size: 18px; font-weight: 500; }
-  .refresh-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: var(--white); border: 1px solid var(--border); padding: 7px 14px; border-radius: var(--radius); }
-  .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; }
-  .card-header { padding: 16px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-  .card-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
-  .card-details { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .card-time { font-size: 12px; color: var(--muted); white-space: nowrap; }
-  .card-actions { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--off); display: flex; gap: 8px; flex-wrap: wrap; }
-  .action-btn { padding: 7px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: var(--font); }
-  .action-btn:hover { background: var(--off); }
-  .action-btn.confirm { background: #111; color: #fff; border-color: #111; }
-  .action-btn.confirm:hover { background: #333; }
-  .action-btn.deny { border-color: #f5c0c0; color: #8b1a1a; background: #fff0f0; }
-  .action-btn.deny:hover { background: #ffe0e0; }
-  .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
-  .badge-new { background: #e8f0fe; color: #1a4a8b; }
-  .badge-confirmed { background: #f0faf4; color: #1a6b3a; }
-  .badge-denied { background: #fff0f0; color: #8b1a1a; }
-  .badge-in { background: #fff8e1; color: #8a6000; }
-  .badge-ready { background: #f0faf4; color: #1a6b3a; }
-  .box { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; }
-  .box-title { font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-  .tform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .tf { display: flex; flex-direction: column; gap: 5px; }
-  .tf label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .tf input, .tf select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); background: var(--white); width: 100%; font-family: var(--font); }
-  .tf input:focus, .tf select:focus { outline: none; border-color: var(--accent); }
-  .add-btn { margin-top: 14px; padding: 10px 20px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); }
-  .empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; }
-  .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
-  .msg-toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 12px 24px; border-radius: var(--radius); font-size: 14px; z-index: 999; white-space: nowrap; }
-  .msg-toast.show { display: block; }
-  .conflict-banner { display: none; background: #fff8e1; border: 1px solid #f0d070; border-radius: var(--radius); padding: 14px 16px; margin-top: 12px; font-size: 13px; color: #8a6000; }
-  .conflict-banner.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
-
-  /* ── MONTHLY CALENDAR ── */
-  .cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
-  .cal-nav-btn { padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); cursor: pointer; font-size: 14px; font-family: var(--font); }
-  .cal-nav-btn:hover { background: var(--off); }
-  .cal-month-label { font-size: 17px; font-weight: 500; min-width: 180px; }
-  .cal-today-btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); cursor: pointer; font-size: 13px; font-family: var(--font); color: var(--muted); }
-  .cal-grid { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
-  .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--off); border-bottom: 1px solid var(--border); }
-  .cal-dow-cell { padding: 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
-  .cal-day { min-height: 80px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; cursor: pointer; transition: background .1s; position: relative; }
-  .cal-day:hover { background: var(--off); }
-  .cal-day:nth-child(7n) { border-right: none; }
-  .cal-day.other-month .cal-day-num { color: #ccc; }
-  .cal-day.today { background: #f0f7ff; }
-  .cal-day.today .cal-day-num { background: #111; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-  .cal-day.selected { background: #e8f0fe; }
-  .cal-day.closed { background: #fafafa; cursor: default; }
-  .cal-day.closed:hover { background: #fafafa; }
-  .cal-day-num { font-size: 13px; font-weight: 500; margin-bottom: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
-  .cal-appt-dot { font-size: 11px; background: #111; color: #fff; border-radius: 4px; padding: 2px 5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
-  .cal-appt-dot.cancelled { background: #ddd; color: #888; }
-  .cal-day-detail { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-top: 16px; }
-  .cal-day-detail-title { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
-
-  /* ── SERVICE EDITOR ── */
-  .svc-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
-  .svc-row:last-child { border-bottom: none; }
-  .svc-name { flex: 1; font-size: 14px; }
-  .svc-dur-input { width: 80px; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; text-align: center; font-family: var(--font); }
-  .svc-dur-label { font-size: 12px; color: var(--muted); }
-  .svc-save-btn { padding: 6px 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 12px; cursor: pointer; font-family: var(--font); }
-
-  @media (max-width: 600px) {
-    .tform { grid-template-columns: 1fr; }
-    .main { padding: 16px; }
-    .cal-day { min-height: 52px; padding: 4px; }
-    .cal-appt-dot { display: none; }
-  }
+  :root { --accent:#111;--white:#fff;--off:#f7f7f5;--border:#e8e8e4;--muted:#888880;--text:#111;--radius:10px;--radius-lg:16px;--font:system-ui,sans-serif; }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font);background:var(--off);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased}
+  .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
+  .login-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:40px;width:100%;max-width:380px}
+  .login-title{font-size:20px;font-weight:500;margin-bottom:6px}
+  .login-sub{font-size:14px;color:var(--muted);margin-bottom:28px}
+  .lf{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+  .lf label{font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .lf input{padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;width:100%}
+  .lf input:focus{outline:none;border-color:var(--accent)}
+  .lbtn{width:100%;padding:12px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px}
+  .login-err{display:none;font-size:13px;color:#8b1a1a;margin-top:12px}
+  .login-err.show{display:block}
+  .app{display:none}
+  .app.show{display:block}
+  .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .topbar-logo{font-size:16px;font-weight:500}
+  .topbar-right{display:flex;align-items:center;gap:12px}
+  .topbar-date{font-size:13px;color:var(--muted)}
+  .logout-btn{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;padding:6px 12px;border-radius:var(--radius);font-family:var(--font)}
+  .logout-btn:hover{background:var(--off);color:var(--text)}
+  .main{padding:24px;max-width:960px;margin:0 auto}
+  .tabs{display:flex;gap:4px;background:#ececea;padding:4px;border-radius:var(--radius);width:fit-content;margin-bottom:24px;flex-wrap:wrap}
+  .tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:var(--font)}
+  .tab.active{background:var(--white);color:var(--text);border:1px solid var(--border)}
+  .panel{display:none}
+  .panel.active{display:block}
+  .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
+  .st{font-size:18px;font-weight:500}
+  .rbtn{font-size:13px;color:var(--muted);cursor:pointer;background:var(--white);border:1px solid var(--border);padding:7px 14px;border-radius:var(--radius);font-family:var(--font)}
+  .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);margin-bottom:12px;overflow:hidden}
+  .ch{padding:16px 20px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .cn{font-size:15px;font-weight:500;margin-bottom:3px}
+  .cd{font-size:13px;color:var(--muted);line-height:1.6}
+  .ct{font-size:12px;color:var(--muted);white-space:nowrap}
+  .ca{padding:12px 20px;border-top:1px solid var(--border);background:var(--off);display:flex;gap:8px;flex-wrap:wrap}
+  .ab{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);font-family:var(--font)}
+  .ab:hover{background:var(--off)}
+  .ab.ok{background:#111;color:#fff;border-color:#111}
+  .ab.ok:hover{background:#333}
+  .ab.go{background:#16a34a;color:#fff;border-color:#16a34a}
+  .ab.go:hover{background:#14803e}
+  .ab.no{border-color:#f5c0c0;color:#8b1a1a;background:#fff0f0}
+  .ab.no:hover{background:#ffe0e0}
+  .badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500}
+  .bn{background:#e8f0fe;color:#1a4a8b}
+  .bc{background:#f0faf4;color:#1a6b3a}
+  .bd{background:#fff0f0;color:#8b1a1a}
+  .bi{background:#fff8e1;color:#8a6000}
+  .br{background:#f0faf4;color:#1a6b3a}
+  .box{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-bottom:20px}
+  .box-title{font-size:14px;font-weight:500;margin-bottom:14px}
+  .box-sub{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .fg{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .ff{display:flex;flex-direction:column;gap:5px}
+  .ff label{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .ff input,.ff select,.ff textarea{padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text);background:var(--white);width:100%;font-family:var(--font)}
+  .ff input:focus,.ff select:focus,.ff textarea:focus{outline:none;border-color:var(--accent)}
+  .add-btn{margin-top:14px;padding:10px 20px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font)}
+  .add-btn:hover{background:#333}
+  .empty{text-align:center;padding:40px 20px;color:var(--muted);font-size:14px}
+  .loading{text-align:center;padding:28px;color:var(--muted);font-size:14px}
+  .toast{display:none;position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#111;color:#fff;padding:12px 24px;border-radius:var(--radius);font-size:14px;z-index:999;white-space:nowrap}
+  .toast.show{display:block}
+  .conflict-banner{display:none;background:#fff8e1;border:1px solid #f0d070;border-radius:var(--radius);padding:14px 16px;margin-top:12px;font-size:13px;color:#8a6000}
+  .conflict-banner.show{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+  /* STATS */
+  .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+  .stat-card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:18px 20px}
+  .stat-num{font-size:28px;font-weight:500;letter-spacing:-0.5px;margin-bottom:4px}
+  .stat-label{font-size:13px;color:var(--muted)}
+  /* SERVICES */
+  .svc-row{display:flex;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border)}
+  .svc-row:last-child{border-bottom:none}
+  .svc-name{flex:1;font-size:14px;font-weight:500}
+  .svc-meta{font-size:12px;color:var(--muted)}
+  .si{width:72px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;text-align:center;font-family:var(--font)}
+  .ss{padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:var(--radius);font-size:12px;cursor:pointer;font-family:var(--font)}
+  /* ANNOUNCEMENTS */
+  .ann-card{border:1px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:10px;background:var(--white);display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+  .ann-msg{font-size:14px;flex:1}
+  .ann-type{font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500;flex-shrink:0}
+  .ann-info{background:#e8f0fe;color:#1a4a8b}
+  .ann-promo{background:#f0faf4;color:#1a6b3a}
+  .ann-warning{background:#fff8e1;color:#8a6000}
+  /* CALENDAR */
+  .cal-nav{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+  .cnb{padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:14px;font-family:var(--font)}
+  .cnb:hover{background:var(--off)}
+  .cal-month-label{font-size:17px;font-weight:500;min-width:180px}
+  .cal-today-btn{padding:6px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:13px;font-family:var(--font);color:var(--muted)}
+  .cal-grid{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden}
+  .cal-dow{display:grid;grid-template-columns:repeat(7,1fr);background:var(--off);border-bottom:1px solid var(--border)}
+  .cal-dow-cell{padding:10px 0;text-align:center;font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em}
+  .cal-days{display:grid;grid-template-columns:repeat(7,1fr)}
+  .cal-day{min-height:80px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);padding:8px;cursor:pointer;transition:background .1s;position:relative}
+  .cal-day:hover{background:var(--off)}
+  .cal-day:nth-child(7n){border-right:none}
+  .cal-day.other-month .cdn{color:#ccc}
+  .cal-day.today{background:#f0f7ff}
+  .cal-day.today .cdn{background:#111;color:#fff;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+  .cal-day.selected{background:#e8f0fe}
+  .cal-day.closed{background:#fafafa;cursor:default}
+  .cal-day.closed:hover{background:#fafafa}
+  .cdn{font-size:13px;font-weight:500;margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
+  .cad{font-size:11px;background:#111;color:#fff;border-radius:4px;padding:2px 5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+  .cad.cancelled{background:#ddd;color:#888}
+  .cal-detail{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-top:16px}
+  /* SETTINGS */
+  @media(max-width:600px){.fg{grid-template-columns:1fr}.main{padding:16px}.cal-day{min-height:52px;padding:4px}.cad{display:none}.stats-grid{grid-template-columns:1fr 1fr}}
 </style>
 </head>
 <body>
@@ -115,7 +125,7 @@
   <div class="login-card">
     <div class="login-title">Aurora Auto Repair</div>
     <div class="login-sub">Admin panel</div>
-    <div class="lfield"><label>Password</label><input type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkLogin()"></div>
+    <div class="lf"><label>Password</label><input type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkLogin()"></div>
     <button class="lbtn" onclick="checkLogin()">Sign in</button>
     <div class="login-err" id="login-err">Wrong password. Try again.</div>
   </div>
@@ -124,39 +134,53 @@
 <div class="app" id="app">
   <div class="topbar">
     <div class="topbar-logo">Aurora Auto — Admin</div>
-    <button class="logout-btn" onclick="logout()">Sign out</button>
+    <div class="topbar-right">
+      <span class="topbar-date" id="topbar-date"></span>
+      <button class="logout-btn" onclick="logout()">Sign out</button>
+    </div>
   </div>
 
   <div class="main">
     <div class="tabs">
-      <button class="tab active" onclick="switchTab('bookings')">Bookings</button>
-      <button class="tab" onclick="switchTab('repairs')">Repair tracker</button>
+      <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
+      <button class="tab" onclick="switchTab('bookings')">Bookings</button>
+      <button class="tab" onclick="switchTab('repairs')">Repairs</button>
       <button class="tab" onclick="switchTab('calendar')">Calendar</button>
+      <button class="tab" onclick="switchTab('services')">Services</button>
+      <button class="tab" onclick="switchTab('announce')">Announcements</button>
       <button class="tab" onclick="switchTab('settings')">Settings</button>
     </div>
 
-    <!-- BOOKINGS -->
-    <div class="panel active" id="panel-bookings">
-      <div class="section-head">
-        <div class="section-title">Incoming bookings</div>
-        <button class="refresh-btn" onclick="loadBookings()">Refresh</button>
+    <!-- DASHBOARD -->
+    <div class="panel active" id="panel-dashboard">
+      <div class="stats-grid" id="stats-grid">
+        <div class="stat-card"><div class="stat-num" id="s-today">—</div><div class="stat-label">Appointments today</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-bookings">—</div><div class="stat-label">Pending bookings</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-tickets">—</div><div class="stat-label">Open repair tickets</div></div>
+        <div class="stat-card"><div class="stat-num" id="s-ready">—</div><div class="stat-label">Ready for pickup</div></div>
       </div>
+      <div class="sh"><div class="st">Today's schedule</div><button class="rbtn" onclick="loadDashboard()">Refresh</button></div>
+      <div id="dashboard-today"><div class="loading">Loading...</div></div>
+      <div class="sh" style="margin-top:24px"><div class="st">Recent bookings</div></div>
+      <div id="dashboard-bookings"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- BOOKINGS -->
+    <div class="panel" id="panel-bookings">
+      <div class="sh"><div class="st">Incoming bookings</div><button class="rbtn" onclick="loadBookings()">Refresh</button></div>
       <div id="bookings-list"><div class="loading">Loading...</div></div>
     </div>
 
     <!-- REPAIRS -->
     <div class="panel" id="panel-repairs">
-      <div class="section-head">
-        <div class="section-title">Repair tracker</div>
-        <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
-      </div>
+      <div class="sh"><div class="st">Repair tracker</div><button class="rbtn" onclick="loadTickets()">Refresh</button></div>
       <div class="box">
         <div class="box-title">Add repair ticket</div>
-        <div class="tform">
-          <div class="tf"><label>Customer name</label><input type="text" id="t-name" placeholder="Mike Torres"></div>
-          <div class="tf"><label>Vehicle</label><input type="text" id="t-vehicle" placeholder="2019 Toyota Camry"></div>
-          <div class="tf"><label>Service</label><input type="text" id="t-service" placeholder="Brake service"></div>
-          <div class="tf"><label>ETA</label><input type="text" id="t-eta" placeholder="3:30 PM today"></div>
+        <div class="fg">
+          <div class="ff"><label>Customer name</label><input type="text" id="t-name" placeholder="Mike Torres"></div>
+          <div class="ff"><label>Vehicle</label><input type="text" id="t-vehicle" placeholder="2019 Toyota Camry"></div>
+          <div class="ff"><label>Service</label><input type="text" id="t-service" placeholder="Brake service"></div>
+          <div class="ff"><label>ETA</label><input type="text" id="t-eta" placeholder="3:30 PM today"></div>
         </div>
         <button class="add-btn" onclick="addTicket()">Create ticket</button>
       </div>
@@ -165,515 +189,555 @@
 
     <!-- CALENDAR -->
     <div class="panel" id="panel-calendar">
-      <div class="section-head">
-        <div class="section-title">Calendar</div>
-        <button class="refresh-btn" onclick="renderCalendar()">Refresh</button>
-      </div>
-
+      <div class="sh"><div class="st">Calendar</div><button class="rbtn" onclick="loadAllAppts().then(renderCalendar)">Refresh</button></div>
       <div class="box">
         <div class="box-title">Add appointment / block time</div>
-        <div class="tform">
-          <div class="tf"><label>Name</label><input type="text" id="cal-name" placeholder="Mike Torres or Blocked"></div>
-          <div class="tf"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
-          <div class="tf"><label>Date</label><input type="date" id="cal-date"></div>
-          <div class="tf"><label>Start time</label><input type="time" id="cal-start"></div>
-          <div class="tf"><label>End time</label><input type="time" id="cal-end"></div>
+        <div class="fg">
+          <div class="ff"><label>Name</label><input type="text" id="cal-name" placeholder="Mike Torres or Blocked"></div>
+          <div class="ff"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
+          <div class="ff"><label>Date</label><input type="date" id="cal-date"></div>
+          <div class="ff"><label>Start time</label><input type="time" id="cal-start"></div>
+          <div class="ff"><label>End time</label><input type="time" id="cal-end"></div>
         </div>
         <div class="conflict-banner" id="conflict-banner">
           <span id="conflict-msg"></span>
           <div style="display:flex;gap:8px">
-            <button class="action-btn" onclick="document.getElementById('conflict-banner').classList.remove('show')">Cancel</button>
-            <button class="action-btn confirm" onclick="forceAddCalEntry()">Book anyway</button>
+            <button class="ab" onclick="document.getElementById('conflict-banner').classList.remove('show')">Cancel</button>
+            <button class="ab ok" onclick="forceAddCalEntry()">Book anyway</button>
           </div>
         </div>
-        <button class="add-btn" onclick="addCalendarEntry(false)" style="margin-top:14px">Add to calendar</button>
+        <button class="add-btn" onclick="addCalendarEntry(false)">Add to calendar</button>
       </div>
-
       <div class="cal-nav">
-        <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
+        <button class="cnb" onclick="changeMonth(-1)">←</button>
         <div class="cal-month-label" id="cal-month-label"></div>
-        <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
+        <button class="cnb" onclick="changeMonth(1)">→</button>
         <button class="cal-today-btn" onclick="goToday()">Today</button>
       </div>
-
       <div class="cal-grid">
         <div class="cal-dow">
-          <div class="cal-dow-cell">Sun</div>
-          <div class="cal-dow-cell">Mon</div>
-          <div class="cal-dow-cell">Tue</div>
-          <div class="cal-dow-cell">Wed</div>
-          <div class="cal-dow-cell">Thu</div>
-          <div class="cal-dow-cell">Fri</div>
-          <div class="cal-dow-cell">Sat</div>
+          <div class="cal-dow-cell">Sun</div><div class="cal-dow-cell">Mon</div><div class="cal-dow-cell">Tue</div>
+          <div class="cal-dow-cell">Wed</div><div class="cal-dow-cell">Thu</div><div class="cal-dow-cell">Fri</div><div class="cal-dow-cell">Sat</div>
         </div>
         <div class="cal-days" id="cal-days"></div>
       </div>
-
-      <div class="cal-day-detail" id="cal-day-detail" style="display:none">
-        <div class="cal-day-detail-title" id="cal-detail-title"></div>
+      <div class="cal-detail" id="cal-detail" style="display:none">
+        <div style="font-size:15px;font-weight:500;margin-bottom:14px" id="cal-detail-title"></div>
         <div id="cal-detail-list"></div>
+      </div>
+    </div>
+
+    <!-- SERVICES -->
+    <div class="panel" id="panel-services">
+      <div class="sh"><div class="st">Services & pricing</div><button class="rbtn" onclick="loadServices()">Refresh</button></div>
+      <div class="box">
+        <div class="box-title">Add new service</div>
+        <div class="fg">
+          <div class="ff"><label>Service name</label><input type="text" id="svc-name" placeholder="Wheel alignment"></div>
+          <div class="ff"><label>Duration (minutes)</label><input type="number" id="svc-dur" placeholder="60" min="15" step="15"></div>
+          <div class="ff"><label>Price from ($)</label><input type="number" id="svc-low" placeholder="79" min="0"></div>
+          <div class="ff"><label>Price up to ($)</label><input type="number" id="svc-high" placeholder="149" min="0"></div>
+        </div>
+        <button class="add-btn" onclick="addService()">Add service</button>
+      </div>
+      <div class="box">
+        <div class="box-title">Current services</div>
+        <div id="services-list"><div class="loading">Loading...</div></div>
+      </div>
+    </div>
+
+    <!-- ANNOUNCEMENTS -->
+    <div class="panel" id="panel-announce">
+      <div class="sh"><div class="st">Announcements</div><button class="rbtn" onclick="loadAnnouncements()">Refresh</button></div>
+      <div class="box">
+        <div class="box-title">Post an announcement</div>
+        <div class="box-sub">This shows as a banner on the customer website. Use it for closures, promos, holiday hours, or anything you want customers to see.</div>
+        <div class="fg">
+          <div class="ff" style="grid-column:1/-1"><label>Message</label>
+            <textarea id="ann-msg" placeholder="e.g. Closed December 25th — Merry Christmas! OR 20% off oil changes this week only." style="min-height:70px;resize:vertical"></textarea>
+          </div>
+          <div class="ff"><label>Type</label>
+            <select id="ann-type">
+              <option value="info">Info (blue) — general notice</option>
+              <option value="promo">Promo (green) — special offer</option>
+              <option value="warning">Warning (yellow) — closure or urgent</option>
+            </select>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addAnnouncement()">Post to website</button>
+      </div>
+      <div class="box">
+        <div class="box-title">Active announcements</div>
+        <div id="ann-list"><div class="loading">Loading...</div></div>
       </div>
     </div>
 
     <!-- SETTINGS -->
     <div class="panel" id="panel-settings">
-      <div class="section-head">
-        <div class="section-title">Settings</div>
-      </div>
-
-      <div class="box">
-        <div class="box-title">Service durations</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set how long each service takes. This controls which time slots are shown to customers when booking.</p>
-        <div id="svc-list"><div class="loading">Loading...</div></div>
-      </div>
-
-      <div class="box">
-        <div class="box-title">Service pricing</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set the price range displayed to customers for each service.</p>
-        <div id="pricing-list"><div class="loading">Loading...</div></div>
-      </div>
-
+      <div class="sh"><div class="st">Settings</div></div>
       <div class="box">
         <div class="box-title">Shop hours</div>
-        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Edit your open and close times for each day.</p>
+        <div class="box-sub">Edit your open and close times. Changes take effect immediately for new bookings.</div>
         <div id="hours-list"><div class="loading">Loading...</div></div>
       </div>
     </div>
   </div>
 </div>
 
-<div class="msg-toast" id="toast"></div>
+<div class="toast" id="toast"></div>
 
 <script>
-  const SUPABASE_URL = 'https://jmksxvvbgxqcijrbdwos.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
-  const SHOP_ID = 'aurora-auto-repair';
-  const ADMIN_PASSWORD = 'aurora2025';
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+const SUPABASE_URL='https://jmksxvvbgxqcijrbdwos.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
+const SHOP_ID='aurora-auto-repair';
+const ADMIN_PASSWORD='aurora2025';
+const {createClient}=supabase;
+const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-  // Default service durations (minutes) — overridden by DB if saved
-  let SERVICE_DURATIONS = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
+// Topbar date
+const now=new Date();
+document.getElementById('topbar-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
-  // Default pricing — stored in localStorage per shop
-  let SERVICE_PRICES = {
-    'Oil change': { low: 49, high: 79 },
-    'Brake service': { low: 120, high: 220 },
-    'Tire rotation': { low: 25, high: 45 },
-    'Engine diagnostic': { low: 89, high: 149 },
-    'AC service': { low: 95, high: 175 },
-    'Transmission service': { low: 180, high: 340 },
-    'Other / not sure': { low: 0, high: 0 }
+db.from('bookings').select('id').limit(1).then(()=>console.log('DB ready'));
+
+function checkLogin(){
+  const pw=document.getElementById('pw-input').value;
+  if(pw===ADMIN_PASSWORD){
+    document.getElementById('login-wrap').style.display='none';
+    document.getElementById('app').classList.add('show');
+    loadDashboard();
+  } else { document.getElementById('login-err').classList.add('show'); }
+}
+
+function logout(){
+  document.getElementById('login-wrap').style.display='flex';
+  document.getElementById('app').classList.remove('show');
+  document.getElementById('pw-input').value='';
+}
+
+function switchTab(name){
+  const tabs=['dashboard','bookings','repairs','calendar','services','announce','settings'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
+  document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+  if(name==='dashboard') loadDashboard();
+  else if(name==='bookings') loadBookings();
+  else if(name==='repairs') loadTickets();
+  else if(name==='calendar') loadAllAppts().then(renderCalendar);
+  else if(name==='services') loadServices();
+  else if(name==='announce') loadAnnouncements();
+  else if(name==='settings') loadHours();
+}
+
+function toast(msg,color){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.style.background=color||'#111';
+  t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2800);
+}
+
+function timeAgo(ts){
+  const d=Math.floor((Date.now()-new Date(ts))/60000);
+  if(d<1) return 'just now';
+  if(d<60) return d+'m ago';
+  if(d<1440) return Math.floor(d/60)+'h ago';
+  return Math.floor(d/1440)+'d ago';
+}
+
+function fmt12(t){
+  if(!t) return '';
+  const [h,m]=t.split(':').map(Number);
+  return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+}
+
+function toMins(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+
+// ── DASHBOARD ──
+async function loadDashboard(){
+  const today=new Date().toISOString().split('T')[0];
+  const [appts,bookings,tickets]=await Promise.all([
+    db.from('appointments').select('*').eq('shop_id',SHOP_ID).eq('booking_date',today).neq('status','cancelled'),
+    db.from('bookings').select('*').eq('shop_id',SHOP_ID).order('created_at',{ascending:false}),
+    db.from('tickets').select('*').eq('shop_id',SHOP_ID)
+  ]);
+  const openTickets=(tickets.data||[]).filter(t=>t.status!=='ready');
+  const readyTickets=(tickets.data||[]).filter(t=>t.status==='ready');
+  document.getElementById('s-today').textContent=(appts.data||[]).length;
+  document.getElementById('s-bookings').textContent=(bookings.data||[]).length;
+  document.getElementById('s-tickets').textContent=openTickets.length;
+  document.getElementById('s-ready').textContent=readyTickets.length;
+
+  // Today's schedule
+  const todayAppts=(appts.data||[]).sort((a,b)=>a.start_time>b.start_time?1:-1);
+  const todayEl=document.getElementById('dashboard-today');
+  if(todayAppts.length===0){ todayEl.innerHTML='<div class="empty">No appointments scheduled today.</div>'; }
+  else { todayEl.innerHTML=todayAppts.map(a=>`
+    <div class="card"><div class="ch">
+      <div><div class="cn">${fmt12(a.start_time)} – ${fmt12(a.end_time)} · ${a.customer_name||'—'}</div>
+      <div class="cd">${a.service||'—'} <span class="badge ${a.status==='cancelled'?'bd':'bc'}">${a.status||'scheduled'}</span></div></div>
+      ${a.status!=='cancelled'?`<button class="ab no" style="font-size:12px;padding:5px 10px;flex-shrink:0" onclick="cancelAppt(${a.id})">Cancel</button>`:''}
+    </div></div>`).join(''); }
+
+  // Recent bookings preview
+  const bkEl=document.getElementById('dashboard-bookings');
+  const recent=(bookings.data||[]).slice(0,3);
+  if(recent.length===0){ bkEl.innerHTML='<div class="empty">No pending bookings.</div>'; }
+  else { bkEl.innerHTML=recent.map(b=>`
+    <div class="card"><div class="ch">
+      <div><div class="cn">${b.name||'—'} <span class="badge bn">New</span></div>
+      <div class="cd">${b.service||'—'} · ${b.phone||''}${b.date?' · '+b.date:''}</div>
+      ${b.notes?`<div style="margin-top:8px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#555">${b.notes}</div>`:''}</div>
+      <div class="ct">${timeAgo(b.created_at)}</div>
+    </div>
+    <div class="ca">
+      <button class="ab ok" onclick="confirmBooking(${b.id},'${esc(b.name)}','${esc(b.vehicle)}','${esc(b.service)}','${esc(b.phone)}','${esc(b.email)}')">Confirm</button>
+      <button class="ab" onclick="callCustomer('${b.phone||''}')">Call</button>
+      <button class="ab no" onclick="deleteBooking(${b.id})">Remove</button>
+    </div></div>`).join('');
+  if(bookings.data.length>3) bkEl.innerHTML+=`<div style="text-align:center;padding:12px;font-size:13px;color:var(--muted)">+${bookings.data.length-3} more — <span style="cursor:pointer;text-decoration:underline" onclick="switchTab('bookings')">view all</span></div>`; }
+}
+
+// ── BOOKINGS ──
+function esc(s){ return (s||'').replace(/'/g,"\\'"); }
+
+async function loadBookings(){
+  const el=document.getElementById('bookings-list');
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data}=await db.from('bookings').select('*').eq('shop_id',SHOP_ID).order('created_at',{ascending:false});
+  if(!data||data.length===0){el.innerHTML='<div class="empty">No bookings yet.</div>';return;}
+  el.innerHTML=data.map(b=>`
+    <div class="card">
+      <div class="ch">
+        <div>
+          <div class="cn">${b.name||'—'} <span class="badge bn">New</span></div>
+          <div class="cd">${b.vehicle||'—'}<br>${b.service||'—'}<br>${b.phone||''}${b.date?' · '+b.date:''}</div>
+          ${b.notes?`<div style="margin-top:8px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#555"><strong>Notes:</strong> ${b.notes}</div>`:''}
+        </div>
+        <div class="ct">${timeAgo(b.created_at)}</div>
+      </div>
+      <div class="ca">
+        <button class="ab ok" onclick="confirmBooking(${b.id},'${esc(b.name)}','${esc(b.vehicle)}','${esc(b.service)}','${esc(b.phone)}','${esc(b.email||'')}')">Confirm & create ticket</button>
+        <button class="ab" onclick="callCustomer('${b.phone||''}')">Call ${b.phone||''}</button>
+        <button class="ab no" onclick="deleteBooking(${b.id})">Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+async function confirmBooking(id,name,vehicle,service,phone,email){
+  const {error}=await db.from('tickets').insert([{customer_name:name,vehicle,service,status:'checked-in',eta:'',shop_id:SHOP_ID,customer_email:email||''}]);
+  if(!error){
+    await db.from('bookings').delete().eq('id',id);
+    if(email) fetch('/.netlify/functions/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'confirmed',customerName:name,customerEmail:email,vehicle,service})});
+    toast('Confirmed — ticket created for '+name);
+    switchTab('repairs');
+  }
+}
+
+async function deleteBooking(id){
+  await db.from('bookings').delete().eq('id',id);
+  toast('Booking removed'); loadBookings();
+}
+
+function callCustomer(phone){ window.location.href='tel:'+phone.replace(/\D/g,''); }
+
+// ── REPAIRS ──
+async function loadTickets(){
+  const el=document.getElementById('tickets-list');
+  el.innerHTML='<div class="loading">Loading...</div>';
+  const {data}=await db.from('tickets').select('*').eq('shop_id',SHOP_ID).order('created_at',{ascending:false});
+  if(!data||data.length===0){el.innerHTML='<div class="empty">No active repair tickets.</div>';return;}
+  const sL={'checked-in':'Checked in','diagnosing':'Diagnosing','in-repair':'In repair','ready':'Ready'};
+  const sB={'checked-in':'bn','diagnosing':'bi','in-repair':'bi','ready':'br'};
+  el.innerHTML=data.map(t=>{
+    const btns=[{k:'checked-in',l:'Checked in'},{k:'diagnosing',l:'Diagnosing'},{k:'in-repair',l:'In repair'}]
+      .map(s=>`<button class="ab${t.status===s.k?' ok':''}" onclick="updateStatus(${t.id},'${s.k}')">${s.l}</button>`).join('');
+    const readyActive=t.status==='ready';
+    return `<div class="card">
+      <div class="ch">
+        <div><div class="cn">${t.customer_name||'—'} <span class="badge ${sB[t.status]||'bn'}">${sL[t.status]||t.status}</span></div>
+        <div class="cd">${t.vehicle||'—'} · ${t.service||'—'}${t.eta?' · ETA: '+t.eta:''}</div></div>
+        <div class="ct">${timeAgo(t.created_at)}</div>
+      </div>
+      <div class="ca">
+        ${btns}
+        <button class="ab" style="background:#16a34a;color:#fff;border-color:#16a34a;opacity:${readyActive?'1':'.55'}" onclick="updateStatus(${t.id},'ready')">Mark ready</button>
+        <button class="ab" onclick="updateETA(${t.id})">Set ETA</button>
+        <button class="ab no" onclick="deleteTicket(${t.id})">Close</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function addTicket(){
+  const name=document.getElementById('t-name').value.trim();
+  const vehicle=document.getElementById('t-vehicle').value.trim();
+  const service=document.getElementById('t-service').value.trim();
+  const eta=document.getElementById('t-eta').value.trim();
+  if(!name||!service){alert('Name and service required.');return;}
+  const {error}=await db.from('tickets').insert([{customer_name:name,vehicle,service,status:'checked-in',eta,shop_id:SHOP_ID}]);
+  if(!error){['t-name','t-vehicle','t-service','t-eta'].forEach(id=>document.getElementById(id).value='');toast('Ticket created');loadTickets();}
+}
+
+async function updateStatus(id,status){
+  await db.from('tickets').update({status}).eq('id',id);
+  toast('Status → '+status.replace('-',' '));
+  if(status==='ready'){
+    const {data}=await db.from('tickets').select('*').eq('id',id).single();
+    if(data?.customer_email) fetch('/.netlify/functions/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'ready',customerName:data.customer_name,customerEmail:data.customer_email,vehicle:data.vehicle,service:data.service,eta:data.eta})});
+  }
+  loadTickets();
+}
+
+async function updateETA(id){
+  const eta=prompt('Estimated pickup time:');
+  if(!eta) return;
+  await db.from('tickets').update({eta}).eq('id',id);
+  toast('ETA updated'); loadTickets();
+}
+
+async function deleteTicket(id){
+  if(!confirm('Close this ticket?')) return;
+  await db.from('tickets').delete().eq('id',id);
+  toast('Ticket closed'); loadTickets();
+}
+
+// ── CALENDAR ──
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),allAppts=[],selectedDate=null,closedDays=[];
+
+async function loadAllAppts(){
+  const {data}=await db.from('appointments').select('*').eq('shop_id',SHOP_ID);
+  allAppts=data||[];
+  const {data:avail}=await db.from('availability').select('*').eq('shop_id',SHOP_ID);
+  closedDays=(avail||[]).filter(a=>a.is_closed==='true').map(a=>a.day_of_week);
+}
+
+function changeMonth(dir){ calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
+function goToday(){ calYear=new Date().getFullYear(); calMonth=new Date().getMonth(); renderCalendar(); }
+
+function renderCalendar(){
+  const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const DLC=['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+  document.getElementById('cal-month-label').textContent=MONTHS[calMonth]+' '+calYear;
+  const today=new Date();
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const dim=new Date(calYear,calMonth+1,0).getDate();
+  const dip=new Date(calYear,calMonth,0).getDate();
+  let html='';
+  const total=Math.ceil((firstDay+dim)/7)*7;
+  for(let i=0;i<total;i++){
+    let day,month,year,isOther=false;
+    if(i<firstDay){day=dip-firstDay+i+1;month=calMonth-1;year=calYear;isOther=true;}
+    else if(i>=firstDay+dim){day=i-firstDay-dim+1;month=calMonth+1;year=calYear;isOther=true;}
+    else{day=i-firstDay+1;month=calMonth;year=calYear;}
+    const rm=((month%12)+12)%12;
+    const ry=year+Math.floor(month/12);
+    const dateStr=`${ry}-${String(rm+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    const isToday=day===today.getDate()&&rm===today.getMonth()&&ry===today.getFullYear();
+    const isSel=dateStr===selectedDate;
+    const dayName=DLC[new Date(dateStr+'T00:00:00').getDay()];
+    const isClosed=closedDays.includes(dayName);
+    const dayAppts=allAppts.filter(a=>a.booking_date===dateStr&&a.status!=='cancelled');
+    let cls='cal-day';
+    if(isOther) cls+=' other-month';
+    if(isToday) cls+=' today';
+    if(isSel) cls+=' selected';
+    if(isClosed) cls+=' closed';
+    const dots=dayAppts.slice(0,3).map(a=>`<div class="cad">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`).join('');
+    html+=`<div class="${cls}" data-date="${dateStr}" data-closed="${isClosed}">
+      <div class="cdn">${day}</div>${dots}
+      ${dayAppts.length>3?`<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>`:''}
+    </div>`;
+  }
+  document.getElementById('cal-days').innerHTML=html;
+  document.getElementById('cal-days').onclick=function(e){
+    const d=e.target.closest('.cal-day');
+    if(!d||d.dataset.closed==='true') return;
+    selectedDate=d.dataset.date; renderCalendar();
   };
+  if(selectedDate) showDayDetail(selectedDate);
+}
 
-  // Load saved prices from localStorage
-  try {
-    const saved = localStorage.getItem(SHOP_ID + '-prices');
-    if (saved) SERVICE_PRICES = { ...SERVICE_PRICES, ...JSON.parse(saved) };
-  } catch(e) {}
+function showDayDetail(dateStr){
+  const detail=document.getElementById('cal-detail');
+  const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const MTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const d=new Date(dateStr+'T00:00:00');
+  document.getElementById('cal-detail-title').textContent=DAYS[d.getDay()]+', '+MTHS[d.getMonth()]+' '+d.getDate();
+  const dayAppts=allAppts.filter(a=>a.booking_date===dateStr).sort((a,b)=>a.start_time>b.start_time?1:-1);
+  const list=document.getElementById('cal-detail-list');
+  if(dayAppts.length===0){list.innerHTML='<div style="font-size:14px;color:var(--muted);padding:12px 0">No appointments this day.</div>';}
+  else{list.innerHTML=dayAppts.map(a=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div><div style="font-size:14px;font-weight:500">${fmt12(a.start_time)} – ${fmt12(a.end_time)}</div>
+      <div style="font-size:13px;color:var(--muted)">${a.customer_name||'—'} · ${a.service||'—'} <span class="badge ${a.status==='cancelled'?'bd':'bc'}">${a.status||'scheduled'}</span></div></div>
+      ${a.status!=='cancelled'?`<button class="ab no" style="font-size:12px;padding:5px 10px" onclick="cancelAppt(${a.id})">Cancel</button>`:''}
+    </div>`).join('');}
+  detail.style.display='block';
+}
 
-  db.from('bookings').select('id').limit(1).then(() => console.log('DB ready'));
-
-  function checkLogin() {
-    const pw = document.getElementById('pw-input').value;
-    if (pw === ADMIN_PASSWORD) {
-      document.getElementById('login-wrap').style.display = 'none';
-      document.getElementById('app').classList.add('show');
-      loadBookings();
-    } else { document.getElementById('login-err').classList.add('show'); }
-  }
-
-  function logout() {
-    document.getElementById('login-wrap').style.display = 'flex';
-    document.getElementById('app').classList.remove('show');
-    document.getElementById('pw-input').value = '';
-  }
-
-  function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['bookings','repairs','calendar','settings'][i] === name));
-    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('panel-' + name).classList.add('active');
-    if (name === 'bookings') loadBookings();
-    else if (name === 'repairs') loadTickets();
-    else if (name === 'calendar') { loadAllAppts().then(renderCalendar); }
-    else if (name === 'settings') loadSettings();
-  }
-
-  function toast(msg, color) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.style.background = color || '#111';
-    t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2800);
-  }
-
-  function timeAgo(ts) {
-    const diff = Math.floor((Date.now() - new Date(ts)) / 60000);
-    if (diff < 1) return 'just now';
-    if (diff < 60) return diff + 'm ago';
-    if (diff < 1440) return Math.floor(diff/60) + 'h ago';
-    return Math.floor(diff/1440) + 'd ago';
-  }
-
-  function fmt12(t) {
-    if (!t) return '';
-    const [h,m] = t.split(':').map(Number);
-    return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
-  }
-
-  // ── BOOKINGS ──
-  async function loadBookings() {
-    const el = document.getElementById('bookings-list');
-    el.innerHTML = '<div class="loading">Loading...</div>';
-    const { data } = await db.from('bookings').select('*').eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No bookings yet.</div>'; return; }
-    el.innerHTML = data.map(b => `
-      <div class="card" id="bk-${b.id}">
-        <div class="card-header">
-          <div>
-            <div class="card-name">${b.name||'—'} <span class="badge badge-new">New</span></div>
-            <div class="card-details">${b.vehicle||'—'}<br>${b.service||'—'}<br>${b.phone||''}${b.date?' · '+b.date:''}</div>
-            ${b.notes?`<div style="margin-top:8px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#555">${b.notes}</div>`:''}
-          </div>
-          <div class="card-time">${timeAgo(b.created_at)}</div>
-        </div>
-        <div class="card-actions">
-          <button class="action-btn confirm" onclick="confirmBooking(${b.id},'${(b.name||'').replace(/'/g,"\\'")}','${(b.vehicle||'').replace(/'/g,"\\'")}','${(b.service||'').replace(/'/g,"\\'")}','${(b.phone||'').replace(/'/g,"\\'")}','${(b.email||'').replace(/'/g,"\\'")}')">Confirm & create ticket</button>
-          <button class="action-btn" onclick="callCustomer('${b.phone||''}')">Call</button>
-          <button class="action-btn deny" onclick="deleteBooking(${b.id})">Remove</button>
-        </div>
-      </div>`).join('');
-  }
-
-  async function confirmBooking(id, name, vehicle, service, phone, email) {
-    const { error } = await db.from('tickets').insert([{ customer_name:name, vehicle, service, status:'checked-in', eta:'', shop_id:SHOP_ID, customer_email:email||'' }]);
-    if (!error) {
-      await db.from('bookings').delete().eq('id', id);
-      if (email) fetch('/.netlify/functions/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'confirmed', customerName:name, customerEmail:email, vehicle, service }) });
-      toast('Confirmed — ticket created for ' + name);
-      switchTab('repairs');
+async function addCalendarEntry(force){
+  const name=document.getElementById('cal-name').value.trim();
+  const service=document.getElementById('cal-service').value.trim();
+  const date=document.getElementById('cal-date').value;
+  const start=document.getElementById('cal-start').value;
+  const end=document.getElementById('cal-end').value;
+  if(!name||!date||!start||!end){alert('Please fill in all fields.');return;}
+  const sM=toMins(start),eM=toMins(end);
+  if(eM<=sM){alert('End time must be after start time.');return;}
+  if(!force){
+    const {data:ex}=await db.from('appointments').select('*').eq('shop_id',SHOP_ID).eq('booking_date',date).neq('status','cancelled');
+    const conflict=(ex||[]).find(a=>{
+      const aS=toMins(a.start_time),aE=toMins(a.end_time);
+      return sM<aE&&eM>aS;
+    });
+    if(conflict){
+      document.getElementById('conflict-msg').textContent=`Conflicts with ${conflict.customer_name} (${fmt12(conflict.start_time)} – ${fmt12(conflict.end_time)}). Book anyway?`;
+      document.getElementById('conflict-banner').classList.add('show');
+      return;
     }
   }
-
-  async function deleteBooking(id) {
-    await db.from('bookings').delete().eq('id', id);
-    toast('Booking removed'); loadBookings();
-  }
-
-  function callCustomer(phone) { window.location.href = 'tel:' + phone.replace(/\D/g,''); }
-
-  // ── REPAIRS ──
-  async function loadTickets() {
-    const el = document.getElementById('tickets-list');
-    el.innerHTML = '<div class="loading">Loading...</div>';
-    const { data } = await db.from('tickets').select('*').eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No active repair tickets.</div>'; return; }
-    el.innerHTML = data.map(t => {
-      const sLabels = { 'checked-in':'Checked in','diagnosing':'Diagnosing','in-repair':'In repair','ready':'Ready' };
-      const sBadge = { 'checked-in':'badge-new','diagnosing':'badge-in','in-repair':'badge-in','ready':'badge-ready' };
-      const statusBtns = [
-        { key: 'checked-in', label: 'Checked in' },
-        { key: 'diagnosing', label: 'Diagnosing' },
-        { key: 'in-repair', label: 'In repair' },
-      ].map(s => {
-        const isActive = t.status === s.key;
-        return `<button class="action-btn${isActive ? ' confirm' : ''}" onclick="updateStatus(${t.id},'${s.key}')">${s.label}</button>`;
-      }).join('');
-      const readyActive = t.status === 'ready';
-      return `
-      <div class="card">
-        <div class="card-header">
-          <div>
-            <div class="card-name">${t.customer_name||'—'} <span class="badge ${sBadge[t.status]||'badge-new'}">${sLabels[t.status]||t.status}</span></div>
-            <div class="card-details">${t.vehicle||'—'} · ${t.service||'—'}${t.eta?' · ETA: '+t.eta:''}</div>
-          </div>
-          <div class="card-time">${timeAgo(t.created_at)}</div>
-        </div>
-        <div class="card-actions">
-          ${statusBtns}
-          <button class="action-btn" style="${readyActive ? 'background:#16a34a;color:#fff;border-color:#16a34a' : 'background:#16a34a;color:#fff;border-color:#16a34a;opacity:.5'}" onclick="updateStatus(${t.id},'ready')">Mark ready</button>
-          <button class="action-btn" onclick="updateETA(${t.id})">Set ETA</button>
-          <button class="action-btn deny" onclick="deleteTicket(${t.id})">Close</button>
-        </div>
-      </div>`;
-    }).join('');
-  }
-
-  async function addTicket() {
-    const name = document.getElementById('t-name').value.trim();
-    const vehicle = document.getElementById('t-vehicle').value.trim();
-    const service = document.getElementById('t-service').value.trim();
-    const eta = document.getElementById('t-eta').value.trim();
-    if (!name||!service) { alert('Name and service required.'); return; }
-    const { error } = await db.from('tickets').insert([{ customer_name:name, vehicle, service, status:'checked-in', eta, shop_id:SHOP_ID }]);
-    if (!error) { ['t-name','t-vehicle','t-service','t-eta'].forEach(id=>document.getElementById(id).value=''); toast('Ticket created'); loadTickets(); }
-  }
-
-  async function updateStatus(id, status) {
-    await db.from('tickets').update({ status }).eq('id', id);
-    toast('Status → ' + status.replace('-',' '));
-    if (status === 'ready') {
-      const { data } = await db.from('tickets').select('*').eq('id', id).single();
-      if (data?.customer_email) fetch('/.netlify/functions/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'ready', customerName:data.customer_name, customerEmail:data.customer_email, vehicle:data.vehicle, service:data.service, eta:data.eta }) });
-    }
-    loadTickets();
-  }
-
-  async function updateETA(id) {
-    const eta = prompt('Estimated pickup time (e.g. "3:30 PM today"):');
-    if (!eta) return;
-    await db.from('tickets').update({ eta }).eq('id', id);
-    toast('ETA updated'); loadTickets();
-  }
-
-  async function deleteTicket(id) {
-    if (!confirm('Close this ticket?')) return;
-    await db.from('tickets').delete().eq('id', id);
-    toast('Ticket closed'); loadTickets();
-  }
-
-  // ── CALENDAR ──
-  let calYear = new Date().getFullYear();
-  let calMonth = new Date().getMonth();
-  let allAppts = [];
-  let selectedDate = null;
-  let closedDays = [];
-
-  async function loadAllAppts() {
-    const { data } = await db.from('appointments').select('*').eq('shop_id', SHOP_ID);
-    allAppts = data || [];
-    const { data: avail } = await db.from('availability').select('*').eq('shop_id', SHOP_ID);
-    closedDays = (avail||[]).filter(a => a.is_closed === 'true').map(a => a.day_of_week);
-  }
-
-  function changeMonth(dir) {
-    calMonth += dir;
-    if (calMonth > 11) { calMonth = 0; calYear++; }
-    if (calMonth < 0) { calMonth = 11; calYear--; }
+  document.getElementById('conflict-banner').classList.remove('show');
+  const {error}=await db.from('appointments').insert([{customer_name:name,service,booking_date:date,start_time:start,end_time:end,shop_id:SHOP_ID,status:'scheduled'}]);
+  if(!error){
+    ['cal-name','cal-service','cal-date','cal-start','cal-end'].forEach(id=>document.getElementById(id).value='');
+    toast('Added to calendar');
+    await loadAllAppts();
+    selectedDate=date;
+    calYear=new Date(date+'T00:00:00').getFullYear();
+    calMonth=new Date(date+'T00:00:00').getMonth();
     renderCalendar();
   }
+}
 
-  function goToday() {
-    calYear = new Date().getFullYear();
-    calMonth = new Date().getMonth();
-    renderCalendar();
+function forceAddCalEntry(){ addCalendarEntry(true); }
+
+async function cancelAppt(id){
+  if(!confirm('Cancel this appointment?')) return;
+  await db.from('appointments').update({status:'cancelled'}).eq('id',id);
+  toast('Appointment cancelled');
+  await loadAllAppts(); renderCalendar();
+  loadDashboard();
+}
+
+// ── SERVICES ──
+async function loadServices(){
+  const el=document.getElementById('services-list');
+  const {data}=await db.from('services').select('*').eq('shop_id',SHOP_ID).order('id');
+  if(!data||data.length===0){el.innerHTML='<div class="empty">No custom services yet. Add one above.</div>';return;}
+  el.innerHTML=data.map(s=>`
+    <div class="svc-row">
+      <div>
+        <div class="svc-name">${s.name}</div>
+        <div class="svc-meta">${s.duration_mins} min · $${s.price_low}${s.price_high&&s.price_high!==s.price_low?' – $'+s.price_high:''} · <span class="${s.active==='true'?'bc':'bd'} badge">${s.active==='true'?'Active':'Hidden'}</span></div>
+      </div>
+      <div style="display:flex;gap:6px;margin-left:auto">
+        <button class="ss" style="background:${s.active==='true'?'#888':'#16a34a'}" onclick="toggleService(${s.id},'${s.active}')">${s.active==='true'?'Hide':'Show'}</button>
+        <button class="ss" style="background:#8b1a1a" onclick="deleteService(${s.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addService(){
+  const name=document.getElementById('svc-name').value.trim();
+  const dur=document.getElementById('svc-dur').value;
+  const low=document.getElementById('svc-low').value;
+  const high=document.getElementById('svc-high').value;
+  if(!name||!dur||!low){alert('Name, duration and price required.');return;}
+  const {error}=await db.from('services').insert([{name,duration_mins:dur,price_low:low,price_high:high||low,shop_id:SHOP_ID,active:'true'}]);
+  if(!error){
+    ['svc-name','svc-dur','svc-low','svc-high'].forEach(id=>document.getElementById(id).value='');
+    toast(name+' added',  '#16a34a'); loadServices();
   }
+}
 
-  function renderCalendar() {
-    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const DAYS_LC = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-    document.getElementById('cal-month-label').textContent = MONTHS[calMonth] + ' ' + calYear;
-    const today = new Date();
-    const firstDay = new Date(calYear, calMonth, 1).getDay();
-    const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
-    const daysInPrev = new Date(calYear, calMonth, 0).getDate();
-    let html = '';
-    let totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
-    for (let i = 0; i < totalCells; i++) {
-      let day, month, year, isOther = false;
-      if (i < firstDay) { day = daysInPrev - firstDay + i + 1; month = calMonth - 1; year = calYear; isOther = true; }
-      else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; month = calMonth + 1; year = calYear; isOther = true; }
-      else { day = i - firstDay + 1; month = calMonth; year = calYear; }
-      const realMonth = ((month % 12) + 12) % 12;
-      const realYear = year + Math.floor(month / 12);
-      const dateStr = `${realYear}-${String(realMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      const isToday = day === today.getDate() && realMonth === today.getMonth() && realYear === today.getFullYear();
-      const isSel = dateStr === selectedDate;
-      const dayName = DAYS_LC[new Date(dateStr + 'T00:00:00').getDay()];
-      const isClosed = closedDays.includes(dayName);
-      const dayAppts = allAppts.filter(a => a.booking_date === dateStr && a.status !== 'cancelled');
-      let classes = 'cal-day';
-      if (isOther) classes += ' other-month';
-      if (isToday) classes += ' today';
-      if (isSel) classes += ' selected';
-      if (isClosed) classes += ' closed';
-      const dots = dayAppts.slice(0,3).map(a => `<div class="cal-appt-dot">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`).join('');
-      html += `<div class="${classes}" data-date="${dateStr}" data-closed="${isClosed}">
-        <div class="cal-day-num">${day}</div>
-        ${dots}
-        ${dayAppts.length > 3 ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>` : ''}
-      </div>`;
-    }
-    document.getElementById('cal-days').innerHTML = html;
+async function toggleService(id,current){
+  const newVal=current==='true'?'false':'true';
+  await db.from('services').update({active:newVal}).eq('id',id);
+  toast(newVal==='true'?'Service now visible to customers':'Service hidden from customers');
+  loadServices();
+}
 
-    // Event delegation — handles all day clicks cleanly
-    document.getElementById('cal-days').onclick = function(e) {
-      const day = e.target.closest('.cal-day');
-      if (!day || day.dataset.closed === 'true') return;
-      selectedDate = day.dataset.date;
-      renderCalendar();
-    };
+async function deleteService(id){
+  if(!confirm('Delete this service?')) return;
+  await db.from('services').delete().eq('id',id);
+  toast('Service deleted'); loadServices();
+}
 
-    if (selectedDate) showDayDetail(selectedDate);
+// ── ANNOUNCEMENTS ──
+async function loadAnnouncements(){
+  const el=document.getElementById('ann-list');
+  const {data}=await db.from('announcements').select('*').eq('shop_id',SHOP_ID).order('id',{ascending:false});
+  if(!data||data.length===0){el.innerHTML='<div class="empty">No active announcements.</div>';return;}
+  const typeClass={info:'ann-info',promo:'ann-promo',warning:'ann-warning'};
+  el.innerHTML=data.map(a=>`
+    <div class="ann-card">
+      <div>
+        <span class="ann-type ${typeClass[a.type]||'ann-info'}">${a.type||'info'}</span>
+        <div class="ann-msg" style="margin-top:6px">${a.message}</div>
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        <button class="ss" style="background:${a.active==='true'?'#888':'#16a34a'}" onclick="toggleAnn(${a.id},'${a.active}')">${a.active==='true'?'Hide':'Show'}</button>
+        <button class="ss" style="background:#8b1a1a" onclick="deleteAnn(${a.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function addAnnouncement(){
+  const msg=document.getElementById('ann-msg').value.trim();
+  const type=document.getElementById('ann-type').value;
+  if(!msg){alert('Please write a message.');return;}
+  const {error}=await db.from('announcements').insert([{message:msg,type,active:'true',shop_id:SHOP_ID}]);
+  if(!error){
+    document.getElementById('ann-msg').value='';
+    toast('Posted to website!','#16a34a'); loadAnnouncements();
   }
+}
 
-  function selectCalDay(dateStr) {
-    selectedDate = dateStr;
-    renderCalendar();
-  }
+async function toggleAnn(id,current){
+  await db.from('announcements').update({active:current==='true'?'false':'true'}).eq('id',id);
+  toast(current==='true'?'Banner hidden from site':'Banner now live on site');
+  loadAnnouncements();
+}
 
-  function showDayDetail(dateStr) {
-    const detail = document.getElementById('cal-day-detail');
-    const title = document.getElementById('cal-detail-title');
-    const list = document.getElementById('cal-detail-list');
-    const d = new Date(dateStr + 'T00:00:00');
-    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    title.textContent = DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
-    const dayAppts = allAppts.filter(a => a.booking_date === dateStr).sort((a,b) => a.start_time > b.start_time ? 1 : -1);
-    if (dayAppts.length === 0) {
-      list.innerHTML = '<div style="font-size:14px;color:var(--muted);padding:12px 0">No appointments this day.</div>';
-    } else {
-      list.innerHTML = dayAppts.map(a => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
-          <div>
-            <div style="font-size:14px;font-weight:500">${fmt12(a.start_time)} – ${fmt12(a.end_time)}</div>
-            <div style="font-size:13px;color:var(--muted)">${a.customer_name||'—'} · ${a.service||'—'} <span class="badge ${a.status==='cancelled'?'badge-denied':'badge-confirmed'}">${a.status||'scheduled'}</span></div>
-          </div>
-          ${a.status !== 'cancelled' ? `<button class="action-btn deny" style="font-size:12px;padding:5px 10px" onclick="cancelAppt(${a.id})">Cancel</button>` : ''}
-        </div>`).join('');
-    }
-    detail.style.display = 'block';
-  }
+async function deleteAnn(id){
+  await db.from('announcements').delete().eq('id',id);
+  toast('Announcement deleted'); loadAnnouncements();
+}
 
-  // Conflict detection
-  async function addCalendarEntry(force) {
-    const name = document.getElementById('cal-name').value.trim();
-    const service = document.getElementById('cal-service').value.trim();
-    const date = document.getElementById('cal-date').value;
-    const start = document.getElementById('cal-start').value;
-    const end = document.getElementById('cal-end').value;
-    if (!name||!date||!start||!end) { alert('Please fill in all fields.'); return; }
+// ── SETTINGS / HOURS ──
+async function loadHours(){
+  const el=document.getElementById('hours-list');
+  const {data}=await db.from('availability').select('*').eq('shop_id',SHOP_ID).order('id');
+  if(!data||data.length===0){el.innerHTML='<div class="empty">No hours found.</div>';return;}
+  const order=['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+  const sorted=[...data].sort((a,b)=>order.indexOf(a.day_of_week)-order.indexOf(b.day_of_week));
+  el.innerHTML=sorted.map(row=>`
+    <div class="svc-row" style="flex-wrap:wrap;gap:10px">
+      <div style="min-width:100px;font-weight:500;text-transform:capitalize">${row.day_of_week}</div>
+      <div style="display:flex;align-items:center;gap:8px;flex:1;flex-wrap:wrap">
+        <input type="time" id="oh-${row.id}" value="${row.open_time||'09:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
+        <span style="font-size:13px;color:var(--muted)">to</span>
+        <input type="time" id="ch-${row.id}" value="${row.close_time||'17:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+          <input type="checkbox" id="cl-${row.id}" ${row.is_closed==='true'?'checked':''} onchange="toggleClosed(${row.id})"> Closed
+        </label>
+        <button class="ss" onclick="saveHours(${row.id})">Save</button>
+      </div>
+    </div>`).join('');
+}
 
-    const startM = toMins(start), endM = toMins(end);
-    if (endM <= startM) { alert('End time must be after start time.'); return; }
+async function saveHours(id){
+  const open=document.getElementById('oh-'+id).value;
+  const close=document.getElementById('ch-'+id).value;
+  const isClosed=document.getElementById('cl-'+id).checked?'true':'false';
+  await db.from('availability').update({open_time:open,close_time:close,is_closed:isClosed}).eq('id',id);
+  toast('Hours saved','#16a34a');
+}
 
-    if (!force) {
-      const { data: existing } = await db.from('appointments').select('*')
-        .eq('shop_id', SHOP_ID).eq('booking_date', date).neq('status','cancelled');
-      const conflict = (existing||[]).find(a => {
-        const aS = toMins(a.start_time), aE = toMins(a.end_time);
-        return startM < aE && endM > aS;
-      });
-      if (conflict) {
-        document.getElementById('conflict-msg').textContent = `⚠ Conflicts with ${conflict.customer_name} (${fmt12(conflict.start_time)} – ${fmt12(conflict.end_time)}). Book anyway?`;
-        document.getElementById('conflict-banner').classList.add('show');
-        return;
-      }
-    }
-
-    document.getElementById('conflict-banner').classList.remove('show');
-    const { error } = await db.from('appointments').insert([{ customer_name:name, service, booking_date:date, start_time:start, end_time:end, shop_id:SHOP_ID, status:'scheduled' }]);
-    if (!error) {
-      ['cal-name','cal-service','cal-date','cal-start','cal-end'].forEach(id=>document.getElementById(id).value='');
-      toast('Added to calendar');
-      await loadAllAppts();
-      selectedDate = date;
-      calYear = new Date(date+'T00:00:00').getFullYear();
-      calMonth = new Date(date+'T00:00:00').getMonth();
-      renderCalendar();
-    }
-  }
-
-  function forceAddCalEntry() { addCalendarEntry(true); }
-
-  function toMins(t) {
-    const [h,m] = t.split(':').map(Number); return h*60+m;
-  }
-
-  async function cancelAppt(id) {
-    if (!confirm('Cancel this appointment?')) return;
-    await db.from('appointments').update({ status:'cancelled' }).eq('id', id);
-    toast('Appointment cancelled — slot now available');
-    await loadAllAppts(); renderCalendar();
-  }
-
-  // ── SETTINGS ──
-  async function loadSettings() {
-    loadServiceDurations();
-    loadServicePricing();
-    loadHours();
-  }
-
-  function loadServicePricing() {
-    const el = document.getElementById('pricing-list');
-    const services = Object.keys(SERVICE_PRICES).filter(s => s !== 'Other / not sure');
-    el.innerHTML = services.map(svc => `
-      <div class="svc-row">
-        <div class="svc-name">${svc}</div>
-        <span style="font-size:13px;color:var(--muted)">$</span>
-        <input class="svc-dur-input" type="number" id="plo-${svc.replace(/\s+/g,'_')}" value="${SERVICE_PRICES[svc].low}" min="0" step="1" style="width:72px">
-        <span style="font-size:13px;color:var(--muted)">– $</span>
-        <input class="svc-dur-input" type="number" id="phi-${svc.replace(/\s+/g,'_')}" value="${SERVICE_PRICES[svc].high}" min="0" step="1" style="width:72px">
-        <button class="svc-save-btn" onclick="savePrice('${svc}')">Save</button>
-      </div>`).join('');
-  }
-
-  function savePrice(svc) {
-    const key = svc.replace(/\s+/g,'_');
-    const low = parseInt(document.getElementById('plo-' + key).value) || 0;
-    const high = parseInt(document.getElementById('phi-' + key).value) || 0;
-    if (high < low) { alert('Max price must be higher than min price.'); return; }
-    SERVICE_PRICES[svc] = { low, high };
-    try { localStorage.setItem(SHOP_ID + '-prices', JSON.stringify(SERVICE_PRICES)); } catch(e) {}
-    toast(svc + ' → $' + low + ' – $' + high, '#16a34a');
-  }
-
-  async function loadServiceDurations() {
-    const el = document.getElementById('svc-list');
-    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID + '-services').limit(1);
-    const services = Object.keys(SERVICE_DURATIONS);
-    el.innerHTML = services.map(svc => `
-      <div class="svc-row">
-        <div class="svc-name">${svc}</div>
-        <input class="svc-dur-input" type="number" id="dur-${svc.replace(/\s+/g,'_')}" value="${SERVICE_DURATIONS[svc]}" min="15" step="15">
-        <div class="svc-dur-label">min</div>
-        <button class="svc-save-btn" onclick="saveDuration('${svc}')">Save</button>
-      </div>`).join('');
-  }
-
-  async function saveDuration(svc) {
-    const key = svc.replace(/\s+/g,'_');
-    const val = parseInt(document.getElementById('dur-' + key).value);
-    if (!val || val < 15) { alert('Minimum 15 minutes.'); return; }
-    SERVICE_DURATIONS[svc] = val;
-    toast(svc + ' set to ' + val + ' min', '#16a34a');
-  }
-
-  async function loadHours() {
-    const el = document.getElementById('hours-list');
-    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID).order('id');
-    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No hours found.</div>'; return; }
-    const dayOrder = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const sorted = [...data].sort((a,b) => dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week));
-    el.innerHTML = sorted.map(row => `
-      <div class="svc-row" style="flex-wrap:wrap;gap:10px">
-        <div class="svc-name" style="min-width:100px;text-transform:capitalize;font-weight:500">${row.day_of_week}</div>
-        <div style="display:flex;align-items:center;gap:8px;flex:1">
-          <input type="time" id="oh-${row.id}" value="${row.open_time||'09:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
-          <span style="font-size:13px;color:var(--muted)">to</span>
-          <input type="time" id="ch-${row.id}" value="${row.close_time||'17:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
-          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
-            <input type="checkbox" id="cl-${row.id}" ${row.is_closed==='true'?'checked':''} onchange="toggleClosed(${row.id})"> Closed
-          </label>
-          <button class="svc-save-btn" onclick="saveHours(${row.id})">Save</button>
-        </div>
-      </div>`).join('');
-  }
-
-  async function saveHours(id) {
-    const open = document.getElementById('oh-' + id).value;
-    const close = document.getElementById('ch-' + id).value;
-    const isClosed = document.getElementById('cl-' + id).checked ? 'true' : 'false';
-    const { error } = await db.from('availability').update({ open_time:open, close_time:close, is_closed:isClosed }).eq('id', id);
-    if (!error) toast('Hours saved', '#16a34a');
-  }
-
-  function toggleClosed(id) {
-    const isClosed = document.getElementById('cl-' + id).checked;
-    document.getElementById('oh-' + id).style.opacity = isClosed ? '.4' : '1';
-    document.getElementById('ch-' + id).style.opacity = isClosed ? '.4' : '1';
-  }
+function toggleClosed(id){
+  const c=document.getElementById('cl-'+id).checked;
+  document.getElementById('oh-'+id).style.opacity=c?'.4':'1';
+  document.getElementById('ch-'+id).style.opacity=c?'.4':'1';
+}
 </script>
 </body>
 </html>
