@@ -326,7 +326,7 @@
     const btn = document.getElementById('book-btn');
     btn.textContent = 'Submitting...'; btn.disabled = true;
     const { error } = await db.from('bookings').insert([{
-      name: first + ' ' + last, phone, vehicle, service, date, shop_id: SHOP_ID
+      name: first + ' ' + last, phone, email, vehicle, service, date, shop_id: SHOP_ID
     }]);
     if (error) {
       btn.textContent = 'Confirm appointment'; btn.disabled = false;
