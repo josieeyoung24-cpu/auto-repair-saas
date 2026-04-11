@@ -294,7 +294,27 @@
 
   async function updateStatus(id, status) {
     const { error } = await db.from('tickets').update({ status }).eq('id', id);
-    if (!error) { toast('Status updated to: ' + status.replace('-',' ')); loadTickets(); }
+    if (!error) {
+      toast('Status updated to: ' + status.replace('-',' '));
+      if (status === 'ready') {
+        const { data } = await db.from('tickets').select('*').eq('id', id).single();
+        if (data && data.customer_email) {
+          fetch('/.netlify/functions/send-email', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              type: 'ready',
+              customerName: data.customer_name,
+              customerEmail: data.customer_email,
+              vehicle: data.vehicle,
+              service: data.service,
+              eta: data.eta
+            })
+          });
+        }
+      }
+      loadTickets();
+    }
   }
 
   async function updateETA(id) {
