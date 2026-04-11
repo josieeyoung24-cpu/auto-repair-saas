@@ -177,6 +177,7 @@
       <div class="field"><label>First name</label><input type="text" id="b-first" placeholder="Mike"></div>
       <div class="field"><label>Last name</label><input type="text" id="b-last" placeholder="Torres"></div>
       <div class="field"><label>Phone number</label><input type="tel" id="b-phone" placeholder="(206) 555-0100"></div>
+      <div class="field"><label>Email (for confirmation)</label><input type="email" id="b-email" placeholder="mike@email.com"></div>
       <div class="field"><label>Vehicle</label><input type="text" id="b-vehicle" placeholder="2019 Toyota Camry"></div>
       <div class="field"><label>Service needed</label>
         <select id="b-service">
@@ -317,6 +318,7 @@
     const first = document.getElementById('b-first').value.trim();
     const last = document.getElementById('b-last').value.trim();
     const phone = document.getElementById('b-phone').value.trim();
+    const email = document.getElementById('b-email').value.trim();
     const vehicle = document.getElementById('b-vehicle').value.trim();
     const service = document.getElementById('b-service').value;
     const date = document.getElementById('b-date').value;
@@ -326,14 +328,27 @@
     const { error } = await db.from('bookings').insert([{
       name: first + ' ' + last, phone, vehicle, service, date, shop_id: SHOP_ID
     }]);
-    btn.textContent = 'Confirm appointment'; btn.disabled = false;
     if (error) {
+      btn.textContent = 'Confirm appointment'; btn.disabled = false;
       document.getElementById('book-error').classList.add('show');
-    } else {
-      const t = Math.floor(1000 + Math.random() * 9000);
-      document.getElementById('book-success').innerHTML = '✓ Booked, ' + first + '! Neil will confirm shortly. Reference: <strong>#AAR-' + t + '</strong>';
-      document.getElementById('book-success').classList.add('show');
+      return;
     }
+    // Send emails via Netlify function
+    fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'booking',
+        customerName: first + ' ' + last,
+        customerEmail: email,
+        customerPhone: phone,
+        vehicle, service, date
+      })
+    });
+    btn.textContent = 'Confirm appointment'; btn.disabled = false;
+    const t = Math.floor(1000 + Math.random() * 9000);
+    document.getElementById('book-success').innerHTML = '✓ Booked, ' + first + '! Neil will confirm shortly.' + (email ? ' Check your email for confirmation.' : '') + ' Reference: <strong>#AAR-' + t + '</strong>';
+    document.getElementById('book-success').classList.add('show');
   }
 
   async function lookupStatus() {
