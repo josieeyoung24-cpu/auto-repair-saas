@@ -6,105 +6,125 @@
 <title>Aurora Auto — Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root { --accent: #111; --white: #fff; --off: #f7f7f5; --border: #e8e8e4; --muted: #888880; --text: #111; --radius: 10px; --radius-lg: 16px; --font: 'system-ui', sans-serif; }
+  :root { --accent: #111; --white: #fff; --off: #f7f7f5; --border: #e8e8e4; --muted: #888880; --text: #111; --radius: 10px; --radius-lg: 16px; --font: system-ui, sans-serif; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font); background: var(--off); color: var(--text); font-size: 15px; -webkit-font-smoothing: antialiased; }
-
   .login-wrap { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
   .login-card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 40px; width: 100%; max-width: 380px; }
   .login-title { font-size: 20px; font-weight: 500; margin-bottom: 6px; }
   .login-sub { font-size: 14px; color: var(--muted); margin-bottom: 28px; }
-  .field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
-  .field label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .field input { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; width: 100%; }
-  .field input:focus { outline: none; border-color: var(--accent); }
-  .btn { width: 100%; padding: 12px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
-  .btn:hover { background: #333; }
+  .lfield { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+  .lfield label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .lfield input { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; width: 100%; }
+  .lfield input:focus { outline: none; border-color: var(--accent); }
+  .lbtn { width: 100%; padding: 12px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; margin-top: 8px; }
   .login-err { display: none; font-size: 13px; color: #8b1a1a; margin-top: 12px; }
   .login-err.show { display: block; }
-
   .app { display: none; }
   .app.show { display: block; }
   .topbar { background: var(--white); border-bottom: 1px solid var(--border); padding: 0 24px; height: 60px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 10; }
   .topbar-logo { font-size: 16px; font-weight: 500; }
-  .topbar-right { display: flex; align-items: center; gap: 16px; }
-  .topbar-shop { font-size: 13px; color: var(--muted); }
   .logout-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: none; border: none; padding: 6px 12px; border-radius: var(--radius); }
   .logout-btn:hover { background: var(--off); color: var(--text); }
-
-  .main { padding: 28px 24px; max-width: 900px; margin: 0 auto; }
-  .tabs { display: flex; gap: 4px; background: #ececea; padding: 4px; border-radius: var(--radius); width: fit-content; margin-bottom: 28px; }
-  .tab { padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); }
+  .main { padding: 28px 24px; max-width: 960px; margin: 0 auto; }
+  .tabs { display: flex; gap: 4px; background: #ececea; padding: 4px; border-radius: var(--radius); width: fit-content; margin-bottom: 28px; flex-wrap: wrap; }
+  .tab { padding: 8px 16px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: var(--font); }
   .tab.active { background: var(--white); color: var(--text); border: 1px solid var(--border); }
   .panel { display: none; }
   .panel.active { display: block; }
-
   .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px; }
   .section-title { font-size: 18px; font-weight: 500; }
   .refresh-btn { font-size: 13px; color: var(--muted); cursor: pointer; background: var(--white); border: 1px solid var(--border); padding: 7px 14px; border-radius: var(--radius); }
-
   .card { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); margin-bottom: 12px; overflow: hidden; }
   .card-header { padding: 16px 20px; display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
   .card-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
   .card-details { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .card-time { font-size: 12px; color: var(--muted); white-space: nowrap; margin-top: 2px; }
+  .card-time { font-size: 12px; color: var(--muted); white-space: nowrap; }
   .card-actions { padding: 12px 20px; border-top: 1px solid var(--border); background: var(--off); display: flex; gap: 8px; flex-wrap: wrap; }
-
-  .action-btn { padding: 7px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); }
+  .action-btn { padding: 7px 14px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); font-family: var(--font); }
   .action-btn:hover { background: var(--off); }
   .action-btn.confirm { background: #111; color: #fff; border-color: #111; }
   .action-btn.confirm:hover { background: #333; }
   .action-btn.deny { border-color: #f5c0c0; color: #8b1a1a; background: #fff0f0; }
   .action-btn.deny:hover { background: #ffe0e0; }
-
   .badge { display: inline-block; font-size: 11px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
   .badge-new { background: #e8f0fe; color: #1a4a8b; }
   .badge-confirmed { background: #f0faf4; color: #1a6b3a; }
   .badge-denied { background: #fff0f0; color: #8b1a1a; }
   .badge-in { background: #fff8e1; color: #8a6000; }
   .badge-ready { background: #f0faf4; color: #1a6b3a; }
-
-  .new-ticket { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 24px; }
-  .new-ticket-title { font-size: 14px; font-weight: 500; margin-bottom: 16px; }
-  .ticket-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .ticket-field { display: flex; flex-direction: column; gap: 5px; }
-  .ticket-field label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
-  .ticket-field input, .ticket-field select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); background: var(--white); width: 100%; }
-  .ticket-field input:focus, .ticket-field select:focus { outline: none; border-color: var(--accent); }
-  .add-ticket-btn { margin-top: 14px; padding: 10px 20px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; }
-
+  .box { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-bottom: 20px; }
+  .box-title { font-size: 14px; font-weight: 500; margin-bottom: 16px; }
+  .tform { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tf { display: flex; flex-direction: column; gap: 5px; }
+  .tf label { font-size: 11px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .tf input, .tf select { padding: 9px 12px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; color: var(--text); background: var(--white); width: 100%; font-family: var(--font); }
+  .tf input:focus, .tf select:focus { outline: none; border-color: var(--accent); }
+  .add-btn { margin-top: 14px; padding: 10px 20px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; font-family: var(--font); }
   .empty { text-align: center; padding: 48px 20px; color: var(--muted); font-size: 14px; }
   .loading { text-align: center; padding: 32px; color: var(--muted); font-size: 14px; }
-  .msg-toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 12px 24px; border-radius: var(--radius); font-size: 14px; z-index: 999; }
+  .msg-toast { display: none; position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 12px 24px; border-radius: var(--radius); font-size: 14px; z-index: 999; white-space: nowrap; }
   .msg-toast.show { display: block; }
+  .conflict-banner { display: none; background: #fff8e1; border: 1px solid #f0d070; border-radius: var(--radius); padding: 14px 16px; margin-top: 12px; font-size: 13px; color: #8a6000; }
+  .conflict-banner.show { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+  /* ── MONTHLY CALENDAR ── */
+  .cal-nav { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .cal-nav-btn { padding: 7px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); cursor: pointer; font-size: 14px; font-family: var(--font); }
+  .cal-nav-btn:hover { background: var(--off); }
+  .cal-month-label { font-size: 17px; font-weight: 500; min-width: 180px; }
+  .cal-today-btn { padding: 6px 14px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--white); cursor: pointer; font-size: 13px; font-family: var(--font); color: var(--muted); }
+  .cal-grid { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; }
+  .cal-dow { display: grid; grid-template-columns: repeat(7, 1fr); background: var(--off); border-bottom: 1px solid var(--border); }
+  .cal-dow-cell { padding: 10px 0; text-align: center; font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+  .cal-days { display: grid; grid-template-columns: repeat(7, 1fr); }
+  .cal-day { min-height: 80px; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); padding: 8px; cursor: pointer; transition: background .1s; position: relative; }
+  .cal-day:hover { background: var(--off); }
+  .cal-day:nth-child(7n) { border-right: none; }
+  .cal-day.other-month .cal-day-num { color: #ccc; }
+  .cal-day.today { background: #f0f7ff; }
+  .cal-day.today .cal-day-num { background: #111; color: #fff; border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .cal-day.selected { background: #e8f0fe; }
+  .cal-day.closed { background: #fafafa; cursor: default; }
+  .cal-day.closed:hover { background: #fafafa; }
+  .cal-day-num { font-size: 13px; font-weight: 500; margin-bottom: 4px; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; }
+  .cal-appt-dot { font-size: 11px; background: #111; color: #fff; border-radius: 4px; padding: 2px 5px; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .cal-appt-dot.cancelled { background: #ddd; color: #888; }
+  .cal-day-detail { background: var(--white); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 20px; margin-top: 16px; }
+  .cal-day-detail-title { font-size: 15px; font-weight: 500; margin-bottom: 16px; }
+
+  /* ── SERVICE EDITOR ── */
+  .svc-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+  .svc-row:last-child { border-bottom: none; }
+  .svc-name { flex: 1; font-size: 14px; }
+  .svc-dur-input { width: 80px; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 13px; text-align: center; font-family: var(--font); }
+  .svc-dur-label { font-size: 12px; color: var(--muted); }
+  .svc-save-btn { padding: 6px 14px; background: var(--accent); color: #fff; border: none; border-radius: var(--radius); font-size: 12px; cursor: pointer; font-family: var(--font); }
 
   @media (max-width: 600px) {
-    .ticket-form { grid-template-columns: 1fr; }
-    .main { padding: 20px 16px; }
+    .tform { grid-template-columns: 1fr; }
+    .main { padding: 16px; }
+    .cal-day { min-height: 52px; padding: 4px; }
+    .cal-appt-dot { display: none; }
   }
 </style>
 </head>
 <body>
 
-<!-- LOGIN -->
 <div class="login-wrap" id="login-wrap">
   <div class="login-card">
     <div class="login-title">Aurora Auto Repair</div>
-    <div class="login-sub">Admin panel — Neil's dashboard</div>
-    <div class="field"><label>Password</label><input type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkLogin()"></div>
-    <button class="btn" onclick="checkLogin()">Sign in</button>
+    <div class="login-sub">Admin panel</div>
+    <div class="lfield"><label>Password</label><input type="password" id="pw-input" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')checkLogin()"></div>
+    <button class="lbtn" onclick="checkLogin()">Sign in</button>
     <div class="login-err" id="login-err">Wrong password. Try again.</div>
   </div>
 </div>
 
-<!-- APP -->
 <div class="app" id="app">
   <div class="topbar">
     <div class="topbar-logo">Aurora Auto — Admin</div>
-    <div class="topbar-right">
-      <span class="topbar-shop">aurora-auto-repair</span>
-      <button class="logout-btn" onclick="logout()">Sign out</button>
-    </div>
+    <button class="logout-btn" onclick="logout()">Sign out</button>
   </div>
 
   <div class="main">
@@ -112,62 +132,106 @@
       <button class="tab active" onclick="switchTab('bookings')">Bookings</button>
       <button class="tab" onclick="switchTab('repairs')">Repair tracker</button>
       <button class="tab" onclick="switchTab('calendar')">Calendar</button>
+      <button class="tab" onclick="switchTab('settings')">Settings</button>
     </div>
 
-    <!-- BOOKINGS PANEL -->
+    <!-- BOOKINGS -->
     <div class="panel active" id="panel-bookings">
       <div class="section-head">
         <div class="section-title">Incoming bookings</div>
         <button class="refresh-btn" onclick="loadBookings()">Refresh</button>
       </div>
-      <div id="bookings-list"><div class="loading">Loading bookings...</div></div>
+      <div id="bookings-list"><div class="loading">Loading...</div></div>
     </div>
 
-    <!-- REPAIRS PANEL -->
+    <!-- REPAIRS -->
     <div class="panel" id="panel-repairs">
       <div class="section-head">
         <div class="section-title">Repair tracker</div>
         <button class="refresh-btn" onclick="loadTickets()">Refresh</button>
       </div>
-      <div class="new-ticket">
-        <div class="new-ticket-title">Add a new repair ticket</div>
-        <div class="ticket-form">
-          <div class="ticket-field"><label>Customer name</label><input type="text" id="t-name" placeholder="Mike Torres"></div>
-          <div class="ticket-field"><label>Vehicle</label><input type="text" id="t-vehicle" placeholder="2019 Toyota Camry"></div>
-          <div class="ticket-field"><label>Service</label><input type="text" id="t-service" placeholder="Brake service"></div>
-          <div class="ticket-field"><label>ETA</label><input type="text" id="t-eta" placeholder="3:30 PM today"></div>
+      <div class="box">
+        <div class="box-title">Add repair ticket</div>
+        <div class="tform">
+          <div class="tf"><label>Customer name</label><input type="text" id="t-name" placeholder="Mike Torres"></div>
+          <div class="tf"><label>Vehicle</label><input type="text" id="t-vehicle" placeholder="2019 Toyota Camry"></div>
+          <div class="tf"><label>Service</label><input type="text" id="t-service" placeholder="Brake service"></div>
+          <div class="tf"><label>ETA</label><input type="text" id="t-eta" placeholder="3:30 PM today"></div>
         </div>
-        <button class="add-ticket-btn" onclick="addTicket()">Create ticket</button>
+        <button class="add-btn" onclick="addTicket()">Create ticket</button>
       </div>
-      <div id="tickets-list"><div class="loading">Loading tickets...</div></div>
+      <div id="tickets-list"><div class="loading">Loading...</div></div>
     </div>
 
-    <!-- CALENDAR PANEL -->
+    <!-- CALENDAR -->
     <div class="panel" id="panel-calendar">
       <div class="section-head">
-        <div class="section-title">Appointment calendar</div>
-        <button class="refresh-btn" onclick="loadCalendar()">Refresh</button>
+        <div class="section-title">Calendar</div>
+        <button class="refresh-btn" onclick="renderCalendar()">Refresh</button>
       </div>
 
-      <div class="new-ticket" style="margin-bottom:24px">
-        <div class="new-ticket-title">Block off time / add manual appointment</div>
-        <div class="ticket-form">
-          <div class="ticket-field"><label>Customer name</label><input type="text" id="cal-name" placeholder="Mike Torres or 'Blocked'"></div>
-          <div class="ticket-field"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
-          <div class="ticket-field"><label>Date</label><input type="date" id="cal-date"></div>
-          <div class="ticket-field"><label>Start time</label><input type="time" id="cal-start"></div>
-          <div class="ticket-field"><label>End time</label><input type="time" id="cal-end"></div>
+      <div class="box">
+        <div class="box-title">Add appointment / block time</div>
+        <div class="tform">
+          <div class="tf"><label>Name</label><input type="text" id="cal-name" placeholder="Mike Torres or Blocked"></div>
+          <div class="tf"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
+          <div class="tf"><label>Date</label><input type="date" id="cal-date"></div>
+          <div class="tf"><label>Start time</label><input type="time" id="cal-start"></div>
+          <div class="tf"><label>End time</label><input type="time" id="cal-end"></div>
         </div>
-        <button class="add-ticket-btn" onclick="addCalendarEntry()">Add to calendar</button>
+        <div class="conflict-banner" id="conflict-banner">
+          <span id="conflict-msg"></span>
+          <div style="display:flex;gap:8px">
+            <button class="action-btn" onclick="document.getElementById('conflict-banner').classList.remove('show')">Cancel</button>
+            <button class="action-btn confirm" onclick="forceAddCalEntry()">Book anyway</button>
+          </div>
+        </div>
+        <button class="add-btn" onclick="addCalendarEntry(false)" style="margin-top:14px">Add to calendar</button>
       </div>
 
-      <div id="cal-date-picker" style="margin-bottom:20px;display:flex;align-items:center;gap:12px">
-        <button onclick="changeCalDate(-1)" style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:14px">←</button>
-        <div id="cal-date-label" style="font-size:15px;font-weight:500;min-width:160px;text-align:center"></div>
-        <button onclick="changeCalDate(1)" style="padding:7px 14px;border:1px solid var(--border);border-radius:var(--radius);background:var(--white);cursor:pointer;font-size:14px">→</button>
+      <div class="cal-nav">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">←</button>
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">→</button>
+        <button class="cal-today-btn" onclick="goToday()">Today</button>
       </div>
 
-      <div id="calendar-view"><div class="loading">Loading calendar...</div></div>
+      <div class="cal-grid">
+        <div class="cal-dow">
+          <div class="cal-dow-cell">Sun</div>
+          <div class="cal-dow-cell">Mon</div>
+          <div class="cal-dow-cell">Tue</div>
+          <div class="cal-dow-cell">Wed</div>
+          <div class="cal-dow-cell">Thu</div>
+          <div class="cal-dow-cell">Fri</div>
+          <div class="cal-dow-cell">Sat</div>
+        </div>
+        <div class="cal-days" id="cal-days"></div>
+      </div>
+
+      <div class="cal-day-detail" id="cal-day-detail" style="display:none">
+        <div class="cal-day-detail-title" id="cal-detail-title"></div>
+        <div id="cal-detail-list"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="panel" id="panel-settings">
+      <div class="section-head">
+        <div class="section-title">Settings</div>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Service durations</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Set how long each service takes. This controls which time slots are shown to customers when booking.</p>
+        <div id="svc-list"><div class="loading">Loading...</div></div>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Shop hours</div>
+        <p style="font-size:13px;color:var(--muted);margin-bottom:16px">Edit your open and close times for each day.</p>
+        <div id="hours-list"><div class="loading">Loading...</div></div>
+      </div>
     </div>
   </div>
 </div>
@@ -182,19 +246,19 @@
   const { createClient } = supabase;
   const db = createClient(SUPABASE_URL, SUPABASE_KEY);
 
+  // Default service durations (minutes) — overridden by DB if saved
+  let SERVICE_DURATIONS = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
+
+  db.from('bookings').select('id').limit(1).then(() => console.log('DB ready'));
+
   function checkLogin() {
     const pw = document.getElementById('pw-input').value;
     if (pw === ADMIN_PASSWORD) {
       document.getElementById('login-wrap').style.display = 'none';
       document.getElementById('app').classList.add('show');
       loadBookings();
-    } else {
-      document.getElementById('login-err').classList.add('show');
-    }
+    } else { document.getElementById('login-err').classList.add('show'); }
   }
-
-  // Wake up Supabase on page load
-  db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
 
   function logout() {
     document.getElementById('login-wrap').style.display = 'flex';
@@ -203,87 +267,21 @@
   }
 
   function switchTab(name) {
-    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', ['bookings','repairs','calendar'][i] === name));
+    document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', ['bookings','repairs','calendar','settings'][i] === name));
     document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
     document.getElementById('panel-' + name).classList.add('active');
     if (name === 'bookings') loadBookings();
     else if (name === 'repairs') loadTickets();
-    else if (name === 'calendar') loadCalendar();
+    else if (name === 'calendar') { loadAllAppts().then(renderCalendar); }
+    else if (name === 'settings') loadSettings();
   }
 
-  // ── CALENDAR ──
-  let calViewDate = new Date();
-
-  function changeCalDate(dir) {
-    calViewDate.setDate(calViewDate.getDate() + dir);
-    loadCalendar();
-  }
-
-  function formatTime12(t) {
-    if (!t) return '';
-    const [h, m] = t.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
-  }
-
-  async function loadCalendar() {
-    const dateStr = calViewDate.toISOString().split('T')[0];
-    const days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-    document.getElementById('cal-date-label').textContent = days[calViewDate.getDay()] + ', ' + dateStr;
-
-    const { data: appts } = await db.from('appointments').select('*')
-      .eq('shop_id', SHOP_ID).eq('booking_date', dateStr).order('start_time');
-
-    const el = document.getElementById('calendar-view');
-    if (!appts || appts.length === 0) {
-      el.innerHTML = '<div class="empty">No appointments on this day.</div>';
-      return;
-    }
-
-    el.innerHTML = appts.map(a => `
-      <div class="card" style="margin-bottom:10px">
-        <div class="card-header">
-          <div>
-            <div class="card-name">${a.customer_name || '—'} <span class="badge ${a.status === 'cancelled' ? 'badge-denied' : 'badge-confirmed'}">${a.status || 'scheduled'}</span></div>
-            <div class="card-details">${a.service || '—'} · ${formatTime12(a.start_time)} – ${formatTime12(a.end_time)}</div>
-          </div>
-        </div>
-        <div class="card-actions">
-          <button class="action-btn deny" onclick="cancelAppt(${a.id})">Cancel slot</button>
-        </div>
-      </div>`).join('');
-  }
-
-  async function addCalendarEntry() {
-    const name = document.getElementById('cal-name').value.trim();
-    const service = document.getElementById('cal-service').value.trim();
-    const date = document.getElementById('cal-date').value;
-    const start = document.getElementById('cal-start').value;
-    const end = document.getElementById('cal-end').value;
-    if (!name || !date || !start || !end) { alert('Please fill in all fields.'); return; }
-    const { error } = await db.from('appointments').insert([{
-      customer_name: name, service, booking_date: date,
-      start_time: start, end_time: end, shop_id: SHOP_ID, status: 'scheduled'
-    }]);
-    if (!error) {
-      ['cal-name','cal-service','cal-date','cal-start','cal-end'].forEach(id => document.getElementById(id).value = '');
-      toast('Added to calendar');
-      calViewDate = new Date(date + 'T00:00:00');
-      loadCalendar();
-    }
-  }
-
-  async function cancelAppt(id) {
-    if (!confirm('Cancel this appointment slot?')) return;
-    await db.from('appointments').update({ status: 'cancelled' }).eq('id', id);
-    toast('Slot cancelled — now available for booking');
-    loadCalendar();
-  }
-
-  function toast(msg) {
+  function toast(msg, color) {
     const t = document.getElementById('toast');
-    t.textContent = msg; t.classList.add('show');
-    setTimeout(() => t.classList.remove('show'), 2500);
+    t.textContent = msg;
+    t.style.background = color || '#111';
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 2800);
   }
 
   function timeAgo(ts) {
@@ -294,95 +292,77 @@
     return Math.floor(diff/1440) + 'd ago';
   }
 
+  function fmt12(t) {
+    if (!t) return '';
+    const [h,m] = t.split(':').map(Number);
+    return `${h%12||12}:${String(m).padStart(2,'0')} ${h>=12?'PM':'AM'}`;
+  }
+
+  // ── BOOKINGS ──
   async function loadBookings() {
     const el = document.getElementById('bookings-list');
     el.innerHTML = '<div class="loading">Loading...</div>';
-    const { data, error } = await db.from('bookings').select('*')
-      .eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
-    if (error || !data || data.length === 0) {
-      el.innerHTML = '<div class="empty">No bookings yet. Share your site link to get started.</div>'; return;
-    }
+    const { data } = await db.from('bookings').select('*').eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No bookings yet.</div>'; return; }
     el.innerHTML = data.map(b => `
-      <div class="card" id="booking-${b.id}">
+      <div class="card" id="bk-${b.id}">
         <div class="card-header">
           <div>
-            <div class="card-name">${b.name || '—'} <span class="badge badge-new">New</span></div>
-            <div class="card-details">
-              ${b.vehicle || 'Vehicle not specified'}<br>
-              ${b.service || 'Service not specified'}<br>
-              ${b.phone || ''}${b.date ? ' · Requested: ' + b.date : ''}
-            </div>
+            <div class="card-name">${b.name||'—'} <span class="badge badge-new">New</span></div>
+            <div class="card-details">${b.vehicle||'—'}<br>${b.service||'—'}<br>${b.phone||''}${b.date?' · '+b.date:''}</div>
+            ${b.notes?`<div style="margin-top:8px;padding:8px 10px;background:#fffbeb;border:1px solid #fde68a;border-radius:6px;font-size:12px;color:#555">${b.notes}</div>`:''}
           </div>
           <div class="card-time">${timeAgo(b.created_at)}</div>
         </div>
         <div class="card-actions">
-          <button class="action-btn confirm" onclick="confirmBooking(${b.id}, '${b.name}', '${b.vehicle}', '${b.service}', '${b.phone}', '${b.email || ''}')">Confirm & create ticket</button>
-          <button class="action-btn" onclick="callCustomer('${b.phone}')">Call ${b.phone}</button>
+          <button class="action-btn confirm" onclick="confirmBooking(${b.id},'${(b.name||'').replace(/'/g,"\\'")}','${(b.vehicle||'').replace(/'/g,"\\'")}','${(b.service||'').replace(/'/g,"\\'")}','${(b.phone||'').replace(/'/g,"\\'")}','${(b.email||'').replace(/'/g,"\\'")}')">Confirm & create ticket</button>
+          <button class="action-btn" onclick="callCustomer('${b.phone||''}')">Call</button>
           <button class="action-btn deny" onclick="deleteBooking(${b.id})">Remove</button>
         </div>
       </div>`).join('');
   }
 
   async function confirmBooking(id, name, vehicle, service, phone, email) {
-    const { error } = await db.from('tickets').insert([{
-      customer_name: name, vehicle, service, status: 'checked-in',
-      eta: '', shop_id: SHOP_ID, customer_email: email || ''
-    }]);
+    const { error } = await db.from('tickets').insert([{ customer_name:name, vehicle, service, status:'checked-in', eta:'', shop_id:SHOP_ID, customer_email:email||'' }]);
     if (!error) {
-      await deleteBooking(id, true);
-      // Send confirmation email to customer
-      if (email) {
-        fetch('/.netlify/functions/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            type: 'confirmed',
-            customerName: name,
-            customerEmail: email,
-            vehicle, service
-          })
-        });
-      }
-      toast('Confirmed! Ticket created for ' + name);
+      await db.from('bookings').delete().eq('id', id);
+      if (email) fetch('/.netlify/functions/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'confirmed', customerName:name, customerEmail:email, vehicle, service }) });
+      toast('Confirmed — ticket created for ' + name);
       switchTab('repairs');
     }
   }
 
-  async function deleteBooking(id, silent) {
+  async function deleteBooking(id) {
     await db.from('bookings').delete().eq('id', id);
-    if (!silent) { toast('Booking removed'); loadBookings(); }
+    toast('Booking removed'); loadBookings();
   }
 
-  function callCustomer(phone) {
-    window.location.href = 'tel:' + phone.replace(/\D/g,'');
-  }
+  function callCustomer(phone) { window.location.href = 'tel:' + phone.replace(/\D/g,''); }
 
+  // ── REPAIRS ──
   async function loadTickets() {
     const el = document.getElementById('tickets-list');
     el.innerHTML = '<div class="loading">Loading...</div>';
-    const { data, error } = await db.from('tickets').select('*')
-      .eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
-    if (error || !data || data.length === 0) {
-      el.innerHTML = '<div class="empty">No active repair tickets. Create one above or confirm a booking.</div>'; return;
-    }
-    const statusLabels = { 'checked-in': 'Checked in', 'diagnosing': 'Diagnosing', 'in-repair': 'In repair', 'ready': 'Ready for pickup' };
-    const badgeClass = { 'checked-in': 'badge-new', 'diagnosing': 'badge-in', 'in-repair': 'badge-in', 'ready': 'badge-ready' };
+    const { data } = await db.from('tickets').select('*').eq('shop_id', SHOP_ID).order('created_at', { ascending: false });
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No active repair tickets.</div>'; return; }
+    const sLabels = { 'checked-in':'Checked in','diagnosing':'Diagnosing','in-repair':'In repair','ready':'Ready' };
+    const sBadge = { 'checked-in':'badge-new','diagnosing':'badge-in','in-repair':'badge-in','ready':'badge-ready' };
     el.innerHTML = data.map(t => `
-      <div class="card" id="ticket-${t.id}">
+      <div class="card">
         <div class="card-header">
           <div>
-            <div class="card-name">${t.customer_name || '—'} <span class="badge ${badgeClass[t.status] || 'badge-new'}">${statusLabels[t.status] || t.status}</span></div>
-            <div class="card-details">${t.vehicle || '—'} · ${t.service || '—'}${t.eta ? ' · ETA: ' + t.eta : ''}</div>
+            <div class="card-name">${t.customer_name||'—'} <span class="badge ${sBadge[t.status]||'badge-new'}">${sLabels[t.status]||t.status}</span></div>
+            <div class="card-details">${t.vehicle||'—'} · ${t.service||'—'}${t.eta?' · ETA: '+t.eta:''}</div>
           </div>
           <div class="card-time">${timeAgo(t.created_at)}</div>
         </div>
         <div class="card-actions">
-          <button class="action-btn" onclick="updateStatus(${t.id}, 'checked-in')">Checked in</button>
-          <button class="action-btn" onclick="updateStatus(${t.id}, 'diagnosing')">Diagnosing</button>
-          <button class="action-btn" onclick="updateStatus(${t.id}, 'in-repair')">In repair</button>
-          <button class="action-btn confirm" onclick="updateStatus(${t.id}, 'ready')">Mark ready</button>
+          <button class="action-btn" onclick="updateStatus(${t.id},'checked-in')">Checked in</button>
+          <button class="action-btn" onclick="updateStatus(${t.id},'diagnosing')">Diagnosing</button>
+          <button class="action-btn" onclick="updateStatus(${t.id},'in-repair')">In repair</button>
+          <button class="action-btn confirm" onclick="updateStatus(${t.id},'ready')">Mark ready</button>
           <button class="action-btn" onclick="updateETA(${t.id})">Set ETA</button>
-          <button class="action-btn deny" onclick="deleteTicket(${t.id})">Close ticket</button>
+          <button class="action-btn deny" onclick="deleteTicket(${t.id})">Close</button>
         </div>
       </div>`).join('');
   }
@@ -392,53 +372,241 @@
     const vehicle = document.getElementById('t-vehicle').value.trim();
     const service = document.getElementById('t-service').value.trim();
     const eta = document.getElementById('t-eta').value.trim();
-    if (!name || !service) { alert('Customer name and service are required.'); return; }
-    const { error } = await db.from('tickets').insert([{
-      customer_name: name, vehicle, service, status: 'checked-in', eta, shop_id: SHOP_ID
-    }]);
-    if (!error) {
-      ['t-name','t-vehicle','t-service','t-eta'].forEach(id => document.getElementById(id).value = '');
-      toast('Ticket created for ' + name);
-      loadTickets();
-    }
+    if (!name||!service) { alert('Name and service required.'); return; }
+    const { error } = await db.from('tickets').insert([{ customer_name:name, vehicle, service, status:'checked-in', eta, shop_id:SHOP_ID }]);
+    if (!error) { ['t-name','t-vehicle','t-service','t-eta'].forEach(id=>document.getElementById(id).value=''); toast('Ticket created'); loadTickets(); }
   }
 
   async function updateStatus(id, status) {
-    const { error } = await db.from('tickets').update({ status }).eq('id', id);
-    if (!error) {
-      toast('Status updated to: ' + status.replace('-',' '));
-      if (status === 'ready') {
-        const { data } = await db.from('tickets').select('*').eq('id', id).single();
-        if (data && data.customer_email) {
-          fetch('/.netlify/functions/send-email', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              type: 'ready',
-              customerName: data.customer_name,
-              customerEmail: data.customer_email,
-              vehicle: data.vehicle,
-              service: data.service,
-              eta: data.eta
-            })
-          });
-        }
-      }
-      loadTickets();
+    await db.from('tickets').update({ status }).eq('id', id);
+    toast('Status → ' + status.replace('-',' '));
+    if (status === 'ready') {
+      const { data } = await db.from('tickets').select('*').eq('id', id).single();
+      if (data?.customer_email) fetch('/.netlify/functions/send-email', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ type:'ready', customerName:data.customer_name, customerEmail:data.customer_email, vehicle:data.vehicle, service:data.service, eta:data.eta }) });
     }
+    loadTickets();
   }
 
   async function updateETA(id) {
-    const eta = prompt('Enter estimated pickup time (e.g. "3:30 PM today"):');
+    const eta = prompt('Estimated pickup time (e.g. "3:30 PM today"):');
     if (!eta) return;
-    const { error } = await db.from('tickets').update({ eta }).eq('id', id);
-    if (!error) { toast('ETA updated'); loadTickets(); }
+    await db.from('tickets').update({ eta }).eq('id', id);
+    toast('ETA updated'); loadTickets();
   }
 
   async function deleteTicket(id) {
     if (!confirm('Close this ticket?')) return;
     await db.from('tickets').delete().eq('id', id);
     toast('Ticket closed'); loadTickets();
+  }
+
+  // ── CALENDAR ──
+  let calYear = new Date().getFullYear();
+  let calMonth = new Date().getMonth();
+  let allAppts = [];
+  let selectedDate = null;
+  let closedDays = [];
+
+  async function loadAllAppts() {
+    const { data } = await db.from('appointments').select('*').eq('shop_id', SHOP_ID);
+    allAppts = data || [];
+    const { data: avail } = await db.from('availability').select('*').eq('shop_id', SHOP_ID);
+    closedDays = (avail||[]).filter(a => a.is_closed === 'true').map(a => a.day_of_week);
+  }
+
+  function changeMonth(dir) {
+    calMonth += dir;
+    if (calMonth > 11) { calMonth = 0; calYear++; }
+    if (calMonth < 0) { calMonth = 11; calYear--; }
+    renderCalendar();
+  }
+
+  function goToday() {
+    calYear = new Date().getFullYear();
+    calMonth = new Date().getMonth();
+    renderCalendar();
+  }
+
+  function renderCalendar() {
+    const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+    const DAYS_LC = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
+    document.getElementById('cal-month-label').textContent = MONTHS[calMonth] + ' ' + calYear;
+    const today = new Date();
+    const firstDay = new Date(calYear, calMonth, 1).getDay();
+    const daysInMonth = new Date(calYear, calMonth+1, 0).getDate();
+    const daysInPrev = new Date(calYear, calMonth, 0).getDate();
+    let html = '';
+    let totalCells = Math.ceil((firstDay + daysInMonth) / 7) * 7;
+    for (let i = 0; i < totalCells; i++) {
+      let day, month, year, isOther = false;
+      if (i < firstDay) { day = daysInPrev - firstDay + i + 1; month = calMonth - 1; year = calYear; isOther = true; }
+      else if (i >= firstDay + daysInMonth) { day = i - firstDay - daysInMonth + 1; month = calMonth + 1; year = calYear; isOther = true; }
+      else { day = i - firstDay + 1; month = calMonth; year = calYear; }
+      const realMonth = ((month % 12) + 12) % 12;
+      const realYear = year + Math.floor(month / 12);
+      const dateStr = `${realYear}-${String(realMonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+      const isToday = day === today.getDate() && realMonth === today.getMonth() && realYear === today.getFullYear();
+      const isSel = dateStr === selectedDate;
+      const dayName = DAYS_LC[new Date(dateStr + 'T00:00:00').getDay()];
+      const isClosed = closedDays.includes(dayName);
+      const dayAppts = allAppts.filter(a => a.booking_date === dateStr && a.status !== 'cancelled');
+      let classes = 'cal-day';
+      if (isOther) classes += ' other-month';
+      if (isToday) classes += ' today';
+      if (isSel) classes += ' selected';
+      if (isClosed) classes += ' closed';
+      const dots = dayAppts.slice(0,3).map(a => `<div class="cal-appt-dot">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`).join('');
+      html += `<div class="${classes}" onclick="${isClosed?'':'selectCalDay(\''+dateStr+'\')'}">
+        <div class="cal-day-num">${day}</div>
+        ${dots}
+        ${dayAppts.length > 3 ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>` : ''}
+      </div>`;
+    }
+    document.getElementById('cal-days').innerHTML = html;
+    if (selectedDate) showDayDetail(selectedDate);
+  }
+
+  function selectCalDay(dateStr) {
+    selectedDate = dateStr;
+    renderCalendar();
+  }
+
+  function showDayDetail(dateStr) {
+    const detail = document.getElementById('cal-day-detail');
+    const title = document.getElementById('cal-detail-title');
+    const list = document.getElementById('cal-detail-list');
+    const d = new Date(dateStr + 'T00:00:00');
+    const DAYS = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+    const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+    title.textContent = DAYS[d.getDay()] + ', ' + MONTHS[d.getMonth()] + ' ' + d.getDate();
+    const dayAppts = allAppts.filter(a => a.booking_date === dateStr).sort((a,b) => a.start_time > b.start_time ? 1 : -1);
+    if (dayAppts.length === 0) {
+      list.innerHTML = '<div style="font-size:14px;color:var(--muted);padding:12px 0">No appointments this day.</div>';
+    } else {
+      list.innerHTML = dayAppts.map(a => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)">
+          <div>
+            <div style="font-size:14px;font-weight:500">${fmt12(a.start_time)} – ${fmt12(a.end_time)}</div>
+            <div style="font-size:13px;color:var(--muted)">${a.customer_name||'—'} · ${a.service||'—'} <span class="badge ${a.status==='cancelled'?'badge-denied':'badge-confirmed'}">${a.status||'scheduled'}</span></div>
+          </div>
+          ${a.status !== 'cancelled' ? `<button class="action-btn deny" style="font-size:12px;padding:5px 10px" onclick="cancelAppt(${a.id})">Cancel</button>` : ''}
+        </div>`).join('');
+    }
+    detail.style.display = 'block';
+  }
+
+  // Conflict detection
+  async function addCalendarEntry(force) {
+    const name = document.getElementById('cal-name').value.trim();
+    const service = document.getElementById('cal-service').value.trim();
+    const date = document.getElementById('cal-date').value;
+    const start = document.getElementById('cal-start').value;
+    const end = document.getElementById('cal-end').value;
+    if (!name||!date||!start||!end) { alert('Please fill in all fields.'); return; }
+
+    const startM = toMins(start), endM = toMins(end);
+    if (endM <= startM) { alert('End time must be after start time.'); return; }
+
+    if (!force) {
+      const { data: existing } = await db.from('appointments').select('*')
+        .eq('shop_id', SHOP_ID).eq('booking_date', date).neq('status','cancelled');
+      const conflict = (existing||[]).find(a => {
+        const aS = toMins(a.start_time), aE = toMins(a.end_time);
+        return startM < aE && endM > aS;
+      });
+      if (conflict) {
+        document.getElementById('conflict-msg').textContent = `⚠ Conflicts with ${conflict.customer_name} (${fmt12(conflict.start_time)} – ${fmt12(conflict.end_time)}). Book anyway?`;
+        document.getElementById('conflict-banner').classList.add('show');
+        return;
+      }
+    }
+
+    document.getElementById('conflict-banner').classList.remove('show');
+    const { error } = await db.from('appointments').insert([{ customer_name:name, service, booking_date:date, start_time:start, end_time:end, shop_id:SHOP_ID, status:'scheduled' }]);
+    if (!error) {
+      ['cal-name','cal-service','cal-date','cal-start','cal-end'].forEach(id=>document.getElementById(id).value='');
+      toast('Added to calendar');
+      await loadAllAppts();
+      selectedDate = date;
+      calYear = new Date(date+'T00:00:00').getFullYear();
+      calMonth = new Date(date+'T00:00:00').getMonth();
+      renderCalendar();
+    }
+  }
+
+  function forceAddCalEntry() { addCalendarEntry(true); }
+
+  function toMins(t) {
+    const [h,m] = t.split(':').map(Number); return h*60+m;
+  }
+
+  async function cancelAppt(id) {
+    if (!confirm('Cancel this appointment?')) return;
+    await db.from('appointments').update({ status:'cancelled' }).eq('id', id);
+    toast('Appointment cancelled — slot now available');
+    await loadAllAppts(); renderCalendar();
+  }
+
+  // ── SETTINGS ──
+  async function loadSettings() {
+    loadServiceDurations();
+    loadHours();
+  }
+
+  async function loadServiceDurations() {
+    const el = document.getElementById('svc-list');
+    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID + '-services').limit(1);
+    const services = Object.keys(SERVICE_DURATIONS);
+    el.innerHTML = services.map(svc => `
+      <div class="svc-row">
+        <div class="svc-name">${svc}</div>
+        <input class="svc-dur-input" type="number" id="dur-${svc.replace(/\s+/g,'_')}" value="${SERVICE_DURATIONS[svc]}" min="15" step="15">
+        <div class="svc-dur-label">min</div>
+        <button class="svc-save-btn" onclick="saveDuration('${svc}')">Save</button>
+      </div>`).join('');
+  }
+
+  async function saveDuration(svc) {
+    const key = svc.replace(/\s+/g,'_');
+    const val = parseInt(document.getElementById('dur-' + key).value);
+    if (!val || val < 15) { alert('Minimum 15 minutes.'); return; }
+    SERVICE_DURATIONS[svc] = val;
+    toast(svc + ' set to ' + val + ' min', '#16a34a');
+  }
+
+  async function loadHours() {
+    const el = document.getElementById('hours-list');
+    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID).order('id');
+    if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No hours found.</div>'; return; }
+    const dayOrder = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const sorted = [...data].sort((a,b) => dayOrder.indexOf(a.day_of_week) - dayOrder.indexOf(b.day_of_week));
+    el.innerHTML = sorted.map(row => `
+      <div class="svc-row" style="flex-wrap:wrap;gap:10px">
+        <div class="svc-name" style="min-width:100px;text-transform:capitalize;font-weight:500">${row.day_of_week}</div>
+        <div style="display:flex;align-items:center;gap:8px;flex:1">
+          <input type="time" id="oh-${row.id}" value="${row.open_time||'09:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
+          <span style="font-size:13px;color:var(--muted)">to</span>
+          <input type="time" id="ch-${row.id}" value="${row.close_time||'17:00'}" style="padding:6px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;${row.is_closed==='true'?'opacity:.4':''}">
+          <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">
+            <input type="checkbox" id="cl-${row.id}" ${row.is_closed==='true'?'checked':''} onchange="toggleClosed(${row.id})"> Closed
+          </label>
+          <button class="svc-save-btn" onclick="saveHours(${row.id})">Save</button>
+        </div>
+      </div>`).join('');
+  }
+
+  async function saveHours(id) {
+    const open = document.getElementById('oh-' + id).value;
+    const close = document.getElementById('ch-' + id).value;
+    const isClosed = document.getElementById('cl-' + id).checked ? 'true' : 'false';
+    const { error } = await db.from('availability').update({ open_time:open, close_time:close, is_closed:isClosed }).eq('id', id);
+    if (!error) toast('Hours saved', '#16a34a');
+  }
+
+  function toggleClosed(id) {
+    const isClosed = document.getElementById('cl-' + id).checked;
+    document.getElementById('oh-' + id).style.opacity = isClosed ? '.4' : '1';
+    document.getElementById('ch-' + id).style.opacity = isClosed ? '.4' : '1';
   }
 </script>
 </body>
