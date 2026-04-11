@@ -738,7 +738,7 @@ async function loadAnnouncements(){
     <div class="ann-card">
       <div>
         <span class="ann-card-type ${typeClass[a.type]||'ann-info'}">${a.type||'info'}</span>
-        <div class="ann-card-msg" style="margin-top:6px">${a.message}</div>
+        <div class="ann-card-msg" style="margin-top:6px">${a.messages}</div>
       </div>
       <div style="display:flex;gap:6px;flex-shrink:0">
         <button class="ss" style="background:${a.active==='true'?'#888':'#16a34a'}" onclick="toggleAnn(${a.id},'${a.active}')">${a.active==='true'?'Hide':'Show'}</button>
@@ -751,7 +751,7 @@ async function addAnnouncement(){
   const msg=document.getElementById('new-ann-message').value.trim();
   const type=document.getElementById('new-ann-type').value;
   if(!msg){alert('Please write a message.');return;}
-  const {error}=await db.from('announcements').insert([{message:msg,type,active:'true',shop_id:SHOP_ID}]);
+  const {error}=await db.from('announcements').insert([{messages:msg,type,active:'true',shop_id:SHOP_ID}]);
   if(!error){
     document.getElementById('new-ann-message').value='';
     toast('Posted to website!','#16a34a'); loadAnnouncements();
