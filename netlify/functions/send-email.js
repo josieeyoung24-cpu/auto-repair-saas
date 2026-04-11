@@ -69,6 +69,35 @@ exports.handler = async (event) => {
       }
     }
 
+    if (type === 'confirmed') {
+      if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [customerEmail],
+          subject: `Your appointment is confirmed — Aurora Auto Repair`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <div style="background:#111;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
+                <h2 style="color:#fff;font-size:22px;font-weight:500;margin-bottom:8px">Appointment confirmed!</h2>
+                <p style="color:rgba(255,255,255,0.75);font-size:14px;margin:0">See you soon, ${customerName.split(' ')[0]}.</p>
+              </div>
+              <table style="width:100%;font-size:14px;border-collapse:collapse">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle || 'Your vehicle'}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service || 'Service'}</td></tr>
+                ${date ? `<tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Date</td><td style="padding:10px 0;border-bottom:1px solid #eee">${date}</td></tr>` : ''}
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                Questions? Call us at <strong>(206) 367-8833</strong><br>
+                10712 Aurora Ave N, Seattle WA 98133
+              </div>
+            </div>`
+        })
+      });
+    }
+
     if (type === 'ready') {
       if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
       await fetch('https://api.resend.com/emails', {
