@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aurora Auto Repair — Seattle</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root {
+    --accent: #111111;
+    --white: #ffffff;
+    --off: #f7f7f5;
+    --border: #e8e8e4;
+    --muted: #888880;
+    --text: #111111;
+    --radius: 10px;
+    --radius-lg: 16px;
+    --font-main: 'DM Sans', sans-serif;
+    --font-mono: 'DM Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: var(--font-main); background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
+  a { text-decoration: none; color: inherit; }
+  nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  .nav-logo { font-size: 17px; font-weight: 500; letter-spacing: -0.4px; }
+  .nav-links { display: flex; gap: 28px; list-style: none; }
+  .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
+  .hero { padding: 80px 40px 64px; max-width: 700px; }
+  .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--muted); }
+  .hero h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 300; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
+  .hero h1 em { font-style: normal; font-weight: 500; }
+  .hero p { font-size: 16px; color: var(--muted); margin-bottom: 36px; max-width: 480px; line-height: 1.7; }
+  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn { padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-main); border: none; }
+  .btn-primary { background: var(--accent); color: var(--white); }
+  .btn-primary:hover { background: #333; }
+  .btn-primary:disabled { background: #999; cursor: not-allowed; }
+  .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: var(--off); }
+  .trust-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); }
+  .trust-item { padding: 24px 40px; border-right: 1px solid var(--border); }
+  .trust-item:last-child { border-right: none; }
+  .trust-num { font-size: 26px; font-weight: 500; letter-spacing: -0.5px; }
+  .trust-label { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .tools-section { padding: 64px 40px; }
+  .section-header { margin-bottom: 36px; }
+  .section-header h2 { font-size: 26px; font-weight: 400; letter-spacing: -0.5px; margin-bottom: 6px; }
+  .section-header p { font-size: 14px; color: var(--muted); }
+  .tab-nav { display: flex; gap: 4px; margin-bottom: 28px; background: var(--off); padding: 4px; border-radius: var(--radius); width: fit-content; }
+  .tab-btn { padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: var(--font-main); }
+  .tab-btn.active { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 600px; }
+  .field { display: flex; flex-direction: column; gap: 6px; }
+  .field label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-family: var(--font-mono); }
+  .field input, .field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--white); font-family: var(--font-main); width: 100%; appearance: none; }
+  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
+  .field input::placeholder { color: #bbb; }
+  .msg { display: none; margin-top: 16px; padding: 14px 18px; border-radius: var(--radius); font-size: 14px; }
+  .msg.show { display: block; }
+  .msg-success { background: #f0faf4; border: 1px solid #b8e8c8; color: #1a6b3a; }
+  .msg-error { background: #fff0f0; border: 1px solid #f5c0c0; color: #8b1a1a; }
+  .status-search { display: flex; gap: 10px; max-width: 480px; margin-bottom: 24px; }
+  .status-search input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--white); font-family: var(--font-main); }
+  .status-search input:focus { outline: none; border-color: var(--accent); }
+  .status-search button { padding: 11px 22px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-main); white-space: nowrap; }
+  .status-card { display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 560px; }
+  .status-card.show { display: block; }
+  .status-vehicle { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
+  .status-vehicle-name { font-size: 16px; font-weight: 500; }
+  .status-vehicle-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
+  .status-badge { font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 6px; background: #fff8e1; color: #8a6000; border: 1px solid #f0d070; font-weight: 500; text-transform: capitalize; }
+  .status-badge.ready { background: #f0faf4; color: #1a6b3a; border-color: #b8e8c8; }
+  @keyframes pulse-green { 0%,100%{ box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50%{ box-shadow: 0 0 0 12px rgba(34,197,94,0); } }
+  .ready-banner { display: none; margin-top: 20px; background: #16a34a; color: #fff; border-radius: var(--radius-lg); padding: 22px 24px; text-align: center; animation: pulse-green 2s ease-in-out infinite; }
+  .ready-banner.show { display: block; }
+  .ready-banner-title { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 6px; }
+  .ready-banner-sub { font-size: 14px; opacity: 0.85; margin-bottom: 16px; }
+  .ready-banner-phone { display: inline-block; background: #fff; color: #16a34a; font-weight: 500; font-size: 15px; padding: 10px 24px; border-radius: var(--radius); font-family: var(--font-mono); }
+  .progress-steps { display: flex; align-items: flex-start; margin-bottom: 24px; position: relative; }
+  .progress-steps::before { content: ''; position: absolute; top: 14px; left: 14px; right: 14px; height: 1px; background: var(--border); }
+  .progress-fill { position: absolute; top: 14px; left: 14px; height: 1px; background: var(--accent); transition: width 0.5s ease; }
+  .step { flex: 1; text-align: center; position: relative; z-index: 1; }
+  .step-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; background: var(--white); border: 1px solid var(--border); color: var(--muted); }
+  .step-dot.done { background: var(--accent); border-color: var(--accent); color: var(--white); }
+  .step-dot.active { background: var(--white); border: 2px solid var(--accent); color: var(--accent); font-weight: 700; }
+  .step-label { font-size: 12px; color: var(--muted); }
+  .step-label.active { color: var(--text); font-weight: 500; }
+  .step-label.done { color: var(--text); }
+  .status-note { background: var(--off); border-radius: var(--radius); padding: 14px 16px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .status-note strong { color: var(--text); }
+  .status-not-found { display: none; font-size: 14px; color: var(--muted); padding: 16px 0; }
+  .status-not-found.show { display: block; }
+  .quote-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; max-width: 600px; margin-bottom: 20px; }
+  .quote-result { display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 480px; margin-top: 8px; }
+  .quote-result.show { display: block; }
+  .quote-price { font-size: 36px; font-weight: 300; letter-spacing: -1px; margin-bottom: 6px; }
+  .quote-detail { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
+  .quote-fine { font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 14px; font-family: var(--font-mono); }
+  .services-section { padding: 0 40px 64px; }
+  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: var(--radius-lg); overflow: hidden; margin-top: 28px; }
+  .service-card { background: var(--white); padding: 22px 24px; transition: background 0.15s; }
+  .service-card:hover { background: var(--off); }
+  .service-name { font-size: 14px; font-weight: 500; margin-bottom: 4px; }
+  .service-desc { font-size: 12px; color: var(--muted); margin-bottom: 12px; }
+  .service-price { font-family: var(--font-mono); font-size: 13px; font-weight: 500; }
+  .reviews-section { padding: 0 40px 64px; }
+  .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
+  .review-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 22px; }
+  .review-stars { color: #f5a623; font-size: 13px; margin-bottom: 10px; letter-spacing: 2px; }
+  .review-text { font-size: 14px; line-height: 1.65; margin-bottom: 14px; }
+  .review-author { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  footer { border-top: 1px solid var(--border); padding: 36px 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
+  .footer-brand { font-size: 16px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 8px; }
+  .footer-tagline { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .footer-heading { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 12px; }
+  .footer-info { font-size: 13px; line-height: 2; }
+  .footer-bottom { border-top: 1px solid var(--border); padding: 18px 40px; display: flex; justify-content: space-between; }
+  .footer-bottom-text { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
+  @media (max-width: 768px) {
+    nav { padding: 0 20px; } .nav-links { display: none; }
+    .hero { padding: 48px 20px 40px; } .trust-bar { grid-template-columns: repeat(2, 1fr); } .trust-item { padding: 20px; }
+    .tools-section { padding: 48px 20px; } .services-section, .reviews-section { padding: 0 20px 48px; }
+    .form-grid, .quote-form { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr 1fr; }
+    .reviews-grid { grid-template-columns: 1fr; } footer { padding: 32px 20px; grid-template-columns: 1fr; gap: 28px; }
+    .footer-bottom { padding: 16px 20px; flex-direction: column; gap: 6px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">Aurora Auto Repair</div>
+  <ul class="nav-links">
+    <li><a href="#services">Services</a></li>
+    <li><a href="#tools">Book / Track</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+  </ul>
+  <a class="nav-phone" href="tel:2063678833">(206) 367-8833</a>
+</nav>
+
+<section class="hero">
+  <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
+  <h1>Neil fixes it.<br><em>Fair price.</em> Same day.</h1>
+  <p>Family-owned for 10+ years. Way less than the dealer — and Neil won't touch your car without calling you first.</p>
+  <div class="hero-actions">
+    <button class="btn btn-primary" onclick="openTab('book')">Book an appointment</button>
+    <button class="btn btn-secondary" onclick="openTab('status')">Track my repair →</button>
+  </div>
+</section>
+
+<div class="trust-bar">
+  <div class="trust-item"><div class="trust-num">4.6★</div><div class="trust-label">62 Google reviews</div></div>
+  <div class="trust-item"><div class="trust-num">10+ yrs</div><div class="trust-label">In business</div></div>
+  <div class="trust-item"><div class="trust-num">Way less</div><div class="trust-label">Than the dealer</div></div>
+  <div class="trust-item"><div class="trust-num">Same day</div><div class="trust-label">Most repairs</div></div>
+</div>
+
+<section class="tools-section" id="tools">
+  <div class="section-header">
+    <h2>What can we help with?</h2>
+    <p>Book an appointment, track your repair, or get an instant estimate.</p>
+  </div>
+  <div class="tab-nav">
+    <button class="tab-btn active" onclick="openTab('book')">Book appointment</button>
+    <button class="tab-btn" onclick="openTab('status')">Track my repair</button>
+    <button class="tab-btn" onclick="openTab('quote')">Get a quote</button>
+  </div>
+
+  <div class="tab-panel active" id="tab-book">
+    <div class="form-grid">
+      <div class="field"><label>First name</label><input type="text" id="b-first" placeholder="Mike"></div>
+      <div class="field"><label>Last name</label><input type="text" id="b-last" placeholder="Torres"></div>
+      <div class="field"><label>Phone number</label><input type="tel" id="b-phone" placeholder="(206) 555-0100"></div>
+      <div class="field"><label>Vehicle</label><input type="text" id="b-vehicle" placeholder="2019 Toyota Camry"></div>
+      <div class="field"><label>Service needed</label>
+        <select id="b-service">
+          <option value="">Select a service</option>
+          <option>Oil change</option><option>Brake service</option><option>Tire rotation</option>
+          <option>Engine diagnostic</option><option>AC service</option><option>Transmission service</option><option>Other / not sure</option>
+        </select>
+      </div>
+      <div class="field"><label>Preferred date</label><input type="date" id="b-date"></div>
+    </div>
+    <div style="margin-top:20px">
+      <button class="btn btn-primary" onclick="submitBooking()" id="book-btn">Confirm appointment</button>
+    </div>
+    <div class="msg msg-success" id="book-success"></div>
+    <div class="msg msg-error" id="book-error">Something went wrong. Please call us at (206) 367-8833.</div>
+  </div>
+
+  <div class="tab-panel" id="tab-status">
+    <div class="status-search">
+      <input type="text" placeholder="Enter your name or ticket number" id="status-input">
+      <button onclick="lookupStatus()">Look up</button>
+    </div>
+    <div class="status-card" id="status-card">
+      <div class="status-vehicle">
+        <div>
+          <div class="status-vehicle-name" id="s-vehicle"></div>
+          <div class="status-vehicle-sub" id="s-sub"></div>
+        </div>
+        <div class="status-badge" id="s-badge"></div>
+      </div>
+      <div class="progress-steps">
+        <div class="progress-fill" id="progress-fill"></div>
+        <div class="step"><div class="step-dot" id="dot-1">1</div><div class="step-label" id="lbl-1">Checked in</div></div>
+        <div class="step"><div class="step-dot" id="dot-2">2</div><div class="step-label" id="lbl-2">Diagnosing</div></div>
+        <div class="step"><div class="step-dot" id="dot-3">3</div><div class="step-label" id="lbl-3">In repair</div></div>
+        <div class="step"><div class="step-dot" id="dot-4">4</div><div class="step-label" id="lbl-4">Ready for pickup</div></div>
+      </div>
+      <div class="status-note" id="s-note"></div>
+      <div class="ready-banner" id="ready-banner">
+        <div class="ready-banner-title">Your car is ready for pickup!</div>
+        <div class="ready-banner-sub">Head over when you're ready — we're open and waiting for you.</div>
+        <div class="ready-banner-phone">(206) 367-8833</div>
+      </div>
+    </div>
+    <div class="status-not-found" id="status-not-found">No repair found for that name. Try your full name or call us at (206) 367-8833.</div>
+  </div>
+
+  <div class="tab-panel" id="tab-quote">
+    <div class="quote-form">
+      <div class="field"><label>Vehicle make</label>
+        <select id="q-make"><option value="">Select make</option><option>Toyota</option><option>Honda</option><option>Ford</option><option>Chevrolet</option><option>Subaru</option><option>BMW</option><option>Nissan</option><option>Jeep</option></select>
+      </div>
+      <div class="field"><label>Model year</label>
+        <select id="q-year"><option value="">Select year</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option><option>2015 or older</option></select>
+      </div>
+      <div class="field"><label>Service</label>
+        <select id="q-service">
+          <option value="" data-low="" data-high="">Select service</option>
+          <option data-low="49" data-high="79">Oil change</option>
+          <option data-low="120" data-high="220">Brake service</option>
+          <option data-low="25" data-high="45">Tire rotation</option>
+          <option data-low="89" data-high="149">Engine diagnostic</option>
+          <option data-low="95" data-high="175">AC service</option>
+          <option data-low="180" data-high="340">Transmission service</option>
+          <option data-low="60" data-high="120">Battery replacement</option>
+        </select>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="getQuote()">Get estimate</button>
+    <div class="quote-result" id="quote-result">
+      <div class="quote-price" id="quote-price"></div>
+      <div class="quote-detail" id="quote-detail"></div>
+      <div class="quote-fine">Estimate based on typical pricing. Final price confirmed after inspection — we call you before any work begins.</div>
+    </div>
+  </div>
+</section>
+
+<section class="services-section" id="services">
+  <div class="section-header"><h2>Common services</h2><p>Transparent pricing on every job — no surprises.</p></div>
+  <div class="services-grid">
+    <div class="service-card"><div class="service-name">Oil change</div><div class="service-desc">Conventional, synthetic blend, or full synthetic</div><div class="service-price">From $49</div></div>
+    <div class="service-card"><div class="service-name">Brake service</div><div class="service-desc">Pads, rotors, calipers — full inspection included</div><div class="service-price">$120 – $220</div></div>
+    <div class="service-card"><div class="service-name">Tire rotation</div><div class="service-desc">Extends tire life, improves handling</div><div class="service-price">From $25</div></div>
+    <div class="service-card"><div class="service-name">Engine diagnostic</div><div class="service-desc">Full OBD scan + written report</div><div class="service-price">$89 – $149</div></div>
+    <div class="service-card"><div class="service-name">AC service</div><div class="service-desc">Recharge, leak check, compressor inspection</div><div class="service-price">$95 – $175</div></div>
+    <div class="service-card"><div class="service-name">Transmission service</div><div class="service-desc">Fluid flush and filter replacement</div><div class="service-price">$180 – $340</div></div>
+  </div>
+</section>
+
+<section class="reviews-section" id="reviews">
+  <div class="section-header"><h2>What customers say</h2><p>4.6 stars across 62 Google reviews — real customers, real words.</p></div>
+  <div class="reviews-grid">
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"I came in for a water pump repair and Neil found that the coolant housing was cracked. Saved me a bunch of hassle and stress. Down to earth and easy to work with. Highly recommend."</div><div class="review-author">Scott Cates · 1 month ago</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"I never write reviews, but given how hard it is to find a decent auto shop, I wanted to share my experience. I've taken my car here for an oil change and general maintenance and couldn't be happier."</div><div class="review-author">Christine Tran · 4 months ago</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Honest, kind, funny, and willing to help on the fly and improvise ways to get things fixed as efficiently and cost effectively as possible while being highly professional and skilled. Thank you!"</div><div class="review-author">Salvia Hunden · 9 months ago</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"After someone smashed my driver side mirror — I was so lucky Neil had the part and fixed it in after an hour! And charged me WAY less than the dealer! So grateful for Neil! Fair prices!!"</div><div class="review-author">Rachel Becker · 11 months ago</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Neil is great. He went out of his way to help me and I've been going to him for years."</div><div class="review-author">Nam Chan · 1 year ago</div></div>
+    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Always does good work for a fair price!"</div><div class="review-author">Abi A · 1 year ago</div></div>
+  </div>
+</section>
+
+<footer>
+  <div>
+    <div class="footer-brand">Aurora Auto Repair</div>
+    <div class="footer-tagline">Neil has been taking care of Seattle families' cars for over 10 years. Fair prices, honest work, no dealer markups.</div>
+  </div>
+  <div>
+    <div class="footer-heading">Location & hours</div>
+    <div class="footer-info">10712 Aurora Ave N, Seattle WA 98133<br>Mon–Fri: 8:00am – 6:00pm<br>Saturday: 9:00am – 1:00pm<br>Sunday: Closed</div>
+  </div>
+  <div>
+    <div class="footer-heading">Contact</div>
+    <div class="footer-info">(206) 367-8833<br>10712 Aurora Ave N<br>Seattle, WA 98133</div>
+  </div>
+</footer>
+<div class="footer-bottom">
+  <div class="footer-bottom-text">© 2025 Aurora Auto Repair. All rights reserved.</div>
+  <div class="footer-bottom-text">Seattle, WA</div>
+</div>
+
+<script>
+  const SUPABASE_URL = 'https://jmksxvvbgxqcijrbdwos.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
+  const SHOP_ID = 'aurora-auto-repair';
+  const { createClient } = supabase;
+  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  function openTab(name) {
+    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+      btn.classList.toggle('active', ['book','status','quote'][i] === name);
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById('tab-' + name).classList.add('active');
+    document.getElementById('tools').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  async function submitBooking() {
+    const first = document.getElementById('b-first').value.trim();
+    const last = document.getElementById('b-last').value.trim();
+    const phone = document.getElementById('b-phone').value.trim();
+    const vehicle = document.getElementById('b-vehicle').value.trim();
+    const service = document.getElementById('b-service').value;
+    const date = document.getElementById('b-date').value;
+    if (!first || !phone || !service) { alert('Please fill in your name, phone, and service.'); return; }
+    const btn = document.getElementById('book-btn');
+    btn.textContent = 'Submitting...'; btn.disabled = true;
+    const { error } = await db.from('bookings').insert([{
+      name: first + ' ' + last, phone, vehicle, service, date, shop_id: SHOP_ID
+    }]);
+    btn.textContent = 'Confirm appointment'; btn.disabled = false;
+    if (error) {
+      document.getElementById('book-error').classList.add('show');
+    } else {
+      const t = Math.floor(1000 + Math.random() * 9000);
+      document.getElementById('book-success').innerHTML = '✓ Booked, ' + first + '! Neil will confirm shortly. Reference: <strong>#AAR-' + t + '</strong>';
+      document.getElementById('book-success').classList.add('show');
+    }
+  }
+
+  async function lookupStatus() {
+    const val = document.getElementById('status-input').value.trim();
+    if (!val) { alert('Enter your name to look up your repair.'); return; }
+    const card = document.getElementById('status-card');
+    const notFound = document.getElementById('status-not-found');
+    card.classList.remove('show'); notFound.classList.remove('show');
+    const { data, error } = await db.from('tickets').select('*')
+      .eq('shop_id', SHOP_ID).ilike('customer_name', '%' + val + '%')
+      .order('created_at', { ascending: false }).limit(1);
+    if (error || !data || data.length === 0) { notFound.classList.add('show'); return; }
+    const t = data[0];
+    const steps = { 'checked-in': 1, 'diagnosing': 2, 'in-repair': 3, 'ready': 4 };
+    const cur = steps[t.status] || 1;
+    const fills = [0, 0, 33, 66, 100];
+    document.getElementById('s-vehicle').textContent = t.vehicle || 'Your vehicle';
+    document.getElementById('s-sub').textContent = t.customer_name + ' · #AAR-' + t.id;
+    document.getElementById('s-badge').textContent = (t.status || 'checked in').replace('-', ' ');
+    document.getElementById('s-badge').className = 'status-badge' + (t.status === 'ready' ? ' ready' : '');
+    document.getElementById('progress-fill').style.width = fills[cur] + '%';
+    document.getElementById('s-note').innerHTML = '<strong>' + (t.service || 'Service in progress') + '</strong>' +
+      (t.eta ? ' · Est. ready: ' + t.eta : '') + '. We\'ll call you when it\'s done.';
+    ['1','2','3','4'].forEach(n => {
+      const s = parseInt(n);
+      const dot = document.getElementById('dot-' + n);
+      const lbl = document.getElementById('lbl-' + n);
+      dot.className = 'step-dot' + (s < cur ? ' done' : s === cur ? ' active' : '');
+      dot.textContent = s < cur ? '✓' : n;
+      lbl.className = 'step-label' + (s < cur ? ' done' : s === cur ? ' active' : '');
+    });
+    card.classList.add('show');
+    document.getElementById('ready-banner').classList.toggle('show', t.status === 'ready');
+  }
+
+  document.getElementById('status-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupStatus(); });
+
+  function getQuote() {
+    const make = document.getElementById('q-make').value;
+    const year = document.getElementById('q-year').value;
+    const svcEl = document.getElementById('q-service');
+    const opt = svcEl.options[svcEl.selectedIndex];
+    if (!make || !year || !opt.dataset.low) { alert('Please select a make, year, and service.'); return; }
+    document.getElementById('quote-price').textContent = '$' + opt.dataset.low + ' – $' + opt.dataset.high;
+    document.getElementById('quote-detail').textContent = opt.text + ' · ' + make + ' ' + year + ' · Parts + labor included';
+    document.getElementById('quote-result').classList.add('show');
+  }
+
+  const d = new Date(); d.setDate(d.getDate() + 1);
+  document.getElementById('b-date').min = d.toISOString().split('T')[0];
+
+  // Wake up Supabase immediately on page load so first action is instant
+  db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
+</script>
+</body>
+</html>
