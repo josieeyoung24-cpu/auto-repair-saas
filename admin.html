@@ -339,6 +339,17 @@
     <div class="panel" id="panel-settings">
       <div class="sh"><div class="st">Settings</div></div>
       <div class="box">
+        <div class="box-title">Change admin password</div>
+        <div class="box-sub">Update the password used to access this admin panel and the staff login on the customer site.</div>
+        <div class="fg" style="max-width:480px">
+          <div class="ff"><label>Current password</label><input type="password" id="pw-current" placeholder="Current password"></div>
+          <div class="ff"><label>New password</label><input type="password" id="pw-new" placeholder="New password"></div>
+          <div class="ff"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Confirm new password"></div>
+        </div>
+        <button class="add-btn" onclick="changePassword()">Update password</button>
+        <div id="pw-msg" style="display:none;margin-top:12px;font-size:13px;padding:10px 14px;border-radius:var(--radius)"></div>
+      </div>
+      <div class="box">
         <div class="box-title">Shop hours</div>
         <div class="box-sub">Edit your open and close times. Changes take effect immediately for new bookings.</div>
         <div id="hours-list"><div class="loading">Loading...</div></div>
@@ -353,7 +364,44 @@
 const SUPABASE_URL='https://jmksxvvbgxqcijrbdwos.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
 const SHOP_ID='aurora-auto-repair';
-const ADMIN_PASSWORD='aurora2025';
+// Load saved password from localStorage if exists
+const SAVED_PW = localStorage.getItem('aurora-admin-pw');
+const ADMIN_PASSWORD = SAVED_PW || 'aurora2025';
+
+function changePassword() {
+  const current = document.getElementById('pw-current').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const msg = document.getElementById('pw-msg');
+
+  if (current !== ADMIN_PASSWORD) {
+    msg.style.display = 'block';
+    msg.style.background = '#fff0f0';
+    msg.style.color = '#8b1a1a';
+    msg.textContent = 'Current password is incorrect.';
+    return;
+  }
+  if (newPw.length < 6) {
+    msg.style.display = 'block';
+    msg.style.background = '#fff0f0';
+    msg.style.color = '#8b1a1a';
+    msg.textContent = 'New password must be at least 6 characters.';
+    return;
+  }
+  if (newPw !== confirm) {
+    msg.style.display = 'block';
+    msg.style.background = '#fff0f0';
+    msg.style.color = '#8b1a1a';
+    msg.textContent = 'Passwords do not match.';
+    return;
+  }
+  localStorage.setItem('aurora-admin-pw', newPw);
+  ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
+  msg.style.display = 'block';
+  msg.style.background = '#f0faf4';
+  msg.style.color = '#1a6b3a';
+  msg.textContent = 'Password updated successfully. Use the new password next time you log in.';
+}
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
 
@@ -362,6 +410,23 @@ const now=new Date();
 document.getElementById('topbar-date').textContent=now.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
 db.from('bookings').select('id').limit(1).then(()=>console.log('DB ready'));
+
+// Auto-login if coming from staff login on main site
+(function() {
+  const params = new URLSearchParams(window.location.search);
+  const auth = params.get('auth');
+  if (auth) {
+    try {
+      const pw = atob(auth);
+      if (pw === ADMIN_PASSWORD) {
+        document.getElementById('login-wrap').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        loadDashboard();
+        window.history.replaceState({}, '', '/admin.html');
+      }
+    } catch(e) {}
+  }
+})();
 
 function checkLogin(){
   const pw=document.getElementById('pw-input').value;
