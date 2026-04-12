@@ -11,7 +11,7 @@ exports.handler = async (event) => {
   try { body = JSON.parse(event.body); }
   catch { return { statusCode: 400, body: 'Invalid JSON' }; }
 
-  const { type, customerName, customerEmail, customerPhone, vehicle, service, date, eta, notes } = body;
+  const { type, customerName, customerEmail, customerPhone, vehicle, service, date, eta, notes, priceLow, priceHigh } = body;
 
   try {
     if (type === 'booking') {
@@ -68,6 +68,34 @@ exports.handler = async (event) => {
           })
         });
       }
+    }
+
+    if (type === 'quote') {
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [SHOP_EMAIL],
+          subject: `New quote request — ${customerName}`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <h2 style="font-size:20px;font-weight:600;margin-bottom:4px">New quote request</h2>
+              <p style="color:#888;font-size:14px;margin-bottom:24px">Aurora Auto Repair</p>
+              <table style="width:100%;font-size:14px;border-collapse:collapse">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Customer</td><td style="padding:10px 0;border-bottom:1px solid #eee;font-weight:500">${customerName}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Phone</td><td style="padding:10px 0;border-bottom:1px solid #eee"><a href="tel:${customerPhone}" style="color:#111">${customerPhone}</a></td></tr>
+                ${customerEmail ? `<tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Email</td><td style="padding:10px 0;border-bottom:1px solid #eee">${customerEmail}</td></tr>` : ''}
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
+                <tr><td style="padding:10px 0;color:#888">Estimate shown</td><td style="padding:10px 0;font-weight:500">$${priceLow} – $${priceHigh}</td></tr>
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#888">
+                Log into your admin panel to confirm or adjust the price.
+              </div>
+            </div>`
+        })
+      });
     }
 
     if (type === 'confirmed') {
