@@ -121,6 +121,7 @@
   .cdn{font-size:13px;font-weight:500;margin-bottom:4px;width:24px;height:24px;display:flex;align-items:center;justify-content:center}
   .cad{font-size:11px;background:#111;color:#fff;border-radius:4px;padding:2px 5px;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
   .cad.cancelled{background:#ddd;color:#888}
+  .cad.blocked{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
   .cal-detail{background:var(--white);border:1px solid var(--border);border-radius:var(--radius-lg);padding:20px;margin-top:16px}
   /* SETTINGS */
   @media(max-width:600px){
@@ -224,10 +225,23 @@
     <!-- CALENDAR -->
     <div class="panel" id="panel-calendar">
       <div class="sh"><div class="st">Calendar</div><button class="rbtn" onclick="loadAllAppts().then(renderCalendar)">Refresh</button></div>
+
       <div class="box">
-        <div class="box-title">Add appointment / block time</div>
+        <div class="box-title">Block off time</div>
+        <div class="box-sub">Use this to block hours when you're unavailable — lunch, errands, closures, etc. Customers won't be able to book during blocked time.</div>
         <div class="fg">
-          <div class="ff"><label>Name</label><input type="text" id="cal-name" placeholder="Mike Torres or Blocked"></div>
+          <div class="ff"><label>Date</label><input type="date" id="block-date"></div>
+          <div class="ff"><label>Reason (shown as blocked)</label><input type="text" id="block-reason" placeholder="e.g. Lunch break, Closed, Staff meeting"></div>
+          <div class="ff"><label>Start time</label><input type="time" id="block-start"></div>
+          <div class="ff"><label>End time</label><input type="time" id="block-end"></div>
+        </div>
+        <button class="add-btn" onclick="blockTime()">Block this time</button>
+      </div>
+
+      <div class="box">
+        <div class="box-title">Add manual appointment</div>
+        <div class="fg">
+          <div class="ff"><label>Name</label><input type="text" id="cal-name" placeholder="Mike Torres"></div>
           <div class="ff"><label>Service</label><input type="text" id="cal-service" placeholder="Oil change"></div>
           <div class="ff"><label>Date</label><input type="date" id="cal-date"></div>
           <div class="ff"><label>Start time</label><input type="time" id="cal-start"></div>
@@ -388,6 +402,69 @@ const SHOP_ID='aurora-auto-repair';
 const SAVED_PW = localStorage.getItem('aurora-admin-pw');
 const ADMIN_PASSWORD = SAVED_PW || 'aurora2025';
 
+// ── SESSION PERSISTENCE ──
+// Keep session alive across refreshes using sessionStorage
+// Logs out after 1 hour of inactivity
+let inactivityTimer;
+
+function startSession() {
+  sessionStorage.setItem('aurora-session', Date.now());
+  resetInactivityTimer();
+}
+
+function resetInactivityTimer() {
+  clearTimeout(inactivityTimer);
+  inactivityTimer = setTimeout(() => {
+    sessionStorage.removeItem('aurora-session');
+    logout();
+    alert('You have been logged out due to inactivity.');
+  }, 60 * 60 * 1000); // 1 hour
+}
+
+// Reset timer on any user interaction
+['click','keydown','scroll','touchstart'].forEach(e =>
+  document.addEventListener(e, resetInactivityTimer, { passive: true })
+);
+
+// Check if already logged in on page load
+(function checkExistingSession() {
+  const session = sessionStorage.getItem('aurora-session');
+  const params = new URLSearchParams(window.location.search);
+  const auth = params.get('auth');
+
+  if (session) {
+    document.getElementById('login-wrap').style.display = 'none';
+    document.getElementById('app').classList.add('show');
+    loadDashboard();
+    startAutoRefresh();
+    resetInactivityTimer();
+  } else if (auth) {
+    try {
+      const pw = atob(auth);
+      if (pw === ADMIN_PASSWORD) {
+        document.getElementById('login-wrap').style.display = 'none';
+        document.getElementById('app').classList.add('show');
+        loadDashboard();
+        startSession();
+        startAutoRefresh();
+        window.history.replaceState({}, '', '/admin.html');
+      }
+    } catch(e) {}
+  }
+})();
+
+// ── AUTO REFRESH ──
+let autoRefreshInterval;
+function startAutoRefresh() {
+  clearInterval(autoRefreshInterval);
+  autoRefreshInterval = setInterval(() => {
+    const activePanel = document.querySelector('.panel.active')?.id;
+    if (activePanel === 'panel-bookings') loadBookings();
+    else if (activePanel === 'panel-quotes') loadQuotes();
+    else if (activePanel === 'panel-dashboard') loadDashboard();
+  }, 30000); // every 30 seconds
+}
+
 function changePassword() {
   const current = document.getElementById('pw-current').value;
   const newPw = document.getElementById('pw-new').value;
@@ -454,10 +531,14 @@ function checkLogin(){
     document.getElementById('login-wrap').style.display='none';
     document.getElementById('app').classList.add('show');
     loadDashboard();
+    startSession();
+    startAutoRefresh();
   } else { document.getElementById('login-err').classList.add('show'); }
 }
 
 function logout(){
+  sessionStorage.removeItem('aurora-session');
+  clearInterval(autoRefreshInterval);
   document.getElementById('login-wrap').style.display='flex';
   document.getElementById('app').classList.remove('show');
   document.getElementById('pw-input').value='';
@@ -825,7 +906,7 @@ function renderCalendar(){
     if(isToday) cls+=' today';
     if(isSel) cls+=' selected';
     if(isClosed) cls+=' closed';
-    const dots=dayAppts.slice(0,3).map(a=>{const color=serviceColorMap[(a.service||'').toLowerCase()]||'#111';return `<div class="cad" style="background:${color}">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`;}).join('');
+    const dots=dayAppts.slice(0,3).map(a=>{const isBlocked=a.status==='blocked';const color=isBlocked?'#fee2e2':serviceColorMap[(a.service||'').toLowerCase()]||'#111';const textColor=isBlocked?'#991b1b':'#fff';return `<div class="cad" style="background:${color};color:${textColor}">${fmt12(a.start_time)} ${isBlocked?'Blocked':a.customer_name?.split(' ')[0]||''}</div>`;}).join('');
     html+=`<div class="${cls}" data-date="${dateStr}" data-closed="${isClosed}">
       <div class="cdn">${day}</div>${dots}
       ${dayAppts.length>3?`<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>`:''}
@@ -856,6 +937,33 @@ function showDayDetail(dateStr){
       ${a.status!=='cancelled'?`<button class="ab no" style="font-size:12px;padding:5px 10px" onclick="cancelAppt(${a.id})">Cancel</button>`:''}
     </div>`).join('');}
   detail.style.display='block';
+}
+
+async function blockTime() {
+  const date = document.getElementById('block-date').value;
+  const reason = document.getElementById('block-reason').value.trim() || 'Blocked';
+  const start = document.getElementById('block-start').value;
+  const end = document.getElementById('block-end').value;
+  if (!date || !start || !end) { alert('Please fill in date, start and end time.'); return; }
+  if (end <= start) { alert('End time must be after start time.'); return; }
+  const { error } = await db.from('appointments').insert([{
+    customer_name: '🚫 ' + reason,
+    service: 'Blocked',
+    booking_date: date,
+    start_time: start,
+    end_time: end,
+    shop_id: SHOP_ID,
+    status: 'blocked'
+  }]);
+  if (!error) {
+    ['block-date','block-reason','block-start','block-end'].forEach(id => document.getElementById(id).value = '');
+    toast('Time blocked — customers cannot book this slot', '#16a34a');
+    await loadAllAppts();
+    selectedDate = date;
+    calYear = new Date(date + 'T00:00:00').getFullYear();
+    calMonth = new Date(date + 'T00:00:00').getMonth();
+    renderCalendar();
+  }
 }
 
 async function addCalendarEntry(force){
