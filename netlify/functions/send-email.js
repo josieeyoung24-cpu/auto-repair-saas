@@ -5,6 +5,7 @@ exports.handler = async (event) => {
 
   const RESEND_KEY = 're_NdQSmbr8_DLAEADNqhzyWTUYrfamsqzHz';
   const SHOP_EMAIL = 'josieeyoung24@gmail.com';
+  const NEIL_EMAILS = ['josieeyoung24@gmail.com']; // Add Neil's emails here e.g. ['neil@auroraautoseattle.com', 'josieeyoung24@gmail.com']
   const FROM = 'Aurora Auto Repair <onboarding@resend.dev>';
 
   let body;
@@ -21,7 +22,7 @@ exports.handler = async (event) => {
         headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: FROM,
-          to: [SHOP_EMAIL],
+          to: NEIL_EMAILS,
           subject: `New booking — ${customerName}`,
           html: `
             <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
@@ -77,7 +78,7 @@ exports.handler = async (event) => {
         headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from: FROM,
-          to: [SHOP_EMAIL],
+          to: NEIL_EMAILS,
           subject: `New quote request — ${customerName}`,
           html: `
             <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
