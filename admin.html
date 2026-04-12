@@ -692,7 +692,15 @@ async function loadTickets(){
       .map(s=>`<button class="ab${t.status===s.k?' ok':''}" onclick="updateStatus(${t.id},'${s.k}')">${s.l}</button>`).join('');
     const readyActive=t.status==='ready';
     const photoSection = t.photo_url
-      ? `<div style="margin-top:10px"><img src="${t.photo_url}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)" onclick="window.open('${t.photo_url}','_blank')"><br><button class="ab no" style="margin-top:6px;font-size:11px;padding:4px 10px" onclick="removePhoto(${t.id})">Remove photo</button></div>`
+      ? `<div style="margin-top:10px">
+          <img src="${t.photo_url}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border);cursor:pointer" onclick="window.open('${t.photo_url}','_blank')">
+          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+            <input type="text" id="pnote-${t.id}" placeholder="Describe this photo for the customer..." value="${t.photo_note||''}" style="flex:1;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);font-size:12px;font-family:var(--font)">
+            <button class="ab ok" style="font-size:12px;padding:6px 12px;flex-shrink:0" onclick="savePhotoNote(${t.id})">Save note</button>
+            <button class="ab no" style="font-size:12px;padding:6px 10px;flex-shrink:0" onclick="removePhoto(${t.id})">Remove</button>
+          </div>
+          ${t.photo_note ? `<div style="margin-top:6px;font-size:12px;color:var(--muted);font-style:italic">"${t.photo_note}"</div>` : ''}
+        </div>`
       : `<div style="margin-top:10px"><label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;color:var(--muted)">📷 Add inspection photo<input type="file" accept="image/*" style="display:none" onchange="uploadPhoto(${t.id},this)"></label></div>`;
     return `<div class="card">
       <div class="ch">
@@ -724,6 +732,13 @@ async function uploadPhoto(ticketId, input) {
   const photoUrl = urlData.publicUrl;
   await db.from('tickets').update({ photo_url: photoUrl }).eq('id', ticketId);
   toast('Photo uploaded — customer can now see it', '#16a34a');
+  loadTickets();
+}
+
+async function savePhotoNote(ticketId) {
+  const note = document.getElementById('pnote-' + ticketId).value.trim();
+  await db.from('tickets').update({ photo_note: note }).eq('id', ticketId);
+  toast('Note saved', '#16a34a');
   loadTickets();
 }
 
