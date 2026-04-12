@@ -185,17 +185,31 @@
         <div class="field"><label>Phone number</label><input type="tel" id="b-phone" placeholder="(206) 555-0100"></div>
         <div class="field"><label>Email (for confirmation)</label><input type="email" id="b-email" placeholder="mike@email.com"></div>
         <div class="field"><label>Vehicle</label><input type="text" id="b-vehicle" placeholder="2019 Toyota Camry"></div>
-        <div class="field"><label>Service needed</label>
-          <select id="b-service" onchange="onServiceChange()">
-            <option value="" data-duration="0">Select a service</option>
-            <option value="Oil change" data-duration="60">Oil change (~1 hr)</option>
-            <option value="Brake service" data-duration="120">Brake service (~2 hrs)</option>
-            <option value="Tire rotation" data-duration="45">Tire rotation (~45 min)</option>
-            <option value="Engine diagnostic" data-duration="90">Engine diagnostic (~1.5 hrs)</option>
-            <option value="AC service" data-duration="90">AC service (~1.5 hrs)</option>
-            <option value="Transmission service" data-duration="120">Transmission service (~2 hrs)</option>
-            <option value="Other / not sure" data-duration="60">Other / not sure (~1 hr)</option>
-          </select>
+        <div class="field" style="grid-column:1/-1">
+          <label>Services needed <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(select all that apply)</span></label>
+          <div id="svc-checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Oil change" data-duration="60" style="width:16px;height:16px;cursor:pointer"> Oil change (~1 hr)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Brake service" data-duration="120" style="width:16px;height:16px;cursor:pointer"> Brake service (~2 hrs)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Tire rotation" data-duration="45" style="width:16px;height:16px;cursor:pointer"> Tire rotation (~45 min)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Engine diagnostic" data-duration="90" style="width:16px;height:16px;cursor:pointer"> Engine diagnostic (~1.5 hrs)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="AC service" data-duration="90" style="width:16px;height:16px;cursor:pointer"> AC service (~1.5 hrs)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Transmission service" data-duration="120" style="width:16px;height:16px;cursor:pointer"> Transmission service (~2 hrs)
+            </label>
+            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
+              <input type="checkbox" value="Other / not sure" data-duration="60" style="width:16px;height:16px;cursor:pointer"> Other / not sure (~1 hr)
+            </label>
+          </div>
         </div>
       </div>
       <div id="slot-picker" style="display:none;margin-top:20px;max-width:600px">
@@ -332,7 +346,24 @@
 </footer>
 <div class="footer-bottom">
   <div class="footer-bottom-text">© 2025 Aurora Auto Repair. All rights reserved.</div>
-  <div class="footer-bottom-text">Seattle, WA</div>
+  <div class="footer-bottom-text">
+    <span style="color:var(--muted);cursor:pointer;font-size:11px" onclick="openAdminModal()">Staff login</span>
+  </div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div id="admin-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px">
+  <div style="background:#fff;border-radius:16px;padding:40px;width:100%;max-width:380px;position:relative">
+    <button onclick="closeAdminModal()" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:20px;cursor:pointer;color:#888">×</button>
+    <div style="font-size:20px;font-weight:500;margin-bottom:6px">Staff login</div>
+    <div style="font-size:14px;color:#888;margin-bottom:24px">Aurora Auto Repair</div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-bottom:16px">
+      <label style="font-size:12px;font-weight:500;color:#888;text-transform:uppercase;letter-spacing:.05em">Password</label>
+      <input type="password" id="admin-pw" placeholder="Enter admin password" style="padding:11px 14px;border:1px solid #e8e8e4;border-radius:10px;font-size:14px;width:100%" onkeydown="if(event.key==='Enter')checkAdminLogin()">
+    </div>
+    <button onclick="checkAdminLogin()" style="width:100%;padding:12px;background:#111;color:#fff;border:none;border-radius:10px;font-size:14px;font-weight:500;cursor:pointer">Sign in</button>
+    <div id="admin-login-err" style="display:none;font-size:13px;color:#8b1a1a;margin-top:12px">Wrong password. Try again.</div>
+  </div>
 </div>
 
 <script>
@@ -357,11 +388,12 @@
     const phone = document.getElementById('b-phone').value.trim();
     const email = document.getElementById('b-email').value.trim();
     const vehicle = document.getElementById('b-vehicle').value.trim();
-    const service = document.getElementById('b-service').value;
+    const checkedServices = getSelectedServices();
+    const service = checkedServices.map(cb => cb.value).join(', ');
     const date = document.getElementById('b-date').value;
     const timeVal = document.getElementById('b-time').value;
     const notes = document.getElementById('b-notes').value.trim();
-    if (!first || !phone || !service) { alert('Please fill in your name, phone, and service.'); return; }
+    if (!first || !phone || checkedServices.length === 0) { alert('Please fill in your name, phone, and select at least one service.'); return; }
     if (!date || !timeVal) { alert('Please select a date and time slot.'); return; }
     const [startTime, endTime] = timeVal.split('|');
     const btn = document.getElementById('book-btn');
@@ -405,7 +437,7 @@
 
   function resetBookingForm() {
     ['b-first','b-last','b-phone','b-email','b-vehicle','b-notes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('b-service').selectedIndex = 0;
+    document.querySelectorAll('#svc-checkboxes input').forEach(cb => cb.checked = false);
     document.getElementById('b-date').value = '';
     document.getElementById('b-time').value = '';
     document.getElementById('slot-picker').style.display = 'none';
@@ -468,10 +500,14 @@
   const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
   const SERVICE_DURATION = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
 
-  function onServiceChange() {
-    const svc = document.getElementById('b-service').value;
+  function getSelectedServices() {
+    return [...document.querySelectorAll('#svc-checkboxes input:checked')];
+  }
+
+  function onServiceCheck() {
+    const checked = getSelectedServices();
     const picker = document.getElementById('slot-picker');
-    if (svc) {
+    if (checked.length > 0) {
       picker.style.display = 'block';
       document.getElementById('slots-wrap').style.display = 'none';
       document.getElementById('b-date').value = '';
@@ -481,14 +517,18 @@
     }
   }
 
+  // Keep onServiceChange as alias for compatibility
+  function onServiceChange() { onServiceCheck(); }
+
   async function loadTimeSlots() {
     const dateVal = document.getElementById('b-date').value;
-    const svc = document.getElementById('b-service').value;
-    if (!dateVal || !svc) return;
+    const checked = getSelectedServices();
+    if (!dateVal || checked.length === 0) return;
 
     const date = new Date(dateVal + 'T00:00:00');
     const dayName = DAYS[date.getDay()];
-    const duration = SERVICE_DURATION[svc] || 60;
+    // Total duration = sum of all selected services
+    const duration = checked.reduce((sum, cb) => sum + (parseInt(cb.dataset.duration) || 60), 0);
 
     const slotsWrap = document.getElementById('slots-wrap');
     const slotsGrid = document.getElementById('slots-grid');
@@ -563,6 +603,36 @@
     btn.classList.add('selected');
     document.getElementById('b-time').value = start + '|' + end;
   }
+
+  // ── STAFF LOGIN ──
+  const ADMIN_PASSWORD = 'aurora2025';
+
+  function openAdminModal() {
+    const modal = document.getElementById('admin-modal');
+    modal.style.display = 'flex';
+    setTimeout(() => document.getElementById('admin-pw').focus(), 100);
+  }
+
+  function closeAdminModal() {
+    document.getElementById('admin-modal').style.display = 'none';
+    document.getElementById('admin-pw').value = '';
+    document.getElementById('admin-login-err').style.display = 'none';
+  }
+
+  function checkAdminLogin() {
+    const pw = document.getElementById('admin-pw').value;
+    if (pw === ADMIN_PASSWORD) {
+      closeAdminModal();
+      window.open('/admin.html', '_blank');
+    } else {
+      document.getElementById('admin-login-err').style.display = 'block';
+    }
+  }
+
+  // Close modal on background click
+  document.getElementById('admin-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAdminModal();
+  });
 
   // Wake up Supabase immediately on page load so first action is instant
   db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
