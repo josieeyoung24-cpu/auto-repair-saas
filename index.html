@@ -394,8 +394,10 @@
     const timeVal = document.getElementById('b-time').value;
     const notes = document.getElementById('b-notes').value.trim();
     if (!first || !phone || checkedServices.length === 0) { alert('Please fill in your name, phone, and select at least one service.'); return; }
-    if (!date || !timeVal) { alert('Please select a date and time slot.'); return; }
-    const [startTime, endTime] = timeVal.split('|');
+    if (!date && timeVal !== 'call-to-confirm') { alert('Please select a date and time slot.'); return; }
+    if (!timeVal) { alert('Please select a time slot.'); return; }
+    const isCallToConfirm = timeVal === 'call-to-confirm';
+    const [startTime, endTime] = isCallToConfirm ? ['', ''] : timeVal.split('|');
     const btn = document.getElementById('book-btn');
     btn.textContent = 'Submitting...'; btn.disabled = true;
 
@@ -410,11 +412,13 @@
       return;
     }
 
-    // Block the time slot immediately
-    await db.from('appointments').insert([{
-      booking_date: date, start_time: startTime, end_time: endTime,
-      service, customer_name: first + ' ' + last, shop_id: SHOP_ID, status: 'pending'
-    }]);
+    // Block the time slot immediately (skip if call-to-confirm)
+    if (!isCallToConfirm) {
+      await db.from('appointments').insert([{
+        booking_date: date, start_time: startTime, end_time: endTime,
+        service, customer_name: first + ' ' + last, shop_id: SHOP_ID, status: 'pending'
+      }]);
+    }
 
     fetch('/.netlify/functions/send-email', {
       method: 'POST',
@@ -427,7 +431,7 @@
     details.innerHTML =
       (vehicle ? '<div><span style="opacity:.7">Vehicle</span>&nbsp;&nbsp;' + vehicle + '</div>' : '') +
       '<div><span style="opacity:.7">Service</span>&nbsp;&nbsp;' + service + '</div>' +
-      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + date + ' at ' + formatTime(startTime) + '</div>' +
+      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + (isCallToConfirm ? 'Neil will call to schedule' : date + ' at ' + formatTime(startTime)) + '</div>' +
       '<div><span style="opacity:.7">Phone</span>&nbsp;&nbsp;' + phone + '</div>' +
       (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '') +
       (notes ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.2)"><span style="opacity:.7">Notes</span>&nbsp;&nbsp;' + notes + '</div>' : '');
@@ -507,14 +511,41 @@
   function onServiceCheck() {
     const checked = getSelectedServices();
     const picker = document.getElementById('slot-picker');
-    if (checked.length > 0) {
-      picker.style.display = 'block';
-      document.getElementById('slots-wrap').style.display = 'none';
-      document.getElementById('b-date').value = '';
-      document.getElementById('b-time').value = '';
-    } else {
+    const otherOnly = checked.length > 0 && checked.every(cb => cb.value === 'Other / not sure');
+    const hasOther = checked.some(cb => cb.value === 'Other / not sure');
+    const hasKnown = checked.some(cb => cb.value !== 'Other / not sure');
+
+    if (checked.length === 0) {
       picker.style.display = 'none';
+      return;
     }
+
+    // If ONLY "Other / not sure" is selected — no slot picker, just a call note
+    if (otherOnly) {
+      picker.style.display = 'block';
+      document.getElementById('b-date').style.display = 'none';
+      document.getElementById('slots-wrap').style.display = 'none';
+      document.getElementById('b-time').value = 'call-to-confirm';
+      let callNote = document.getElementById('other-call-note');
+      if (!callNote) {
+        callNote = document.createElement('div');
+        callNote.id = 'other-call-note';
+        callNote.style.cssText = 'background:#f7f7f5;border:1px solid #e8e8e4;border-radius:10px;padding:14px 16px;font-size:14px;color:#888880;margin-top:8px';
+        callNote.textContent = 'Neil will call you to discuss the service and schedule a time that works. Just fill in your details below and submit.';
+        picker.appendChild(callNote);
+      }
+      callNote.style.display = 'block';
+      return;
+    }
+
+    // Otherwise show normal date/slot picker
+    const callNote = document.getElementById('other-call-note');
+    if (callNote) callNote.style.display = 'none';
+    document.getElementById('b-date').style.display = '';
+    picker.style.display = 'block';
+    document.getElementById('slots-wrap').style.display = 'none';
+    document.getElementById('b-date').value = '';
+    document.getElementById('b-time').value = '';
   }
 
   // Keep onServiceChange as alias for compatibility
