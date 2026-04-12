@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Aurora Auto — Admin</title>
+<link rel="preconnect" href="https://jmksxvvbgxqcijrbdwos.supabase.co">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root { --accent:#c0392b;--accent-dark:#a93226;--white:#fff;--off:#f7f7f5;--border:#e8e8e4;--muted:#888880;--text:#111;--radius:10px;--radius-lg:16px;--font:system-ui,sans-serif; }
@@ -399,6 +401,11 @@
 const SUPABASE_URL='https://jmksxvvbgxqcijrbdwos.supabase.co';
 const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
 const SHOP_ID='aurora-auto-repair';
+
+// Wake up Supabase connection immediately on script load
+const _warmup = fetch(`${SUPABASE_URL}/rest/v1/bookings?select=id&limit=1`, {
+  headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
+});
 // Load saved password from localStorage if exists
 const SAVED_PW = localStorage.getItem('aurora-admin-pw');
 const ADMIN_PASSWORD = SAVED_PW || 'aurora2025';
@@ -433,21 +440,29 @@ function resetInactivityTimer() {
   const params = new URLSearchParams(window.location.search);
   const auth = params.get('auth');
 
-  if (session) {
+  function showApp() {
     document.getElementById('login-wrap').style.display = 'none';
     document.getElementById('app').classList.add('show');
-    loadDashboard();
-    startAutoRefresh();
+  }
+
+  if (session) {
+    showApp();
     resetInactivityTimer();
+    // Load data after paint so UI appears instantly
+    requestAnimationFrame(() => setTimeout(() => {
+      loadDashboard();
+      startAutoRefresh();
+    }, 0));
   } else if (auth) {
     try {
       const pw = atob(auth);
       if (pw === ADMIN_PASSWORD) {
-        document.getElementById('login-wrap').style.display = 'none';
-        document.getElementById('app').classList.add('show');
-        loadDashboard();
+        showApp();
         startSession();
-        startAutoRefresh();
+        requestAnimationFrame(() => setTimeout(() => {
+          loadDashboard();
+          startAutoRefresh();
+        }, 0));
         window.history.replaceState({}, '', '/admin.html');
       }
     } catch(e) {}
