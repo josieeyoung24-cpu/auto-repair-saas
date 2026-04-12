@@ -773,6 +773,17 @@
   // Wake up Supabase immediately on page load so first action is instant
   db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
 
+  // Load services into quote dropdown from Supabase (falls back to defaults)
+  async function loadQuoteServices() {
+    const { data } = await db.from('services').select('*')
+      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id');
+    const select = document.getElementById('q-service');
+    if (!data || data.length === 0) return; // keep hardcoded defaults
+    select.innerHTML = '<option value="" data-low="" data-high="">Select service</option>' +
+      data.map(s => `<option data-low="${s.price_low}" data-high="${s.price_high||s.price_low}">${s.name}</option>`).join('');
+  }
+  loadQuoteServices();
+
   // Load announcements banner
   async function loadBanner() {
     const { data } = await db.from('announcements').select('*')
