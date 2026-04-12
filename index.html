@@ -336,6 +336,11 @@
         <div class="step"><div class="step-dot" id="dot-4">4</div><div class="step-label" id="lbl-4">Ready for pickup</div></div>
       </div>
       <div class="status-note" id="s-note"></div>
+      <div id="s-photo" style="display:none;margin-top:16px">
+        <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Inspection photo</div>
+        <img id="s-photo-img" src="" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src,'_blank')">
+        <div style="font-size:12px;color:var(--muted);margin-top:6px">Tap photo to view full size</div>
+      </div>
       <div class="ready-banner" id="ready-banner">
         <div class="ready-banner-title">Your car is ready for pickup!</div>
         <div class="ready-banner-sub">Head over when you're ready — we're open and waiting for you.</div>
@@ -556,6 +561,17 @@
     document.getElementById('progress-fill').style.width = fills[cur] + '%';
     document.getElementById('s-note').innerHTML = '<strong>' + (t.service || 'Service in progress') + '</strong>' +
       (t.eta ? ' · Est. ready: ' + t.eta : '') + '. We\'ll call you when it\'s done.';
+
+    // Show inspection photo if uploaded
+    const photoEl = document.getElementById('s-photo');
+    const photoImg = document.getElementById('s-photo-img');
+    if (t.photo_url) {
+      photoImg.src = t.photo_url;
+      photoEl.style.display = 'block';
+    } else {
+      photoEl.style.display = 'none';
+    }
+
     ['1','2','3','4'].forEach(n => {
       const s = parseInt(n);
       const dot = document.getElementById('dot-' + n);
