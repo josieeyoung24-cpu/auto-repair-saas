@@ -750,7 +750,7 @@
     const pw = document.getElementById('admin-pw').value;
     if (pw === ADMIN_PASSWORD) {
       closeAdminModal();
-      window.open('/admin.html', '_blank');
+      window.open('/admin.html?auth=' + btoa(pw), '_blank');
     } else {
       document.getElementById('admin-login-err').style.display = 'block';
     }
