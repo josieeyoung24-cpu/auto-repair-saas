@@ -27,8 +27,8 @@
   .loader-road { width: 280px; height: 3px; background: #e8e8e4; border-radius: 2px; position: relative; overflow: hidden; margin-bottom: 20px; }
   .loader-road::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, #111, transparent); animation: road-shine 1.5s ease-in-out infinite; }
   @keyframes road-shine { to { left: 200%; } }
-  .loader-car { font-size: 28px; animation: drive 1.5s ease-in-out infinite; display: block; }
-  @keyframes drive { 0% { transform: translateX(-60px); } 100% { transform: translateX(60px); } }
+  .loader-car { font-size: 26px; display: block; animation: drive 1s linear forwards; }
+  @keyframes drive { 0% { transform: scaleX(-1); left: -30px; } 100% { transform: scaleX(-1); left: 310px; } }
   .loader-text { font-size: 13px; color: var(--muted); font-family: var(--font-mono); letter-spacing: .08em; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-main); background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
@@ -154,14 +154,16 @@
 
 <!-- PAGE LOADER -->
 <div id="page-loader">
-  <span class="loader-car">🚗</span>
-  <div class="loader-road"></div>
-  <div class="loader-text">Aurora Auto Repair</div>
+  <div style="width:320px;position:relative;height:48px;overflow:hidden">
+    <span class="loader-car" style="position:absolute;bottom:12px;left:0">🚗</span>
+    <div style="position:absolute;bottom:8px;left:0;right:0;height:2px;background:#e8e8e4;border-radius:2px"></div>
+  </div>
+  <div class="loader-text" style="margin-top:14px;text-align:center">Aurora Auto Repair</div>
 </div>
 
 <nav>
   <div class="nav-logo" style="display:flex;align-items:center;gap:8px">
-    <svg width="22" height="14" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg width="22" height="14" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
       <rect x="6" y="8" width="32" height="12" rx="3" fill="#c0392b"/>
       <path d="M10 8 L14 2 L30 2 L34 8" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
       <circle cx="13" cy="20" r="4" fill="#111"/>
