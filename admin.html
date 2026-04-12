@@ -442,18 +442,34 @@ async function sendQuotePrice(id, name, email, vehicle, service) {
   else toast('Email failed — check connection', '#8b1a1a');
 }
 
+async function sendQuoteEmail(type, name, email, vehicle, service, low, high) {
+  if (!email) return;
+  await fetch('/.netlify/functions/send-email', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ type, customerName: name, customerEmail: email, vehicle, service, priceLow: low, priceHigh: high || low })
+  });
+}
+
 async function confirmQuotePrice(id) {
   const low = document.getElementById('qp-low-' + id).value;
   const high = document.getElementById('qp-high-' + id).value;
   if (!low) { alert('Enter a price first.'); return; }
   await db.from('quotes').update({ status: 'confirmed', final_low: low, final_high: high || low }).eq('id', id);
-  toast('Quote confirmed at $' + low + (high && high !== low ? ' – $' + high : ''), '#16a34a');
+  const { data } = await db.from('quotes').select('*').eq('id', id).single();
+  if (data?.email) await sendQuoteEmail('quote-confirmed', data.name, data.email, `${data.make||''} ${data.year||''}`, data.service, low, high);
+  toast('Quote confirmed — customer emailed', '#16a34a');
   loadQuotes();
 }
 
 async function updateQuote(id, status) {
   await db.from('quotes').update({ status }).eq('id', id);
-  toast(status === 'confirmed' ? 'Quote confirmed' : 'Quote declined'); loadQuotes();
+  const { data } = await db.from('quotes').select('*').eq('id', id).single();
+  if (status === 'declined' && data?.email) {
+    await sendQuoteEmail('quote-declined', data.name, data.email, `${data.make||''} ${data.year||''}`, data.service, data.price_low, data.price_high);
+  }
+  toast(status === 'confirmed' ? 'Quote confirmed' : 'Quote declined');
+  loadQuotes();
 }
 
 async function deleteQuote(id) {
