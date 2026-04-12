@@ -145,6 +145,7 @@
       <button class="tab active" onclick="switchTab('dashboard')">Dashboard</button>
       <button class="tab" onclick="switchTab('bookings')">Bookings</button>
       <button class="tab" onclick="switchTab('repairs')">Repairs</button>
+      <button class="tab" onclick="switchTab('quotes')">Quotes</button>
       <button class="tab" onclick="switchTab('calendar')">Calendar</button>
       <button class="tab" onclick="switchTab('services')">Services</button>
       <button class="tab" onclick="switchTab('announce')">Announcements</button>
@@ -169,6 +170,12 @@
     <div class="panel" id="panel-bookings">
       <div class="sh"><div class="st">Incoming bookings</div><button class="rbtn" onclick="loadBookings()">Refresh</button></div>
       <div id="bookings-list"><div class="loading">Loading...</div></div>
+    </div>
+
+    <!-- QUOTES -->
+    <div class="panel" id="panel-quotes">
+      <div class="sh"><div class="st">Quote requests</div><button class="rbtn" onclick="loadQuotes()">Refresh</button></div>
+      <div id="quotes-list"><div class="loading">Loading...</div></div>
     </div>
 
     <!-- REPAIRS -->
@@ -365,17 +372,52 @@ function logout(){
 }
 
 function switchTab(name){
-  const tabs=['dashboard','bookings','repairs','calendar','services','announce','settings'];
+  const tabs=['dashboard','bookings','repairs','quotes','calendar','services','announce','settings'];
   document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',tabs[i]===name));
   document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel-'+name).classList.add('active');
   if(name==='dashboard') loadDashboard();
   else if(name==='bookings') loadBookings();
   else if(name==='repairs') loadTickets();
+  else if(name==='quotes') loadQuotes();
   else if(name==='calendar') loadAllAppts().then(renderCalendar);
   else if(name==='services') loadServices();
   else if(name==='announce') loadAnnouncements();
   else if(name==='settings') loadHours();
+}
+
+async function loadQuotes() {
+  const el = document.getElementById('quotes-list');
+  el.innerHTML = '<div class="loading">Loading...</div>';
+  const { data } = await db.from('quotes').select('*').eq('shop_id', SHOP_ID).order('id', { ascending: false });
+  if (!data || data.length === 0) { el.innerHTML = '<div class="empty">No quote requests yet.</div>'; return; }
+  el.innerHTML = data.map(q => `
+    <div class="card">
+      <div class="ch">
+        <div>
+          <div class="cn">${q.name||'—'} <span class="badge ${q.status==='confirmed'?'bc':q.status==='declined'?'bd':'bn'}">${q.status||'pending'}</span></div>
+          <div class="cd">${q.make||''} ${q.year||''} · ${q.service||'—'}<br>${q.phone||''}${q.email?' · '+q.email:''}</div>
+          <div style="margin-top:6px;font-size:13px;font-weight:500">Estimate: $${q.price_low||'—'} – $${q.price_high||'—'}</div>
+        </div>
+        <div class="ct">#${q.id}</div>
+      </div>
+      <div class="ca">
+        <button class="ab ok" onclick="updateQuote(${q.id},'confirmed')">Confirm price</button>
+        <button class="ab" onclick="callCustomer('${q.phone||''}')">Call ${q.phone||''}</button>
+        <button class="ab no" onclick="updateQuote(${q.id},'declined')">Decline</button>
+        <button class="ab no" onclick="deleteQuote(${q.id})">Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+async function updateQuote(id, status) {
+  await db.from('quotes').update({ status }).eq('id', id);
+  toast(status === 'confirmed' ? 'Quote confirmed' : 'Quote declined'); loadQuotes();
+}
+
+async function deleteQuote(id) {
+  await db.from('quotes').delete().eq('id', id);
+  toast('Quote deleted'); loadQuotes();
 }
 
 function toast(msg,color){
