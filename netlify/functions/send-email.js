@@ -126,6 +126,30 @@ exports.handler = async (event) => {
       }
     }
 
+    if (type === 'quote-declined') {
+      if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [customerEmail],
+          subject: `Regarding your quote — Aurora Auto Repair`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <h2 style="font-size:20px;font-weight:600;margin-bottom:4px">Hi ${customerName.split(' ')[0]},</h2>
+              <p style="color:#555;font-size:14px;margin-bottom:24px;line-height:1.6">Thank you for reaching out about your <strong>${service}</strong> on your <strong>${vehicle}</strong>. Unfortunately we're unable to provide a quote for this service at this time.</p>
+              <p style="color:#555;font-size:14px;line-height:1.6">Please give us a call and we'd be happy to discuss your options.</p>
+              <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                <strong>Aurora Auto Repair</strong><br>
+                10712 Aurora Ave N, Seattle WA 98133<br>
+                <a href="tel:2063678833" style="color:#111">(206) 367-8833</a>
+              </div>
+            </div>`
+        })
+      });
+    }
+
     if (type === 'quote-confirmed') {
       if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
       await fetch('https://api.resend.com/emails', {
