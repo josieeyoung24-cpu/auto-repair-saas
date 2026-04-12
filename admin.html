@@ -6,7 +6,7 @@
 <title>Aurora Auto — Admin</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root { --accent:#111;--white:#fff;--off:#f7f7f5;--border:#e8e8e4;--muted:#888880;--text:#111;--radius:10px;--radius-lg:16px;--font:system-ui,sans-serif; }
+  :root { --accent:#c0392b;--accent-dark:#a93226;--white:#fff;--off:#f7f7f5;--border:#e8e8e4;--muted:#888880;--text:#111;--radius:10px;--radius-lg:16px;--font:system-ui,sans-serif; }
   *{box-sizing:border-box;margin:0;padding:0}
   body{font-family:var(--font);background:var(--off);color:var(--text);font-size:15px;-webkit-font-smoothing:antialiased}
   .login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px}
@@ -18,20 +18,22 @@
   .lf input{padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;width:100%}
   .lf input:focus{outline:none;border-color:var(--accent)}
   .lbtn{width:100%;padding:12px;background:var(--accent);color:var(--white);border:none;border-radius:var(--radius);font-size:14px;font-weight:500;cursor:pointer;margin-top:8px}
+  .lbtn:hover{background:var(--accent-dark)}
   .login-err{display:none;font-size:13px;color:#8b1a1a;margin-top:12px}
   .login-err.show{display:block}
   .app{display:none}
   .app.show{display:block}
-  .topbar{background:var(--white);border-bottom:1px solid var(--border);padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
-  .topbar-logo{font-size:16px;font-weight:500}
+  .topbar{background:var(--accent);border-bottom:none;padding:0 24px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10}
+  .topbar-logo{font-size:16px;font-weight:500;color:#fff;display:flex;align-items:center;gap:8px}
   .topbar-right{display:flex;align-items:center;gap:12px}
-  .topbar-date{font-size:13px;color:var(--muted)}
-  .logout-btn{font-size:13px;color:var(--muted);cursor:pointer;background:none;border:none;padding:6px 12px;border-radius:var(--radius);font-family:var(--font)}
-  .logout-btn:hover{background:var(--off);color:var(--text)}
+  .topbar-date{font-size:13px;color:rgba(255,255,255,0.75)}
+  .logout-btn{font-size:13px;color:rgba(255,255,255,0.85);cursor:pointer;background:rgba(255,255,255,0.15);border:none;padding:6px 14px;border-radius:var(--radius);font-family:var(--font)}
+  .logout-btn:hover{background:rgba(255,255,255,0.25);color:#fff}
   .main{padding:24px;max-width:960px;margin:0 auto}
-  .tabs{display:flex;gap:4px;background:#ececea;padding:4px;border-radius:var(--radius);width:fit-content;margin-bottom:24px;flex-wrap:wrap}
-  .tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--muted);font-family:var(--font)}
-  .tab.active{background:var(--white);color:var(--text);border:1px solid var(--border)}
+  .tabs{display:flex;gap:4px;background:#e8e8e4;padding:4px;border-radius:var(--radius);width:fit-content;margin-bottom:24px;flex-wrap:wrap}
+  .tab{padding:8px 16px;border-radius:7px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:#666;font-family:var(--font)}
+  .tab.active{background:var(--accent);color:#fff;border:none}
+  .tab:hover:not(.active){background:rgba(192,57,43,0.1);color:var(--accent)}
   .panel{display:none}
   .panel.active{display:block}
   .sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:18px}
@@ -45,12 +47,17 @@
   .ca{padding:12px 20px;border-top:1px solid var(--border);background:var(--off);display:flex;gap:8px;flex-wrap:wrap}
   .ab{padding:7px 14px;border-radius:var(--radius);font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:var(--white);color:var(--text);font-family:var(--font)}
   .ab:hover{background:var(--off)}
-  .ab.ok{background:#111;color:#fff;border-color:#111}
-  .ab.ok:hover{background:#333}
+  .ab.ok{background:var(--accent);color:#fff;border-color:var(--accent)}
+  .ab.ok:hover{background:var(--accent-dark)}
   .ab.go{background:#16a34a;color:#fff;border-color:#16a34a}
   .ab.go:hover{background:#14803e}
   .ab.no{border-color:#f5c0c0;color:#8b1a1a;background:#fff0f0}
   .ab.no:hover{background:#ffe0e0}
+  /* COLOR SWATCHES */
+  .color-swatch{width:24px;height:24px;border-radius:50%;cursor:pointer;border:2px solid transparent;flex-shrink:0;transition:transform .1s}
+  .color-swatch:hover{transform:scale(1.2)}
+  .color-swatch.selected{border-color:#111;transform:scale(1.15)}
+  .color-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;display:inline-block}
   .badge{display:inline-block;font-size:11px;padding:3px 8px;border-radius:6px;font-weight:500}
   .bn{background:#e8f0fe;color:#1a4a8b}
   .bc{background:#f0faf4;color:#1a6b3a}
@@ -649,13 +656,17 @@ async function deleteTicket(id){
 }
 
 // ── CALENDAR ──
-let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),allAppts=[],selectedDate=null,closedDays=[];
+let calYear=new Date().getFullYear(),calMonth=new Date().getMonth(),allAppts=[],selectedDate=null,closedDays=[],serviceColorMap={};
 
 async function loadAllAppts(){
   const {data}=await db.from('appointments').select('*').eq('shop_id',SHOP_ID);
   allAppts=data||[];
   const {data:avail}=await db.from('availability').select('*').eq('shop_id',SHOP_ID);
   closedDays=(avail||[]).filter(a=>a.is_closed==='true').map(a=>a.day_of_week);
+  // Load service colors
+  const {data:svcs}=await db.from('services').select('name,color').eq('shop_id',SHOP_ID);
+  serviceColorMap={};
+  (svcs||[]).forEach(s=>{ if(s.color) serviceColorMap[s.name]=s.color; });
 }
 
 function changeMonth(dir){ calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
@@ -689,7 +700,7 @@ function renderCalendar(){
     if(isToday) cls+=' today';
     if(isSel) cls+=' selected';
     if(isClosed) cls+=' closed';
-    const dots=dayAppts.slice(0,3).map(a=>`<div class="cad">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`).join('');
+    const dots=dayAppts.slice(0,3).map(a=>{const color=serviceColorMap[a.service]||'#111';return `<div class="cad" style="background:${color}">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`;}).join('');
     html+=`<div class="${cls}" data-date="${dateStr}" data-closed="${isClosed}">
       <div class="cdn">${day}</div>${dots}
       ${dayAppts.length>3?`<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>`:''}
@@ -784,21 +795,45 @@ async function saveDefaultService(name, prefix) {
   loadServices();
 }
 
+const SERVICE_COLORS_PALETTE = ['#c0392b','#e67e22','#f1c40f','#2ecc71','#1abc9c','#3498db','#9b59b6','#e91e63','#795548','#607d8b','#ff5722','#00bcd4'];
+
+function colorSwatches(svcId, currentColor) {
+  return SERVICE_COLORS_PALETTE.map(c =>
+    `<div class="color-swatch${currentColor===c?' selected':''}" style="background:${c}" onclick="saveServiceColor(${svcId},'${c}')" title="${c}"></div>`
+  ).join('');
+}
+
 async function loadServices(){
   const el=document.getElementById('services-list');
   const {data}=await db.from('services').select('*').eq('shop_id',SHOP_ID).order('id');
   if(!data||data.length===0){el.innerHTML='<div class="empty">No custom services yet. Add one above.</div>';return;}
   el.innerHTML=data.map(s=>`
-    <div class="svc-row">
-      <div>
-        <div class="svc-name">${s.name}</div>
-        <div class="svc-meta">${s.duration_mins} min · $${s.price_low}${s.price_high&&s.price_high!==s.price_low?' – $'+s.price_high:''} · <span class="${s.active==='true'?'bc':'bd'} badge">${s.active==='true'?'Active':'Hidden'}</span></div>
+    <div class="svc-row" style="flex-wrap:wrap;gap:8px">
+      <div style="display:flex;align-items:center;gap:8px;flex:1;min-width:200px">
+        <div class="color-dot" style="background:${s.color||'#888'}"></div>
+        <div>
+          <div class="svc-name">${s.name}</div>
+          <div class="svc-meta">${s.duration_mins} min · $${s.price_low}${s.price_high&&s.price_high!==s.price_low?' – $'+s.price_high:''} · <span class="${s.active==='true'?'bc':'bd'} badge">${s.active==='true'?'Active':'Hidden'}</span></div>
+        </div>
       </div>
-      <div style="display:flex;gap:6px;margin-left:auto">
+      <div style="display:flex;gap:4px;flex-wrap:wrap;align-items:center">
+        ${colorSwatches(s.id, s.color)}
+      </div>
+      <div style="display:flex;gap:6px">
         <button class="ss" style="background:${s.active==='true'?'#888':'#16a34a'}" onclick="toggleService(${s.id},'${s.active}')">${s.active==='true'?'Hide':'Show'}</button>
         <button class="ss" style="background:#8b1a1a" onclick="deleteService(${s.id})">Delete</button>
       </div>
     </div>`).join('');
+}
+
+async function saveServiceColor(id, color) {
+  await db.from('services').update({ color }).eq('id', id);
+  toast('Color saved', color);
+  loadServices();
+  // refresh calendar if open
+  if (document.getElementById('panel-calendar').classList.contains('active')) {
+    loadAllAppts().then(renderCalendar);
+  }
 }
 
 async function addService(){
