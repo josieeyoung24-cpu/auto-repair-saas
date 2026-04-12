@@ -691,10 +691,16 @@ async function loadTickets(){
     const btns=[{k:'checked-in',l:'Checked in'},{k:'diagnosing',l:'Diagnosing'},{k:'in-repair',l:'In repair'}]
       .map(s=>`<button class="ab${t.status===s.k?' ok':''}" onclick="updateStatus(${t.id},'${s.k}')">${s.l}</button>`).join('');
     const readyActive=t.status==='ready';
+    const photoSection = t.photo_url
+      ? `<div style="margin-top:10px"><img src="${t.photo_url}" style="max-width:100%;max-height:200px;border-radius:8px;border:1px solid var(--border)" onclick="window.open('${t.photo_url}','_blank')"><br><button class="ab no" style="margin-top:6px;font-size:11px;padding:4px 10px" onclick="removePhoto(${t.id})">Remove photo</button></div>`
+      : `<div style="margin-top:10px"><label style="display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border:1px dashed var(--border);border-radius:var(--radius);cursor:pointer;font-size:12px;color:var(--muted)">📷 Add inspection photo<input type="file" accept="image/*" style="display:none" onchange="uploadPhoto(${t.id},this)"></label></div>`;
     return `<div class="card">
       <div class="ch">
-        <div><div class="cn">${t.customer_name||'—'} <span class="badge ${sB[t.status]||'bn'}">${sL[t.status]||t.status}</span></div>
-        <div class="cd">${t.vehicle||'—'} · ${t.service||'—'}${t.eta?' · ETA: '+t.eta:''}</div></div>
+        <div>
+          <div class="cn">${t.customer_name||'—'} <span class="badge ${sB[t.status]||'bn'}">${sL[t.status]||t.status}</span></div>
+          <div class="cd">${t.vehicle||'—'} · ${t.service||'—'}${t.eta?' · ETA: '+t.eta:''}</div>
+          ${photoSection}
+        </div>
         <div class="ct">${timeAgo(t.created_at)}</div>
       </div>
       <div class="ca">
@@ -705,6 +711,25 @@ async function loadTickets(){
       </div>
     </div>`;
   }).join('');
+}
+
+async function uploadPhoto(ticketId, input) {
+  const file = input.files[0];
+  if (!file) return;
+  toast('Uploading photo...');
+  const fileName = `${SHOP_ID}/${ticketId}-${Date.now()}.${file.name.split('.').pop()}`;
+  const { data, error } = await db.storage.from('dvi-photos').upload(fileName, file, { upsert: true });
+  if (error) { toast('Upload failed: ' + error.message, '#8b1a1a'); return; }
+  const { data: urlData } = db.storage.from('dvi-photos').getPublicUrl(fileName);
+  const photoUrl = urlData.publicUrl;
+  await db.from('tickets').update({ photo_url: photoUrl }).eq('id', ticketId);
+  toast('Photo uploaded — customer can now see it', '#16a34a');
+  loadTickets();
+}
+
+async function removePhoto(ticketId) {
+  await db.from('tickets').update({ photo_url: null }).eq('id', ticketId);
+  toast('Photo removed'); loadTickets();
 }
 
 async function addTicket(){
