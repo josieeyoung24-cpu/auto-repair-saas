@@ -71,6 +71,7 @@ exports.handler = async (event) => {
     }
 
     if (type === 'quote') {
+      // Email to shop
       await fetch('https://api.resend.com/emails', {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
@@ -96,6 +97,33 @@ exports.handler = async (event) => {
             </div>`
         })
       });
+
+      // Confirmation email to customer
+      if (customerEmail) {
+        await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            from: FROM,
+            to: [customerEmail],
+            subject: `Your quote request — Aurora Auto Repair`,
+            html: `
+              <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+                <h2 style="font-size:20px;font-weight:600;margin-bottom:4px">We got your quote request, ${customerName.split(' ')[0]}!</h2>
+                <p style="color:#888;font-size:14px;margin-bottom:24px">We'll review your request and get back to you shortly with a confirmed price.</p>
+                <table style="width:100%;font-size:14px;border-collapse:collapse">
+                  <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle}</td></tr>
+                  <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
+                  <tr><td style="padding:10px 0;color:#888">Estimate range</td><td style="padding:10px 0;font-weight:500">$${priceLow} – $${priceHigh}</td></tr>
+                </table>
+                <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                  Questions? Call us at <strong>(206) 367-8833</strong><br>
+                  10712 Aurora Ave N, Seattle WA 98133
+                </div>
+              </div>`
+          })
+        });
+      }
     }
 
     if (type === 'confirmed') {
