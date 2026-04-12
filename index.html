@@ -340,6 +340,17 @@
       <div class="quote-price" id="quote-price"></div>
       <div class="quote-detail" id="quote-detail"></div>
       <div class="quote-fine">Estimate based on typical pricing. Final price confirmed after inspection — we call you before any work begins.</div>
+      <div style="border-top:1px solid var(--border);margin-top:16px;padding-top:16px">
+        <div style="font-size:14px;font-weight:500;margin-bottom:12px">Request this quote — no phone call needed</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px">
+          <div class="field"><label>Your name</label><input type="text" id="q-name" placeholder="Mike Torres"></div>
+          <div class="field"><label>Phone</label><input type="tel" id="q-phone" placeholder="(206) 555-0100"></div>
+          <div class="field" style="grid-column:1/-1"><label>Email (optional)</label><input type="email" id="q-email" placeholder="mike@email.com"></div>
+        </div>
+        <button class="btn btn-primary" onclick="submitQuote()" id="q-submit-btn" style="margin-top:12px">Send quote request</button>
+        <div id="q-success" style="display:none;margin-top:12px;padding:12px 16px;background:#f0faf4;border:1px solid #b8e8c8;border-radius:var(--radius);font-size:14px;color:#1a6b3a">Quote request sent! We'll confirm the price and reach out shortly.</div>
+        <div id="q-error" style="display:none;margin-top:12px;padding:12px 16px;background:#fff0f0;border:1px solid #f5c0c0;border-radius:var(--radius);font-size:14px;color:#8b1a1a">Something went wrong. Please call us at (206) 367-8833.</div>
+      </div>
     </div>
   </div>
 </section>
@@ -537,6 +548,53 @@
     document.getElementById('quote-price').textContent = '$' + opt.dataset.low + ' – $' + opt.dataset.high;
     document.getElementById('quote-detail').textContent = opt.text + ' · ' + make + ' ' + year + ' · Parts + labor included';
     document.getElementById('quote-result').classList.add('show');
+    document.getElementById('q-success').style.display = 'none';
+    document.getElementById('q-error').style.display = 'none';
+  }
+
+  async function submitQuote() {
+    const name = document.getElementById('q-name').value.trim();
+    const phone = document.getElementById('q-phone').value.trim();
+    const email = document.getElementById('q-email').value.trim();
+    const make = document.getElementById('q-make').value;
+    const year = document.getElementById('q-year').value;
+    const svcEl = document.getElementById('q-service');
+    const opt = svcEl.options[svcEl.selectedIndex];
+    if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
+    const btn = document.getElementById('q-submit-btn');
+    btn.textContent = 'Sending...'; btn.disabled = true;
+    const { error } = await db.from('quotes').insert([{
+      name, phone, email, make, year,
+      service: opt.text,
+      price_low: opt.dataset.low,
+      price_high: opt.dataset.high,
+      shop_id: SHOP_ID,
+      status: 'pending'
+    }]);
+    // Send email to shop
+    fetch('/.netlify/functions/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        type: 'quote',
+        customerName: name,
+        customerEmail: email,
+        customerPhone: phone,
+        vehicle: make + ' ' + year,
+        service: opt.text,
+        priceLow: opt.dataset.low,
+        priceHigh: opt.dataset.high
+      })
+    });
+    btn.textContent = 'Send quote request'; btn.disabled = false;
+    if (error) {
+      document.getElementById('q-error').style.display = 'block';
+    } else {
+      document.getElementById('q-success').style.display = 'block';
+      document.getElementById('q-name').value = '';
+      document.getElementById('q-phone').value = '';
+      document.getElementById('q-email').value = '';
+    }
   }
 
   const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
