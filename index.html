@@ -9,6 +9,7 @@
 <style>
   :root {
     --accent: #111111;
+    --accent-red: #c0392b;
     --white: #ffffff;
     --off: #f7f7f5;
     --border: #e8e8e4;
@@ -19,6 +20,16 @@
     --font-main: 'DM Sans', sans-serif;
     --font-mono: 'DM Mono', monospace;
   }
+
+  /* PAGE LOADER */
+  #page-loader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
+  #page-loader.hidden { opacity: 0; pointer-events: none; }
+  .loader-road { width: 280px; height: 3px; background: #e8e8e4; border-radius: 2px; position: relative; overflow: hidden; margin-bottom: 20px; }
+  .loader-road::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, #111, transparent); animation: road-shine 1.5s ease-in-out infinite; }
+  @keyframes road-shine { to { left: 200%; } }
+  .loader-car { font-size: 28px; animation: drive 1.5s ease-in-out infinite; display: block; }
+  @keyframes drive { 0% { transform: translateX(-60px); } 100% { transform: translateX(60px); } }
+  .loader-text { font-size: 13px; color: var(--muted); font-family: var(--font-mono); letter-spacing: .08em; }
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-main); background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
   a { text-decoration: none; color: inherit; }
@@ -28,16 +39,16 @@
   .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; }
   .nav-links a:hover { color: var(--text); }
   .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
-  .hero { padding: 80px 40px 64px; max-width: 700px; }
-  .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-  .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 1px; background: var(--muted); }
+  .hero { padding: 80px 40px 64px; max-width: 700px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); }
+  .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+  .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--accent-red); border-radius: 1px; }
   .hero h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 300; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
   .hero h1 em { font-style: normal; font-weight: 500; }
   .hero p { font-size: 16px; color: var(--muted); margin-bottom: 36px; max-width: 480px; line-height: 1.7; }
   .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-main); border: none; }
-  .btn-primary { background: var(--accent); color: var(--white); }
-  .btn-primary:hover { background: #333; }
+  .btn-primary { background: var(--accent-red); color: var(--white); }
+  .btn-primary:hover { background: #a93226; }
   .btn-primary:disabled { background: #999; cursor: not-allowed; }
   .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover { background: var(--off); }
@@ -53,6 +64,7 @@
   .tab-nav { display: flex; gap: 4px; margin-bottom: 28px; background: var(--off); padding: 4px; border-radius: var(--radius); width: fit-content; }
   .tab-btn { padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: var(--font-main); }
   .tab-btn.active { background: var(--white); color: var(--text); border: 1px solid var(--border); }
+  .slot-btn.selected { background: var(--accent-red); color: var(--white); border-color: var(--accent-red); }
   .tab-panel { display: none; }
   .tab-panel.active { display: block; }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 600px; }
@@ -140,8 +152,29 @@
 </head>
 <body>
 
+<!-- PAGE LOADER -->
+<div id="page-loader">
+  <span class="loader-car">🚗</span>
+  <div class="loader-road"></div>
+  <div class="loader-text">Aurora Auto Repair</div>
+</div>
+
 <nav>
-  <div class="nav-logo">Aurora Auto Repair</div>
+  <div class="nav-logo" style="display:flex;align-items:center;gap:8px">
+    <svg width="22" height="14" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <rect x="6" y="8" width="32" height="12" rx="3" fill="#c0392b"/>
+      <path d="M10 8 L14 2 L30 2 L34 8" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+      <circle cx="13" cy="20" r="4" fill="#111"/>
+      <circle cx="13" cy="20" r="2" fill="#555"/>
+      <circle cx="31" cy="20" r="4" fill="#111"/>
+      <circle cx="31" cy="20" r="2" fill="#555"/>
+      <rect x="26" y="3" width="6" height="5" rx="1" fill="#90caf9" opacity="0.8"/>
+      <rect x="12" y="3" width="12" height="5" rx="1" fill="#90caf9" opacity="0.8"/>
+      <rect x="34" y="12" width="4" height="3" rx="1" fill="#ffd54f"/>
+      <rect x="6" y="12" width="4" height="3" rx="1" fill="#ef5350" opacity="0.7"/>
+    </svg>
+    Aurora Auto Repair
+  </div>
   <ul class="nav-links">
     <li><a href="#services">Services</a></li>
     <li><a href="#tools">Book / Track</a></li>
@@ -154,8 +187,8 @@
 
 <section class="hero">
   <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
-  <h1>Neil fixes it.<br><em>Fair price.</em> Same day.</h1>
-  <p>Family-owned for 10+ years. Way less than the dealer — and Neil won't touch your car without calling you first.</p>
+  <h1>Honest repairs.<br><em>Fair price.</em> Same day.</h1>
+  <p>Family-owned for 10+ years. We charge way less than the dealer — and we won't touch your car without calling you first.</p>
   <div class="hero-actions">
     <button class="btn btn-primary" onclick="openTab('book')">Book an appointment</button>
     <button class="btn btn-secondary" onclick="openTab('status')">Track my repair →</button>
@@ -229,7 +262,7 @@
       </div>
       <div style="margin-top:14px;max-width:600px">
         <div class="field">
-          <label>Notes for Neil (optional)</label>
+          <label>Additional notes (optional)</label>
           <textarea id="b-notes" placeholder="e.g. Dropping off early at 7am, key in drop box. Car makes a grinding noise when braking at high speed." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.6"></textarea>
         </div>
       </div>
@@ -336,7 +369,7 @@
 <footer>
   <div>
     <div class="footer-brand">Aurora Auto Repair</div>
-    <div class="footer-tagline">Neil has been taking care of Seattle families' cars for over 10 years. Fair prices, honest work, no dealer markups.</div>
+    <div class="footer-tagline">Family-owned for over 10 years. Fair prices, honest work, no dealer markups.</div>
   </div>
   <div>
     <div class="footer-heading">Location & hours</div>
@@ -434,7 +467,7 @@
     details.innerHTML =
       (vehicle ? '<div><span style="opacity:.7">Vehicle</span>&nbsp;&nbsp;' + vehicle + '</div>' : '') +
       '<div><span style="opacity:.7">Service</span>&nbsp;&nbsp;' + service + '</div>' +
-      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + (isCallToConfirm ? 'Neil will call to schedule' : date + ' at ' + formatTime(startTime)) + '</div>' +
+      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + (isCallToConfirm ? 'We will call to schedule' : date + ' at ' + formatTime(startTime)) + '</div>' +
       '<div><span style="opacity:.7">Phone</span>&nbsp;&nbsp;' + phone + '</div>' +
       (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '') +
       (notes ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.2)"><span style="opacity:.7">Notes</span>&nbsp;&nbsp;' + notes + '</div>' : '');
@@ -534,7 +567,7 @@
         callNote = document.createElement('div');
         callNote.id = 'other-call-note';
         callNote.style.cssText = 'background:#f7f7f5;border:1px solid #e8e8e4;border-radius:10px;padding:14px 16px;font-size:14px;color:#888880;margin-top:8px';
-        callNote.textContent = 'Neil will call you to discuss the service and schedule a time that works. Just fill in your details below and submit.';
+        callNote.textContent = 'Our team will call you to discuss the service and schedule a time that works. Just fill in your details below and submit.';
         picker.appendChild(callNote);
       }
       callNote.style.display = 'block';
@@ -666,6 +699,15 @@
   // Close modal on background click
   document.getElementById('admin-modal').addEventListener('click', function(e) {
     if (e.target === this) closeAdminModal();
+  });
+
+  // Hide page loader when ready
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const loader = document.getElementById('page-loader');
+      loader.classList.add('hidden');
+      setTimeout(() => loader.style.display = 'none', 400);
+    }, 900);
   });
 
   // Wake up Supabase immediately on page load so first action is instant
