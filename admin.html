@@ -397,17 +397,36 @@ async function loadQuotes() {
         <div>
           <div class="cn">${q.name||'—'} <span class="badge ${q.status==='confirmed'?'bc':q.status==='declined'?'bd':'bn'}">${q.status||'pending'}</span></div>
           <div class="cd">${q.make||''} ${q.year||''} · ${q.service||'—'}<br>${q.phone||''}${q.email?' · '+q.email:''}</div>
-          <div style="margin-top:6px;font-size:13px;font-weight:500">Estimate: $${q.price_low||'—'} – $${q.price_high||'—'}</div>
+          <div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:13px;color:var(--muted)">Estimate shown:</span>
+            <span style="font-size:13px;font-weight:500">$${q.price_low||'—'} – $${q.price_high||'—'}</span>
+          </div>
+          <div style="margin-top:10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+            <span style="font-size:12px;color:var(--muted);font-weight:500">Set your price:</span>
+            <span style="font-size:13px">$</span>
+            <input type="number" id="qp-low-${q.id}" placeholder="${q.price_low||'0'}" value="${q.final_low||q.price_low||''}" style="width:72px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px">
+            <span style="font-size:13px;color:var(--muted)">to $</span>
+            <input type="number" id="qp-high-${q.id}" placeholder="${q.price_high||'0'}" value="${q.final_high||q.price_high||''}" style="width:72px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px">
+          </div>
         </div>
         <div class="ct">#${q.id}</div>
       </div>
       <div class="ca">
-        <button class="ab ok" onclick="updateQuote(${q.id},'confirmed')">Confirm price</button>
+        <button class="ab ok" onclick="confirmQuotePrice(${q.id})">Confirm & save price</button>
         <button class="ab" onclick="callCustomer('${q.phone||''}')">Call ${q.phone||''}</button>
         <button class="ab no" onclick="updateQuote(${q.id},'declined')">Decline</button>
         <button class="ab no" onclick="deleteQuote(${q.id})">Delete</button>
       </div>
     </div>`).join('');
+}
+
+async function confirmQuotePrice(id) {
+  const low = document.getElementById('qp-low-' + id).value;
+  const high = document.getElementById('qp-high-' + id).value;
+  if (!low) { alert('Enter a price first.'); return; }
+  await db.from('quotes').update({ status: 'confirmed', final_low: low, final_high: high || low }).eq('id', id);
+  toast('Quote confirmed at $' + low + (high && high !== low ? ' – $' + high : ''), '#16a34a');
+  loadQuotes();
 }
 
 async function updateQuote(id, status) {
