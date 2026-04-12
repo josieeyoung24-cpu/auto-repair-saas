@@ -339,7 +339,8 @@
       <div id="s-photo" style="display:none;margin-top:16px">
         <div style="font-size:12px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Inspection photo</div>
         <img id="s-photo-img" src="" style="max-width:100%;border-radius:var(--radius);border:1px solid var(--border);cursor:pointer" onclick="window.open(this.src,'_blank')">
-        <div style="font-size:12px;color:var(--muted);margin-top:6px">Tap photo to view full size</div>
+        <div id="s-photo-note" style="font-size:13px;color:var(--muted);margin-top:8px;font-style:italic"></div>
+        <div style="font-size:12px;color:var(--muted);margin-top:4px">Tap photo to view full size</div>
       </div>
       <div class="ready-banner" id="ready-banner">
         <div class="ready-banner-title">Your car is ready for pickup!</div>
@@ -568,6 +569,8 @@
     if (t.photo_url) {
       photoImg.src = t.photo_url;
       photoEl.style.display = 'block';
+      const noteEl = document.getElementById('s-photo-note');
+      if (noteEl) noteEl.textContent = t.photo_note ? '"' + t.photo_note + '"' : '';
     } else {
       photoEl.style.display = 'none';
     }
