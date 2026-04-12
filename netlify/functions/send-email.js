@@ -126,6 +126,39 @@ exports.handler = async (event) => {
       }
     }
 
+    if (type === 'quote-confirmed') {
+      if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
+      await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from: FROM,
+          to: [customerEmail],
+          subject: `Your quote is ready — Aurora Auto Repair`,
+          html: `
+            <div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
+              <div style="background:#111;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
+                <h2 style="color:#fff;font-size:22px;font-weight:500;margin-bottom:8px">Your quote is ready, ${customerName.split(' ')[0]}!</h2>
+                <p style="color:rgba(255,255,255,0.75);font-size:14px;margin:0">Here's the confirmed price for your service.</p>
+              </div>
+              <table style="width:100%;font-size:14px;border-collapse:collapse">
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888;width:140px">Vehicle</td><td style="padding:10px 0;border-bottom:1px solid #eee">${vehicle}</td></tr>
+                <tr><td style="padding:10px 0;border-bottom:1px solid #eee;color:#888">Service</td><td style="padding:10px 0;border-bottom:1px solid #eee">${service}</td></tr>
+                <tr><td style="padding:10px 0;color:#888">Confirmed price</td><td style="padding:10px 0;font-size:18px;font-weight:600">$${priceLow}${priceHigh && priceHigh !== priceLow ? ' – $' + priceHigh : ''}</td></tr>
+              </table>
+              <div style="margin-top:24px;padding:16px;background:#f0faf4;border:1px solid #b8e8c8;border-radius:8px;font-size:13px;color:#1a6b3a;font-weight:500">
+                Ready to book? Call us or visit our website to schedule your appointment.
+              </div>
+              <div style="margin-top:16px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
+                <strong>Aurora Auto Repair</strong><br>
+                10712 Aurora Ave N, Seattle WA 98133<br>
+                <a href="tel:2063678833" style="color:#111">(206) 367-8833</a>
+              </div>
+            </div>`
+        })
+      });
+    }
+
     if (type === 'confirmed') {
       if (!customerEmail) return { statusCode: 200, body: JSON.stringify({ ok: true }) };
       await fetch('https://api.resend.com/emails', {
