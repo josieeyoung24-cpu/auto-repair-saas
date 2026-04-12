@@ -666,7 +666,7 @@ async function loadAllAppts(){
   // Load service colors
   const {data:svcs}=await db.from('services').select('name,color').eq('shop_id',SHOP_ID);
   serviceColorMap={};
-  (svcs||[]).forEach(s=>{ if(s.color) serviceColorMap[s.name]=s.color; });
+  (svcs||[]).forEach(s=>{ if(s.color) serviceColorMap[s.name.toLowerCase()]=s.color; });
 }
 
 function changeMonth(dir){ calMonth+=dir; if(calMonth>11){calMonth=0;calYear++;} if(calMonth<0){calMonth=11;calYear--;} renderCalendar(); }
@@ -700,7 +700,7 @@ function renderCalendar(){
     if(isToday) cls+=' today';
     if(isSel) cls+=' selected';
     if(isClosed) cls+=' closed';
-    const dots=dayAppts.slice(0,3).map(a=>{const color=serviceColorMap[a.service]||'#111';return `<div class="cad" style="background:${color}">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`;}).join('');
+    const dots=dayAppts.slice(0,3).map(a=>{const color=serviceColorMap[(a.service||'').toLowerCase()]||'#111';return `<div class="cad" style="background:${color}">${fmt12(a.start_time)} ${a.customer_name?.split(' ')[0]||''}</div>`;}).join('');
     html+=`<div class="${cls}" data-date="${dateStr}" data-closed="${isClosed}">
       <div class="cdn">${day}</div>${dots}
       ${dayAppts.length>3?`<div style="font-size:11px;color:var(--muted);margin-top:2px">+${dayAppts.length-3} more</div>`:''}
@@ -827,12 +827,17 @@ async function loadServices(){
 }
 
 async function saveServiceColor(id, color) {
-  await db.from('services').update({ color }).eq('id', id);
+  const { error } = await db.from('services').update({ color }).eq('id', id);
+  if (error) {
+    alert('Could not save color. Make sure the "color" column exists in your services table in Supabase.');
+    console.error(error);
+    return;
+  }
   toast('Color saved', color);
+  await loadAllAppts();
   loadServices();
-  // refresh calendar if open
   if (document.getElementById('panel-calendar').classList.contains('active')) {
-    loadAllAppts().then(renderCalendar);
+    renderCalendar();
   }
 }
 
