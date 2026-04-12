@@ -141,12 +141,43 @@
   .footer-bottom { border-top: 1px solid var(--border); padding: 18px 40px; display: flex; justify-content: space-between; }
   .footer-bottom-text { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
   @media (max-width: 768px) {
-    nav { padding: 0 20px; } .nav-links { display: none; }
-    .hero { padding: 48px 20px 40px; } .trust-bar { grid-template-columns: repeat(2, 1fr); } .trust-item { padding: 20px; }
-    .tools-section { padding: 48px 20px; } .services-section, .reviews-section { padding: 0 20px 48px; }
-    .form-grid, .quote-form { grid-template-columns: 1fr; } .services-grid { grid-template-columns: 1fr 1fr; }
-    .reviews-grid { grid-template-columns: 1fr; } footer { padding: 32px 20px; grid-template-columns: 1fr; gap: 28px; }
-    .footer-bottom { padding: 16px 20px; flex-direction: column; gap: 6px; }
+    nav { padding: 0 16px; height: 56px; }
+    .nav-links { display: none; }
+    .nav-phone { font-size: 12px; padding: 6px 12px; }
+    .hero { padding: 40px 16px 32px; }
+    .hero h1 { font-size: 32px; letter-spacing: -1px; }
+    .hero p { font-size: 15px; }
+    .hero-actions { flex-direction: column; }
+    .hero-actions .btn { width: 100%; text-align: center; padding: 14px; font-size: 15px; }
+    .trust-bar { grid-template-columns: repeat(2, 1fr); }
+    .trust-item { padding: 16px; }
+    .trust-num { font-size: 22px; }
+    .tools-section { padding: 32px 16px; }
+    .section-header h2 { font-size: 22px; }
+    .tab-nav { width: 100%; justify-content: stretch; }
+    .tab-btn { flex: 1; text-align: center; padding: 8px 8px; font-size: 12px; }
+    .form-grid { grid-template-columns: 1fr; }
+    .quote-form { grid-template-columns: 1fr; }
+    #svc-checkboxes { grid-template-columns: 1fr !important; }
+    .svc-check-label { font-size: 15px !important; padding: 13px 14px !important; }
+    #slots-grid { gap: 6px; }
+    .slot-btn { padding: 10px 14px; font-size: 13px; }
+    .services-section, .reviews-section { padding: 0 16px 40px; }
+    .services-grid { grid-template-columns: 1fr; }
+    .service-card { padding: 18px; }
+    .reviews-grid { grid-template-columns: 1fr; }
+    footer { padding: 32px 16px; grid-template-columns: 1fr; gap: 24px; }
+    .footer-bottom { padding: 14px 16px; flex-direction: column; gap: 6px; text-align: center; }
+    .quote-result { padding: 16px; }
+    .status-search { flex-direction: column; }
+    .status-search input, .status-search button { width: 100%; }
+    .btn { padding: 13px 20px; font-size: 14px; }
+    #ann-banner > div { padding: 10px 16px !important; font-size: 13px !important; flex-wrap: wrap; }
+  }
+  @media (max-width: 400px) {
+    .hero h1 { font-size: 28px; }
+    .trust-bar { grid-template-columns: 1fr 1fr; }
+    .tab-btn { font-size: 11px; padding: 7px 6px; }
   }
 </style>
 </head>
