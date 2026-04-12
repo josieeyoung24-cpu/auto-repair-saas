@@ -188,26 +188,26 @@
         <div class="field" style="grid-column:1/-1">
           <label>Services needed <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(select all that apply)</span></label>
           <div id="svc-checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Oil change" data-duration="60" style="width:16px;height:16px;cursor:pointer"> Oil change (~1 hr)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Oil change" data-duration="60" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Oil change (~1 hr)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Brake service" data-duration="120" style="width:16px;height:16px;cursor:pointer"> Brake service (~2 hrs)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Brake service" data-duration="120" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Brake service (~2 hrs)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Tire rotation" data-duration="45" style="width:16px;height:16px;cursor:pointer"> Tire rotation (~45 min)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Tire rotation" data-duration="45" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Tire rotation (~45 min)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Engine diagnostic" data-duration="90" style="width:16px;height:16px;cursor:pointer"> Engine diagnostic (~1.5 hrs)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Engine diagnostic" data-duration="90" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Engine diagnostic (~1.5 hrs)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="AC service" data-duration="90" style="width:16px;height:16px;cursor:pointer"> AC service (~1.5 hrs)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="AC service" data-duration="90" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> AC service (~1.5 hrs)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Transmission service" data-duration="120" style="width:16px;height:16px;cursor:pointer"> Transmission service (~2 hrs)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Transmission service" data-duration="120" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Transmission service (~2 hrs)
             </label>
-            <label style="display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:13px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text)" onclick="onServiceCheck()">
-              <input type="checkbox" value="Other / not sure" data-duration="60" style="width:16px;height:16px;cursor:pointer"> Other / not sure (~1 hr)
+            <label style="display:flex;align-items:center;gap:10px;padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;font-size:14px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--text);font-family:var(--font-main)">
+              <input type="checkbox" value="Other / not sure" data-duration="60" onchange="onServiceCheck()" style="width:16px;height:16px;cursor:pointer;flex-shrink:0"> Other / not sure (~1 hr)
             </label>
           </div>
         </div>
