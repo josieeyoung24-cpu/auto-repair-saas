@@ -39,9 +39,10 @@
   .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; }
   .nav-links a:hover { color: var(--text); }
   .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
-  .hero { padding: 80px 40px 64px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); display: flex; align-items: center; justify-content: space-between; gap: 40px; }
-  .hero-content { max-width: 560px; flex-shrink: 0; }
-  .hero-media { flex: 1; max-width: 420px; display: none; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.1); }
+  .nav-hours { display: block !important; }
+  .hero { padding: 80px 40px 64px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 40px; }
+  .hero-content { max-width: 480px; }
+  .hero-media { flex: none; width: 380px; display: none; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.1); }
   .hero-media.show { display: block; }
   .hero-media img { width: 100%; height: 280px; object-fit: cover; display: block; }
   .hero-media iframe { width: 100%; height: 280px; border: none; display: block; }
@@ -180,8 +181,9 @@
     nav { padding: 0 16px; height: 56px; }
     .nav-links { display: none; }
     .nav-phone { font-size: 12px; padding: 6px 12px; }
-    .hero { padding: 40px 16px 32px; flex-direction: column; }
+    .hero { padding: 40px 16px 32px; grid-template-columns: 1fr; }
     .hero-media { display: none !important; }
+    .nav-hours { display: none !important; }
     .hero h1 { font-size: 32px; letter-spacing: -1px; }
     .hero p { font-size: 15px; }
     .hero-actions { flex-direction: column; }
@@ -250,7 +252,10 @@
     <li><a href="#tools">Book / Track</a></li>
     <li><a href="#reviews">Reviews</a></li>
   </ul>
-  <a class="nav-phone" href="tel:2063678833">(206) 367-8833</a>
+  <div style="display:flex;align-items:center;gap:12px">
+    <div style="font-size:12px;color:var(--muted);text-align:right;line-height:1.5;display:none" class="nav-hours" id="nav-hours"></div>
+    <a class="nav-phone" href="tel:2063678833">(206) 367-8833</a>
+  </div>
 </nav>
 
 <div id="ann-banner" style="display:none"></div>
@@ -266,6 +271,7 @@
     </div>
   </div>
   <div class="hero-media" id="hero-media"></div>
+  <div></div>
 </section>
 
 <div class="trust-bar reveal">
@@ -885,7 +891,41 @@
     }, 900);
   });
 
-  // Load hero media (photo or video set by admin)
+  // Load nav hours dynamically from availability table
+  async function loadNavHours() {
+    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID).order('id');
+    if (!data || data.length === 0) {
+      document.getElementById('nav-hours').style.display = 'block';
+      return;
+    }
+    const order = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
+    const sorted = [...data].sort((a,b) => order.indexOf(a.day_of_week) - order.indexOf(b.day_of_week));
+
+    function fmt(t) {
+      if (!t) return '';
+      const [h,m] = t.split(':').map(Number);
+      return `${h%12||12}${m?':'+String(m).padStart(2,'0'):''}${h>=12?'pm':'am'}`;
+    }
+
+    // Group weekdays
+    const weekdays = sorted.filter(d => ['monday','tuesday','wednesday','thursday','friday'].includes(d.day_of_week) && d.is_closed !== 'true');
+    const sat = sorted.find(d => d.day_of_week === 'saturday');
+    const sun = sorted.find(d => d.day_of_week === 'sunday');
+
+    let line1 = '', line2 = '';
+    if (weekdays.length > 0) {
+      const w = weekdays[0];
+      line1 = `Mon–Fri ${fmt(w.open_time)}–${fmt(w.close_time)}`;
+    }
+    const satText = sat && sat.is_closed !== 'true' ? `Sat ${fmt(sat.open_time)}–${fmt(sat.close_time)}` : 'Sat Closed';
+    const sunText = sun && sun.is_closed !== 'true' ? `Sun ${fmt(sun.open_time)}–${fmt(sun.close_time)}` : 'Sun Closed';
+    line2 = `${satText} · ${sunText}`;
+
+    const el = document.getElementById('nav-hours');
+    el.innerHTML = `<div style="font-weight:500;color:var(--text)">${line1}</div><div>${line2}</div>`;
+    el.style.display = 'block';
+  }
+  loadNavHours();
   async function loadHeroMedia() {
     const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
     if (!data || data.length === 0) return;
