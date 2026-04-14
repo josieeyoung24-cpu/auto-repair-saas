@@ -296,14 +296,14 @@
         <div class="field" style="grid-column:1/-1">
           <label>Vehicle</label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
-            <select id="b-vtype" onchange="onVehicleTypeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none">
+            <select id="b-vtype" onchange="onVehicleTypeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%">
               <option value="">Brand</option>
               <option>Acura</option><option>Audi</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Mazda</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Porsche</option><option>Ram</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Other</option>
             </select>
-            <select id="b-vmake" onchange="onVehicleMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
+            <select id="b-vmake" onchange="onVehicleMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%" disabled>
               <option value="">Model</option>
             </select>
-            <select id="b-vyear" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
+            <select id="b-vyear" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%" disabled>
               <option value="">Year</option>
             </select>
           </div>
@@ -1075,7 +1075,7 @@
     const yearEl = document.getElementById('b-vyear');
     yearEl.innerHTML = '<option value="">Year</option>';
     if (!model) { yearEl.disabled = true; return; }
-    for (let y = new Date().getFullYear() + 1; y >= 1990; y--) {
+    for (let y = new Date().getFullYear() + 1; y >= 1950; y--) {
       const o = document.createElement('option');
       o.value = y; o.textContent = y; yearEl.appendChild(o);
     }
