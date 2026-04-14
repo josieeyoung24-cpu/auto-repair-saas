@@ -377,30 +377,29 @@
       <div class="sh"><div class="st">Settings</div></div>
 
       <div class="box">
-        <div class="box-title">Homepage photo or video</div>
-        <div class="box-sub">Add a photo or video to the right side of your homepage. Leave both blank to keep it empty. Video takes priority if both are set.</div>
+        <div class="box-title">Homepage slideshow / video</div>
+        <div class="box-sub">Upload multiple photos for a slideshow that auto-rotates every 6 seconds, or paste a YouTube link for a video. Video takes priority if set.</div>
         <div class="fg">
           <div class="ff" style="grid-column:1/-1">
-            <label>Shop photo</label>
-            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-              <input type="text" id="hero-photo-url" placeholder="Paste image URL or upload below" style="flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font)">
-              <label style="padding:8px 14px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:12px;cursor:pointer;flex-shrink:0;white-space:nowrap">
-                Upload photo<input type="file" accept="image/*" style="display:none" onchange="uploadHeroPhoto(this)">
-              </label>
-            </div>
+            <label>Upload photos (select multiple)</label>
+            <label style="display:inline-flex;align-items:center;gap:8px;padding:10px 16px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:13px;cursor:pointer;margin-top:4px">
+              📷 Choose photos
+              <input type="file" accept="image/*" multiple style="display:none" onchange="uploadHeroPhotos(this)">
+            </label>
+            <div id="upload-progress" style="font-size:13px;color:var(--muted);margin-top:8px;display:none"></div>
           </div>
           <div class="ff" style="grid-column:1/-1">
-            <label>YouTube video URL</label>
+            <label>YouTube video URL (overrides photos)</label>
             <input type="text" id="hero-video-url" placeholder="https://www.youtube.com/watch?v=..." style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);width:100%">
           </div>
         </div>
         <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
           <button class="add-btn" style="margin-top:0" onclick="saveHeroMedia()">Save & publish to site</button>
-          <button class="add-btn" style="margin-top:0;background:#888" onclick="clearHeroMedia()">Clear / remove</button>
+          <button class="add-btn" style="margin-top:0;background:#888" onclick="clearHeroMedia()">Clear all</button>
         </div>
         <div id="hero-preview" style="margin-top:16px;display:none">
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Currently showing on site:</div>
-          <div id="hero-preview-content"></div>
+          <div id="hero-preview-content" style="display:flex;gap:8px;flex-wrap:wrap"></div>
         </div>
       </div>
 
@@ -1190,59 +1189,84 @@ async function deleteAnn(id){
 }
 
 // ── HERO MEDIA ──
+let heroPhotos = [];
+
 async function loadHeroSettings() {
   const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
   if (!data || data.length === 0) return;
   const s = data[0];
-  if (s.hero_photo_url) document.getElementById('hero-photo-url').value = s.hero_photo_url;
   if (s.hero_video_url) document.getElementById('hero-video-url').value = s.hero_video_url;
-  showHeroPreview(s.hero_photo_url, s.hero_video_url);
+  if (s.hero_photos) {
+    try { heroPhotos = JSON.parse(s.hero_photos) || []; } catch(e) { heroPhotos = []; }
+  } else if (s.hero_photo_url) {
+    heroPhotos = [s.hero_photo_url];
+  }
+  showHeroPreview();
 }
 
-function showHeroPreview(photoUrl, videoUrl) {
+function showHeroPreview() {
   const preview = document.getElementById('hero-preview');
   const content = document.getElementById('hero-preview-content');
+  const videoUrl = document.getElementById('hero-video-url').value.trim();
   if (videoUrl) {
-    content.innerHTML = `<div style="font-size:13px;color:var(--text)">🎬 Video: <a href="${videoUrl}" target="_blank" style="color:var(--accent)">${videoUrl.substring(0,50)}...</a></div>`;
+    content.innerHTML = `<div style="font-size:13px">🎬 Video: <a href="${videoUrl}" target="_blank" style="color:var(--accent)">${videoUrl.substring(0,50)}...</a></div>`;
     preview.style.display = 'block';
-  } else if (photoUrl) {
-    content.innerHTML = `<img src="${photoUrl}" style="max-width:200px;max-height:120px;border-radius:8px;border:1px solid var(--border);object-fit:cover">`;
+  } else if (heroPhotos.length > 0) {
+    content.innerHTML = heroPhotos.map((url, i) => `
+      <div style="position:relative;display:inline-block">
+        <img src="${url}" style="width:80px;height:60px;object-fit:cover;border-radius:4px;border:1px solid var(--border)">
+        <button onclick="removeHeroPhoto(${i})" style="position:absolute;top:-6px;right:-6px;background:#8b1a1a;color:#fff;border:none;border-radius:50%;width:18px;height:18px;font-size:11px;cursor:pointer;line-height:18px;text-align:center">×</button>
+      </div>`).join('');
     preview.style.display = 'block';
   } else {
     preview.style.display = 'none';
   }
 }
 
-async function uploadHeroPhoto(input) {
-  const file = input.files[0];
-  if (!file) return;
-  toast('Uploading photo...');
-  const fileName = `${SHOP_ID}/hero-${Date.now()}.${file.name.split('.').pop()}`;
-  const { error } = await db.storage.from('dvi-photos').upload(fileName, file, { upsert: true });
-  if (error) { toast('Upload failed: ' + error.message, '#8b1a1a'); return; }
-  const { data: urlData } = db.storage.from('dvi-photos').getPublicUrl(fileName);
-  document.getElementById('hero-photo-url').value = urlData.publicUrl;
-  toast('Photo uploaded — hit Save to publish', '#16a34a');
+function removeHeroPhoto(index) {
+  heroPhotos.splice(index, 1);
+  showHeroPreview();
+  toast('Photo removed — hit Save to update site');
+}
+
+async function uploadHeroPhotos(input) {
+  const files = Array.from(input.files);
+  if (!files.length) return;
+  const progress = document.getElementById('upload-progress');
+  progress.style.display = 'block';
+  progress.textContent = `Uploading 0 of ${files.length}...`;
+  for (let i = 0; i < files.length; i++) {
+    const file = files[i];
+    const fileName = `${SHOP_ID}/hero-${Date.now()}-${i}.${file.name.split('.').pop()}`;
+    const { error } = await db.storage.from('dvi-photos').upload(fileName, file, { upsert: true });
+    if (!error) {
+      const { data: urlData } = db.storage.from('dvi-photos').getPublicUrl(fileName);
+      heroPhotos.push(urlData.publicUrl);
+    }
+    progress.textContent = `Uploading ${i + 1} of ${files.length}...`;
+  }
+  progress.textContent = `${files.length} photo${files.length > 1 ? 's' : ''} uploaded — hit Save to publish`;
+  showHeroPreview();
 }
 
 async function saveHeroMedia() {
-  const photoUrl = document.getElementById('hero-photo-url').value.trim();
   const videoUrl = document.getElementById('hero-video-url').value.trim();
+  const photosJson = JSON.stringify(heroPhotos);
   const { data: existing } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
   if (existing && existing.length > 0) {
-    await db.from('shop_settings').update({ hero_photo_url: photoUrl, hero_video_url: videoUrl }).eq('shop_id', SHOP_ID);
+    await db.from('shop_settings').update({ hero_photos: photosJson, hero_video_url: videoUrl, hero_photo_url: heroPhotos[0] || '' }).eq('shop_id', SHOP_ID);
   } else {
-    await db.from('shop_settings').insert([{ shop_id: SHOP_ID, hero_photo_url: photoUrl, hero_video_url: videoUrl }]);
+    await db.from('shop_settings').insert([{ shop_id: SHOP_ID, hero_photos: photosJson, hero_video_url: videoUrl, hero_photo_url: heroPhotos[0] || '' }]);
   }
   toast('Published to homepage!', '#16a34a');
-  showHeroPreview(photoUrl, videoUrl);
+  showHeroPreview();
 }
 
 async function clearHeroMedia() {
-  if (!confirm('Remove photo/video from homepage?')) return;
-  await db.from('shop_settings').update({ hero_photo_url: '', hero_video_url: '' }).eq('shop_id', SHOP_ID);
-  document.getElementById('hero-photo-url').value = '';
+  if (!confirm('Remove all photos and video from homepage?')) return;
+  heroPhotos = [];
   document.getElementById('hero-video-url').value = '';
+  await db.from('shop_settings').update({ hero_photos: '[]', hero_video_url: '', hero_photo_url: '' }).eq('shop_id', SHOP_ID);
   document.getElementById('hero-preview').style.display = 'none';
   toast('Media removed from homepage');
 }
