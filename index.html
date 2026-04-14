@@ -293,7 +293,29 @@
         <div class="field"><label>Last name</label><input type="text" id="b-last" placeholder="Torres"></div>
         <div class="field"><label>Phone number</label><input type="tel" id="b-phone" placeholder="(206) 555-0100"></div>
         <div class="field"><label>Email (for confirmation)</label><input type="email" id="b-email" placeholder="mike@email.com"></div>
-        <div class="field"><label>Vehicle</label><input type="text" id="b-vehicle" placeholder="2019 Toyota Camry"></div>
+        <div class="field" style="grid-column:1/-1">
+          <label>Vehicle</label>
+          <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
+            <select id="b-vtype" onchange="onVehicleTypeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none">
+              <option value="">Type</option>
+              <option>Sedan</option>
+              <option>SUV / Crossover</option>
+              <option>Truck</option>
+              <option>Van / Minivan</option>
+              <option>Coupe</option>
+              <option>Hatchback</option>
+              <option>Wagon</option>
+              <option>Electric / Hybrid</option>
+              <option>Other</option>
+            </select>
+            <select id="b-vmake" onchange="onVehicleMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
+              <option value="">Make</option>
+            </select>
+            <select id="b-vyear" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
+              <option value="">Year</option>
+            </select>
+          </div>
+        </div>
         <div class="field" style="grid-column:1/-1">
           <label>Services needed <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(select all that apply)</span></label>
           <div id="svc-checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
@@ -513,7 +535,10 @@
     const last = document.getElementById('b-last').value.trim();
     const phone = document.getElementById('b-phone').value.trim();
     const email = document.getElementById('b-email').value.trim();
-    const vehicle = document.getElementById('b-vehicle').value.trim();
+    const vtype = document.getElementById('b-vtype').value;
+    const vmake = document.getElementById('b-vmake').value;
+    const vyear = document.getElementById('b-vyear').value;
+    const vehicle = [vyear, vmake, vtype].filter(Boolean).join(' ') || '';
     const checkedServices = getSelectedServices();
     const service = checkedServices.map(cb => cb.value).join(', ');
     const date = document.getElementById('b-date').value;
@@ -566,7 +591,12 @@
   }
 
   function resetBookingForm() {
-    ['b-first','b-last','b-phone','b-email','b-vehicle','b-notes'].forEach(id => document.getElementById(id).value = '');
+    ['b-first','b-last','b-phone','b-email','b-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('b-vtype').value = '';
+    document.getElementById('b-vmake').innerHTML = '<option value="">Make</option>';
+    document.getElementById('b-vmake').disabled = true;
+    document.getElementById('b-vyear').innerHTML = '<option value="">Year</option>';
+    document.getElementById('b-vyear').disabled = true;
     document.querySelectorAll('#svc-checkboxes input').forEach(cb => cb.checked = false);
     document.getElementById('b-date').value = '';
     document.getElementById('b-time').value = '';
