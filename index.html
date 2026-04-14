@@ -966,6 +966,35 @@
     const el = document.getElementById('nav-hours');
     el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${line1} · ${line2}`;
   }
+  // ── BRAND COLORS ──
+  async function loadBrandColors() {
+    const { data } = await db.from('shop_settings').select('brand_color,car_color').eq('shop_id', SHOP_ID).limit(1);
+    if (!data || data.length === 0) return;
+    const s = data[0];
+    if (s.brand_color) {
+      document.documentElement.style.setProperty('--accent-red', s.brand_color);
+      // Darken for hover states
+      const hex = s.brand_color.replace('#','');
+      const r = Math.max(0, parseInt(hex.slice(0,2),16) - 20);
+      const g = Math.max(0, parseInt(hex.slice(2,4),16) - 20);
+      const b = Math.max(0, parseInt(hex.slice(4,6),16) - 20);
+      const darker = '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
+      document.documentElement.style.setProperty('--accent-red-dark', darker);
+    }
+    if (s.car_color) {
+      // Update all car SVG fill colors in the nav
+      document.querySelectorAll('.nav-logo svg rect, .nav-logo svg path').forEach(el => {
+        if (el.getAttribute('fill') && !['#111','#555','#90caf9','#ffd54f','#ef5350'].includes(el.getAttribute('fill'))) {
+          el.setAttribute('fill', s.car_color);
+        }
+      });
+      // Also update the stroke on the roof path
+      const roofPath = document.querySelector('.nav-logo svg path');
+      if (roofPath) roofPath.setAttribute('stroke', s.car_color);
+    }
+  }
+  loadBrandColors();
+
   loadNavHours();
   // ── HERO SLIDESHOW ──
   let slideIndex = 0;
