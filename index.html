@@ -52,9 +52,40 @@
   .hero p { font-size: 16px; color: var(--muted); margin-bottom: 36px; max-width: 480px; line-height: 1.7; }
   .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
   .btn { padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-main); border: none; }
-  .btn-primary { background: var(--accent-red); color: var(--white); }
-  .btn-primary:hover { background: #a93226; }
-  .btn-primary:disabled { background: #999; cursor: not-allowed; }
+  /* ── MICRO-ANIMATIONS & QUIRKS ── */
+
+  /* Book button subtle pulse */
+  @keyframes btn-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(192,57,43,0.4); } 50%{ box-shadow:0 0 0 8px rgba(192,57,43,0); } }
+  .btn-primary { background: var(--accent-red); color: var(--white); animation: btn-pulse 3s ease-in-out infinite; }
+  .btn-primary:hover { background: #a93226; animation: none; box-shadow: 0 4px 16px rgba(192,57,43,0.3); }
+  .btn-primary:disabled { background: #999; cursor: not-allowed; animation: none; }
+
+  /* Service checkbox hover bounce */
+  @keyframes checkbox-bounce { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
+  .svc-check-label:hover { animation: checkbox-bounce 0.3s ease; border-color: var(--accent-red) !important; }
+  .svc-check-label:has(input:checked) { background: #fdf0ef !important; border-color: var(--accent-red) !important; color: var(--accent-red) !important; font-weight: 500 !important; }
+
+  /* Nav gradient line */
+  nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-red), transparent); opacity:0; transition: opacity 0.3s; }
+  nav.scrolled::after { opacity: 1; }
+
+  /* Scroll reveal */
+  .reveal { opacity:0; transform:translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
+  .reveal.visible { opacity:1; transform:translateY(0); }
+
+  /* Step dots animate in */
+  .step-dot { transition: background 0.4s ease, border-color 0.4s ease, transform 0.3s ease; }
+  .step-dot.active { transform: scale(1.15); }
+  .step-dot.done { transform: scale(1); }
+
+  /* Wrench spin on in-repair */
+  @keyframes wrench-spin { 0%,100%{ transform:rotate(-20deg); } 50%{ transform:rotate(20deg); } }
+  .status-wrench { display:inline-block; animation: wrench-spin 1s ease-in-out infinite; margin-right:4px; }
+
+  /* Slot button hover */
+  .slot-btn { padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all .15s; font-family: var(--font-main); }
+  .slot-btn:hover { border-color: var(--accent-red); color: var(--accent-red); transform: translateY(-1px); }
+  .slot-btn.selected { background: var(--accent-red); color: var(--white); border-color: var(--accent-red); }
   .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
   .btn-secondary:hover { background: var(--off); }
   .trust-bar { border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); display: grid; grid-template-columns: repeat(4, 1fr); }
@@ -226,7 +257,7 @@
 
 <section class="hero">
   <div class="hero-content">
-    <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
+    <div class="hero-eyebrow" id="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
     <h1>Honest repairs.<br><em>Fair price.</em> Same day.</h1>
     <p>Family-owned for 10+ years. We charge way less than the dealer — and we won't touch your car without calling you first.</p>
     <div class="hero-actions">
@@ -237,9 +268,9 @@
   <div class="hero-media" id="hero-media"></div>
 </section>
 
-<div class="trust-bar">
-  <div class="trust-item"><div class="trust-num">4.6★</div><div class="trust-label">62 Google reviews</div></div>
-  <div class="trust-item"><div class="trust-num">10+ yrs</div><div class="trust-label">In business</div></div>
+<div class="trust-bar reveal">
+  <div class="trust-item"><div class="trust-num" data-count="4.6" data-suffix="★">4.6★</div><div class="trust-label">62 Google reviews</div></div>
+  <div class="trust-item"><div class="trust-num" data-count="10" data-suffix="+ yrs">10+ yrs</div><div class="trust-label">In business</div></div>
   <div class="trust-item"><div class="trust-num">Way less</div><div class="trust-label">Than the dealer</div></div>
   <div class="trust-item"><div class="trust-num">Same day</div><div class="trust-label">Most repairs</div></div>
 </div>
@@ -267,25 +298,25 @@
           <label>Services needed <span style="font-weight:400;text-transform:none;font-size:11px;color:var(--muted)">(select all that apply)</span></label>
           <div id="svc-checkboxes" style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
             <label class="svc-check-label">
-              <input type="checkbox" value="Oil change" data-duration="60" onchange="onServiceCheck()" class="svc-checkbox"> Oil change (~1 hr)
+              <input type="checkbox" value="Oil change" data-duration="60" onchange="onServiceCheck()" class="svc-checkbox"> Oil change (1 hr)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="Brake service" data-duration="120" onchange="onServiceCheck()" class="svc-checkbox"> Brake service (~2 hrs)
+              <input type="checkbox" value="Brake service" data-duration="120" onchange="onServiceCheck()" class="svc-checkbox"> Brake service (2 hrs)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="Tire rotation" data-duration="45" onchange="onServiceCheck()" class="svc-checkbox"> Tire rotation (~45 min)
+              <input type="checkbox" value="Tire rotation" data-duration="45" onchange="onServiceCheck()" class="svc-checkbox"> Tire rotation (45 min)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="Engine diagnostic" data-duration="90" onchange="onServiceCheck()" class="svc-checkbox"> Engine diagnostic (~1.5 hrs)
+              <input type="checkbox" value="Engine diagnostic" data-duration="90" onchange="onServiceCheck()" class="svc-checkbox"> Engine diagnostic (1.5 hrs)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="AC service" data-duration="90" onchange="onServiceCheck()" class="svc-checkbox"> AC service (~1.5 hrs)
+              <input type="checkbox" value="AC service" data-duration="90" onchange="onServiceCheck()" class="svc-checkbox"> AC service (1.5 hrs)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="Transmission service" data-duration="120" onchange="onServiceCheck()" class="svc-checkbox"> Transmission service (~2 hrs)
+              <input type="checkbox" value="Transmission service" data-duration="120" onchange="onServiceCheck()" class="svc-checkbox"> Transmission service (2 hrs)
             </label>
             <label class="svc-check-label">
-              <input type="checkbox" value="Other / not sure" data-duration="60" onchange="onServiceCheck()" class="svc-checkbox"> Other / not sure (~1 hr)
+              <input type="checkbox" value="Other / not sure" data-duration="60" onchange="onServiceCheck()" class="svc-checkbox"> Other / not sure
             </label>
           </div>
         </div>
@@ -899,6 +930,70 @@
       </div>`).join('');
   }
   loadServicesGrid();
+
+  // ── NAV SCROLL EFFECT ──
+  window.addEventListener('scroll', () => {
+    document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 10);
+  });
+
+  // ── SCROLL REVEAL ──
+  const revealObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+  }, { threshold: 0.15 });
+  document.querySelectorAll('.trust-bar, .tools-section, .services-section, .reviews-section').forEach(el => {
+    el.classList.add('reveal');
+    revealObserver.observe(el);
+  });
+
+  // ── COUNT UP ANIMATION ──
+  const countObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (!e.isIntersecting) return;
+      const el = e.target;
+      const target = parseFloat(el.dataset.count);
+      const suffix = el.dataset.suffix || '';
+      if (!target) return;
+      let start = 0;
+      const duration = 1200;
+      const step = 16;
+      const increment = target / (duration / step);
+      const timer = setInterval(() => {
+        start += increment;
+        if (start >= target) { el.textContent = target + suffix; clearInterval(timer); }
+        else { el.textContent = (target % 1 === 0 ? Math.floor(start) : start.toFixed(1)) + suffix; }
+      }, step);
+      countObserver.unobserve(el);
+    });
+  }, { threshold: 0.5 });
+  document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
+
+  // ── WRENCH ON IN-REPAIR STATUS ──
+  const _origLookup = lookupStatus;
+  async function lookupStatus() {
+    await _origLookup.apply(this, arguments);
+    // Add wrench icon to in-repair badge if showing
+    setTimeout(() => {
+      const badge = document.getElementById('s-badge');
+      if (badge && badge.textContent.toLowerCase().includes('in repair')) {
+        badge.innerHTML = '<span class="status-wrench">🔧</span>' + badge.textContent;
+      }
+    }, 100);
+  }
+
+  // ── STEP DOTS ANIMATE IN SEQUENCE ──
+  const _origSteps = window._stepsAnimated;
+  function animateStepsIn() {
+    ['1','2','3','4'].forEach((n, i) => {
+      const dot = document.getElementById('dot-' + n);
+      if (dot) { dot.style.opacity='0'; dot.style.transform='scale(0.5)'; setTimeout(() => { dot.style.transition='opacity 0.3s ease, transform 0.3s ease'; dot.style.opacity='1'; dot.style.transform=''; }, i * 120); }
+    });
+  }
+  // Patch lookupStatus to animate steps after load
+  const __origLookup = lookupStatus;
+  async function lookupStatus() {
+    await __origLookup.apply(this, arguments);
+    setTimeout(animateStepsIn, 200);
+  }
 </script>
 </body>
 </html>
