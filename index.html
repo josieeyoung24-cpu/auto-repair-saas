@@ -39,7 +39,12 @@
   .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; }
   .nav-links a:hover { color: var(--text); }
   .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
-  .hero { padding: 80px 40px 64px; max-width: 700px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); }
+  .hero { padding: 80px 40px 64px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); display: flex; align-items: center; justify-content: space-between; gap: 40px; }
+  .hero-content { max-width: 560px; flex-shrink: 0; }
+  .hero-media { flex: 1; max-width: 420px; display: none; border-radius: 16px; overflow: hidden; box-shadow: 0 8px 40px rgba(0,0,0,0.1); }
+  .hero-media.show { display: block; }
+  .hero-media img { width: 100%; height: 280px; object-fit: cover; display: block; }
+  .hero-media iframe { width: 100%; height: 280px; border: none; display: block; }
   .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
   .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--accent-red); border-radius: 1px; }
   .hero h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 300; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
@@ -144,7 +149,8 @@
     nav { padding: 0 16px; height: 56px; }
     .nav-links { display: none; }
     .nav-phone { font-size: 12px; padding: 6px 12px; }
-    .hero { padding: 40px 16px 32px; }
+    .hero { padding: 40px 16px 32px; flex-direction: column; }
+    .hero-media { display: none !important; }
     .hero h1 { font-size: 32px; letter-spacing: -1px; }
     .hero p { font-size: 15px; }
     .hero-actions { flex-direction: column; }
@@ -219,13 +225,16 @@
 <div id="ann-banner" style="display:none"></div>
 
 <section class="hero">
-  <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
-  <h1>Honest repairs.<br><em>Fair price.</em> Same day.</h1>
-  <p>Family-owned for 10+ years. We charge way less than the dealer — and we won't touch your car without calling you first.</p>
-  <div class="hero-actions">
-    <button class="btn btn-primary" onclick="openTab('book')">Book an appointment</button>
-    <button class="btn btn-secondary" onclick="openTab('status')">Track my repair →</button>
+  <div class="hero-content">
+    <div class="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
+    <h1>Honest repairs.<br><em>Fair price.</em> Same day.</h1>
+    <p>Family-owned for 10+ years. We charge way less than the dealer — and we won't touch your car without calling you first.</p>
+    <div class="hero-actions">
+      <button class="btn btn-primary" onclick="openTab('book')">Book an appointment</button>
+      <button class="btn btn-secondary" onclick="openTab('status')">Track my repair →</button>
+    </div>
   </div>
+  <div class="hero-media" id="hero-media"></div>
 </section>
 
 <div class="trust-bar">
@@ -819,6 +828,26 @@
       setTimeout(() => loader.style.display = 'none', 400);
     }, 900);
   });
+
+  // Load hero media (photo or video set by admin)
+  async function loadHeroMedia() {
+    const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
+    if (!data || data.length === 0) return;
+    const s = data[0];
+    const el = document.getElementById('hero-media');
+    if (s.hero_video_url) {
+      // Convert YouTube URL to embed
+      let embedUrl = s.hero_video_url;
+      const ytMatch = s.hero_video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
+      if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0`;
+      el.innerHTML = `<iframe src="${embedUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+      el.classList.add('show');
+    } else if (s.hero_photo_url) {
+      el.innerHTML = `<img src="${s.hero_photo_url}" alt="Aurora Auto Repair">`;
+      el.classList.add('show');
+    }
+  }
+  loadHeroMedia();
 
   // Wake up Supabase immediately on page load so first action is instant
   db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
