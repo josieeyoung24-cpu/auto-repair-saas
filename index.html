@@ -33,11 +33,18 @@
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: var(--font-main); background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
   a { text-decoration: none; color: inherit; }
-  nav { position: sticky; top: 0; z-index: 100; background: rgba(255,255,255,0.95); backdrop-filter: blur(8px); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 64px; }
+  /* TWO-BAR HEADER */
+  .topbar-info { background: #1a1a1a; color: rgba(255,255,255,0.85); font-size: 12px; padding: 0 40px; height: 38px; display: flex; align-items: center; position: sticky; top: 0; z-index: 101; }
+  .topbar-info-inner { display: flex; align-items: center; gap: 0; width: 100%; }
+  .topbar-item { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.85); font-size: 12px; white-space: nowrap; }
+  .topbar-item:hover { color: #fff; }
+  .topbar-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.2); margin: 0 16px; flex-shrink: 0; }
+  nav { position: sticky; top: 38px; z-index: 100; background: var(--white); border-bottom: 2px solid var(--accent-red); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 64px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+  nav::after { display: none; }
   .nav-logo { font-size: 17px; font-weight: 500; letter-spacing: -0.4px; }
   .nav-links { display: flex; gap: 28px; list-style: none; }
-  .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; }
-  .nav-links a:hover { color: var(--text); }
+  .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; font-weight: 500; }
+  .nav-links a:hover { color: var(--accent-red); }
   .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
   .nav-hours { display: block !important; }
   .hero { padding: 80px 0 64px 40px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); display: flex; align-items: stretch; justify-content: space-between; gap: 48px; overflow: hidden; }
@@ -187,7 +194,8 @@
   .footer-bottom { border-top: 1px solid var(--border); padding: 18px 40px; display: flex; justify-content: space-between; }
   .footer-bottom-text { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
   @media (max-width: 768px) {
-    nav { padding: 0 16px; height: 56px; }
+    .topbar-info { display: none; }
+    nav { top: 0; padding: 0 16px; height: 56px; }
     .nav-links { display: none; }
     .nav-phone { font-size: 12px; padding: 6px 12px; }
     .hero { padding: 40px 16px 32px; grid-template-columns: 1fr; }
@@ -240,6 +248,27 @@
   <div class="loader-text" style="margin-top:14px;text-align:center">Aurora Auto Repair</div>
 </div>
 
+<!-- TOP BAR -->
+<div class="topbar-info">
+  <div class="topbar-info-inner">
+    <a href="tel:2063678833" class="topbar-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.0 2.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+      (206) 367-8833
+    </a>
+    <span class="topbar-divider"></span>
+    <span class="topbar-item">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      10712 Aurora Ave N, Seattle, WA 98133
+    </span>
+    <span class="topbar-divider"></span>
+    <span class="topbar-item" id="nav-hours">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      Mon–Fri 9am–5:30pm · Sat 10am–1pm
+    </span>
+  </div>
+</div>
+
+<!-- MAIN NAV -->
 <nav>
   <div class="nav-logo" style="display:flex;align-items:center;gap:8px">
     <svg width="22" height="14" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
@@ -258,12 +287,12 @@
   </div>
   <ul class="nav-links">
     <li><a href="#services">Services</a></li>
-    <li><a href="#tools">Book / Track</a></li>
     <li><a href="#reviews">Reviews</a></li>
+    <li><a href="#tools">Contact</a></li>
   </ul>
-  <div style="display:flex;align-items:center;gap:12px">
-    <div style="font-size:12px;color:var(--muted);text-align:right;line-height:1.5;display:none" class="nav-hours" id="nav-hours"></div>
-    <a class="nav-phone" href="tel:2063678833">(206) 367-8833</a>
+  <div style="display:flex;align-items:center;gap:10px">
+    <button class="btn btn-secondary" style="padding:9px 18px;font-size:13px" onclick="openTab('status');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Track my repair</button>
+    <button class="btn btn-primary" style="padding:9px 18px;font-size:13px;animation:none" onclick="openTab('book');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Book appointment</button>
   </div>
 </nav>
 
@@ -930,8 +959,7 @@
     line2 = `${satText} · ${sunText}`;
 
     const el = document.getElementById('nav-hours');
-    el.innerHTML = `<div style="font-weight:500;color:var(--text)">${line1}</div><div>${line2}</div>`;
-    el.style.display = 'block';
+    el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${line1} · ${line2}`;
   }
   loadNavHours();
   // ── HERO SLIDESHOW ──
