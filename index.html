@@ -42,10 +42,19 @@
   .nav-hours { display: block !important; }
   .hero { padding: 80px 0 64px 40px; background: linear-gradient(135deg, #fff 60%, #fdf5f5 100%); display: flex; align-items: stretch; justify-content: space-between; gap: 48px; overflow: hidden; }
   .hero-content { max-width: 500px; flex-shrink: 0; padding-right: 0; }
-  .hero-media { flex: 1; display: none; border-radius: 0; overflow: hidden; box-shadow: none; }
+  .hero-media { flex: 1; display: none; border-radius: 0; overflow: hidden; box-shadow: none; position: relative; }
   .hero-media.show { display: block; }
   .hero-media img { width: 100%; height: 420px; object-fit: cover; display: block; }
   .hero-media iframe { width: 100%; height: 420px; border: none; display: block; }
+  .slide { display: none; position: relative; }
+  .slide.active { display: block; }
+  .slide-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; z-index: 2; display: flex; align-items: center; justify-content: center; transition: background .2s; }
+  .slide-arrow:hover { background: rgba(0,0,0,0.7); }
+  .slide-arrow.prev { left: 10px; }
+  .slide-arrow.next { right: 10px; }
+  .slide-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 2; }
+  .slide-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; border: none; transition: background .2s; }
+  .slide-dot.active { background: #fff; }
   .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
   .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--accent-red); border-radius: 1px; }
   .hero h1 { font-size: clamp(36px, 5vw, 52px); font-weight: 300; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
@@ -925,23 +934,69 @@
     el.style.display = 'block';
   }
   loadNavHours();
+  // ── HERO SLIDESHOW ──
+  let slideIndex = 0;
+  let slideTimer = null;
+
   async function loadHeroMedia() {
     const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
     if (!data || data.length === 0) return;
     const s = data[0];
     const el = document.getElementById('hero-media');
+
     if (s.hero_video_url) {
-      // Convert YouTube URL to embed
       let embedUrl = s.hero_video_url;
       const ytMatch = s.hero_video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
       if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0`;
       el.innerHTML = `<iframe src="${embedUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
       el.classList.add('show');
-    } else if (s.hero_photo_url) {
-      el.innerHTML = `<img src="${s.hero_photo_url}" alt="Aurora Auto Repair">`;
-      el.classList.add('show');
+      return;
     }
+
+    let photos = [];
+    if (s.hero_photos) { try { photos = JSON.parse(s.hero_photos) || []; } catch(e) {} }
+    if (!photos.length && s.hero_photo_url) photos = [s.hero_photo_url];
+    if (!photos.length) return;
+
+    if (photos.length === 1) {
+      el.innerHTML = `<img src="${photos[0]}" alt="Aurora Auto Repair" style="width:100%;height:420px;object-fit:cover;display:block">`;
+      el.classList.add('show');
+      return;
+    }
+
+    el.innerHTML = `<div style="position:relative">
+      ${photos.map((p, i) => `<div class="slide${i===0?' active':''}"><img src="${p}" alt="Shop photo" style="width:100%;height:420px;object-fit:cover;display:block"></div>`).join('')}
+      <button class="slide-arrow prev" onclick="changeSlide(-1)">&#8249;</button>
+      <button class="slide-arrow next" onclick="changeSlide(1)">&#8250;</button>
+      <div class="slide-dots">${photos.map((_,i) => `<button class="slide-dot${i===0?' active':''}" onclick="goSlide(${i})"></button>`).join('')}</div>
+    </div>`;
+    el.classList.add('show');
+    slideTimer = setInterval(() => changeSlide(1), 6000);
   }
+
+  function changeSlide(dir) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.slide-dot');
+    if (!slides.length) return;
+    slides[slideIndex].classList.remove('active');
+    if(dots[slideIndex]) dots[slideIndex].classList.remove('active');
+    slideIndex = (slideIndex + dir + slides.length) % slides.length;
+    slides[slideIndex].classList.add('active');
+    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
+  }
+
+  function goSlide(i) {
+    const slides = document.querySelectorAll('.slide');
+    const dots = document.querySelectorAll('.slide-dot');
+    slides[slideIndex].classList.remove('active');
+    if(dots[slideIndex]) dots[slideIndex].classList.remove('active');
+    slideIndex = i;
+    slides[slideIndex].classList.add('active');
+    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
+    clearInterval(slideTimer);
+    slideTimer = setInterval(() => changeSlide(1), 6000);
+  }
+
   loadHeroMedia();
 
   // Wake up Supabase immediately on page load so first action is instant
