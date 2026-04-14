@@ -297,8 +297,8 @@
           <label>Vehicle</label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
             <select id="b-vtype" onchange="onVehicleTypeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%">
-              <option value="">Brand</option>
-              <option>Acura</option><option>Audi</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Mazda</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Porsche</option><option>Ram</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Other</option>
+              <option value="">Make</option>
+              <option>Acura</option><option>Audi</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Mazda</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Porsche</option><option>Ram</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Hummer</option><option>Pontiac</option><option>Saturn</option><option>Scion</option><option>Other</option>
             </select>
             <select id="b-vmake" onchange="onVehicleMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%" disabled>
               <option value="">Model</option>
@@ -408,7 +408,7 @@
   <div class="tab-panel" id="tab-quote">
     <div class="quote-form">
       <div class="field"><label>Vehicle make</label>
-        <select id="q-make"><option value="">Select make</option><option>Acura</option><option>Alfa Romeo</option><option>Aston Martin</option><option>Audi</option><option>Bentley</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ferrari</option><option>Fiat</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Lamborghini</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Maserati</option><option>Mazda</option><option>McLaren</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Pontiac</option><option>Porsche</option><option>Ram</option><option>Rolls-Royce</option><option>Saab</option><option>Saturn</option><option>Scion</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Other</option></select>
+        <select id="q-make"><option value="">Select make</option><option>Acura</option><option>Alfa Romeo</option><option>Aston Martin</option><option>Audi</option><option>Bentley</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ferrari</option><option>Fiat</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Lamborghini</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Maserati</option><option>Mazda</option><option>McLaren</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Pontiac</option><option>Porsche</option><option>Ram</option><option>Rolls-Royce</option><option>Saab</option><option>Saturn</option><option>Scion</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Hummer</option><option>Pontiac</option><option>Saturn</option><option>Scion</option><option>Other</option></select>
       </div>
       <div class="field"><label>Model year</label>
         <select id="q-year"><option value="">Select year</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option><option>2015 or older</option></select>
@@ -1018,42 +1018,44 @@
 
   // ── VEHICLE CASCADE: Brand → Model → Year ──
   const VEHICLE_DATA = {
-    'Toyota': ['4Runner','Avalon','Camry','Corolla','GR86','Highlander','Land Cruiser','Prius','RAV4','Sequoia','Sienna','Tacoma','Tundra','Venza','Other'],
-    'Honda': ['Accord','CR-V','CR-Z','Civic','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Ridgeline','Other'],
-    'Ford': ['Bronco','Edge','Escape','Expedition','Explorer','F-150','F-250','F-350','Fusion','Maverick','Mustang','Ranger','Taurus','Other'],
-    'Chevrolet': ['Blazer','Colorado','Corvette','Equinox','Impala','Malibu','Silverado 1500','Silverado 2500','Silverado 3500','Suburban','Tahoe','Traverse','Trax','Other'],
-    'Nissan': ['Altima','Armada','Frontier','GT-R','Kicks','Leaf','Maxima','Murano','Pathfinder','Rogue','Sentra','Titan','Versa','Other'],
-    'BMW': ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','M3','M4','M5','X1','X2','X3','X4','X5','X6','X7','Other'],
-    'Mercedes-Benz': ['A-Class','C-Class','E-Class','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','CLA','CLS','Other'],
-    'Subaru': ['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','WRX','Other'],
-    'Audi': ['A3','A4','A5','A6','A7','A8','Q3','Q5','Q7','Q8','TT','R8','e-tron','Other'],
-    'Volkswagen': ['Atlas','Golf','GTI','ID.4','Jetta','Passat','Taos','Tiguan','Touareg','Other'],
-    'Jeep': ['Cherokee','Compass','Gladiator','Grand Cherokee','Renegade','Wrangler','Other'],
-    'Dodge': ['Challenger','Charger','Durango','Journey','Ram 1500','Other'],
-    'Ram': ['1500','2500','3500','ProMaster','ProMaster City','Other'],
-    'GMC': ['Acadia','Canyon','Envoy','Sierra 1500','Sierra 2500','Sierra 3500','Terrain','Yukon','Other'],
-    'Hyundai': ['Accent','Elantra','Ioniq','Ioniq 5','Kona','Palisade','Santa Cruz','Santa Fe','Sonata','Tucson','Veloster','Other'],
-    'Kia': ['Carnival','EV6','Forte','K5','Niro','Seltos','Sorento','Soul','Sportage','Stinger','Telluride','Other'],
-    'Lexus': ['ES','GS','GX','IS','LC','LS','LX','NX','RX','UX','Other'],
-    'Mazda': ['CX-30','CX-5','CX-50','CX-9','Mazda3','Mazda6','MX-5 Miata','Other'],
-    'Tesla': ['Model 3','Model S','Model X','Model Y','Cybertruck','Other'],
-    'Acura': ['ILX','MDX','RDX','TLX','NSX','Other'],
-    'Infiniti': ['Q50','Q60','QX50','QX55','QX60','QX80','Other'],
-    'Cadillac': ['CT4','CT5','Escalade','Escalade ESV','XT4','XT5','XT6','Other'],
-    'Lincoln': ['Aviator','Corsair','Navigator','Nautilus','Other'],
-    'Buick': ['Enclave','Encore','Encore GX','Envision','Other'],
-    'Chrysler': ['300','Pacifica','Voyager','Other'],
-    'Volvo': ['S60','S90','V60','V90','XC40','XC60','XC90','Other'],
-    'Land Rover': ['Defender','Discovery','Discovery Sport','Range Rover','Range Rover Evoque','Range Rover Sport','Other'],
-    'Jaguar': ['E-Pace','F-Pace','F-Type','I-Pace','XE','XF','Other'],
-    'Porsche': ['911','Boxster','Cayenne','Cayman','Macan','Panamera','Taycan','Other'],
-    'Mini': ['Clubman','Convertible','Countryman','Hardtop','Paceman','Other'],
-    'Mitsubishi': ['Eclipse Cross','Mirage','Outlander','Outlander Sport','Other'],
-    'Genesis': ['G70','G80','G90','GV70','GV80','Other'],
+    'Toyota': ['4Runner','Avalon','C-HR','Camry','Celica','Corolla','Corolla Cross','Crown','Echo','FJ Cruiser','GR86','GR Corolla','GR Supra','Highlander','Land Cruiser','Matrix','MR2','Prius','Prius C','Prius Prime','Prius V','RAV4','RAV4 Prime','Sequoia','Sienna','Solara','Supra','Tacoma','Tercel','Tundra','Venza','Yaris','Other'],
+    'Honda': ['Accord','Civic','Clarity','CR-V','CR-V Hybrid','CR-Z','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Prologue','Ridgeline','S2000','Other'],
+    'Ford': ['Bronco','Bronco Sport','Edge','Escape','Expedition','Explorer','F-150','F-150 Lightning','F-250','F-350','F-450','Flex','Focus','Fusion','Maverick','Mustang','Mustang Mach-E','Ranger','Taurus','Transit','Transit Connect','Other'],
+    'Chevrolet': ['Blazer','Bolt EV','Bolt EUV','Camaro','Colorado','Corvette','Equinox','Equinox EV','Express','HHR','Impala','Malibu','Monte Carlo','Silverado 1500','Silverado 2500HD','Silverado 3500HD','Sonic','Spark','Suburban','Tahoe','Traverse','Trax','Volt','Other'],
+    'Nissan': ['370Z','Altima','Armada','Cube','Frontier','GT-R','Juke','Kicks','Leaf','Maxima','Murano','Pathfinder','Quest','Rogue','Rogue Sport','Sentra','Titan','Titan XD','Versa','Xterra','Z','Other'],
+    'BMW': ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','i3','i4','i7','i8','iX','M2','M3','M4','M5','M6','M8','X1','X2','X3','X3M','X4','X4M','X5','X5M','X6','X6M','X7','Z3','Z4','Other'],
+    'Mercedes-Benz': ['A-Class','AMG GT','C-Class','CLA','CLS','E-Class','EQB','EQC','EQE','EQS','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','SL','SLC','SLK','Sprinter','Other'],
+    'Subaru': ['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','SVX','Tribeca','WRX','WRX STI','XV Crosstrek','Other'],
+    'Audi': ['A3','A4','A5','A6','A7','A8','e-tron','e-tron GT','Q3','Q4 e-tron','Q5','Q7','Q8','R8','RS3','RS4','RS5','RS6','RS7','S3','S4','S5','S6','S7','S8','SQ5','SQ7','SQ8','TT','TT RS','TTS','Other'],
+    'Volkswagen': ['Arteon','Atlas','Atlas Cross Sport','Beetle','CC','EOS','Golf','Golf Alltrack','Golf GTI','Golf R','Golf SportWagen','ID.4','ID.Buzz','Jetta','Jetta GLI','Passat','Taos','Tiguan','Touareg','Other'],
+    'Jeep': ['Cherokee','Commander','Compass','Gladiator','Grand Cherokee','Grand Cherokee L','Grand Cherokee 4xe','Grand Wagoneer','Patriot','Renegade','Wagoneer','Wrangler','Wrangler 4xe','Other'],
+    'Dodge': ['Challenger','Charger','Dart','Durango','Grand Caravan','Journey','Neon','Nitro','Viper','Other'],
+    'Ram': ['1500','1500 Classic','2500','3500','4500','5500','ProMaster','ProMaster City','Other'],
+    'GMC': ['Acadia','Canyon','Envoy','Envoy XL','Jimmy','Safari','Sierra 1500','Sierra 2500HD','Sierra 3500HD','Sonoma','Terrain','Yukon','Yukon XL','Other'],
+    'Hyundai': ['Accent','Azera','Elantra','Elantra GT','Elantra N','Entourage','Ioniq','Ioniq 5','Ioniq 6','Kona','Kona Electric','Nexo','Palisade','Santa Cruz','Santa Fe','Santa Fe Sport','Sonata','Sonata Hybrid','Tiburon','Tucson','Tucson Hybrid','Veloster','Veloster N','Other'],
+    'Kia': ['Cadenza','Carnival','EV6','EV9','Forte','K5','K900','Niro','Niro EV','Optima','Rio','Rondo','Sedona','Seltos','Sorento','Soul','Soul EV','Sportage','Stinger','Telluride','Other'],
+    'Lexus': ['CT','ES','ES Hybrid','GS','GS Hybrid','GX','IS','IS F','LC','LC Hybrid','LFA','LS','LS Hybrid','LX','NX','NX Hybrid','RC','RC F','RX','RX Hybrid','RZ','UX','UX Hybrid','Other'],
+    'Mazda': ['CX-3','CX-30','CX-5','CX-50','CX-9','CX-90','Mazda2','Mazda3','Mazda5','Mazda6','MX-5 Miata','MX-30','RX-7','RX-8','Tribute','Other'],
+    'Tesla': ['Cybertruck','Model 3','Model S','Model X','Model Y','Roadster','Other'],
+    'Acura': ['ILX','Integra','MDX','NSX','RDX','RLX','RSX','TL','TLX','TSX','ZDX','Other'],
+    'Infiniti': ['EX','FX','G Coupe','G Sedan','JX','M','Q40','Q45','Q50','Q60','Q70','QX30','QX50','QX55','QX56','QX60','QX70','QX80','Other'],
+    'Cadillac': ['ATS','ATS-V','CT4','CT4-V','CT5','CT5-V','CTS','CTS-V','DeVille','DTS','Eldorado','Escalade','Escalade ESV','Escalade EXT','ELR','Lyriq','SRX','STS','XT4','XT5','XT6','XTS','Other'],
+    'Lincoln': ['Aviator','Continental','Corsair','MKC','MKS','MKT','MKX','MKZ','Navigator','Navigator L','Nautilus','Town Car','Zephyr','Other'],
+    'Buick': ['Cascada','Century','Enclave','Encore','Encore GX','Envision','Envoy','LaCrosse','LeSabre','Lucerne','Regal','Regal TourX','Rendezvous','Terraza','Verano','Other'],
+    'Chrysler': ['200','300','300C','Aspen','Crossfire','Pacifica','Pacifica Hybrid','PT Cruiser','Sebring','Town & Country','Voyager','Other'],
+    'Volvo': ['C30','C40 Recharge','C70','S40','S60','S60 Cross Country','S80','S90','V40','V50','V60','V60 Cross Country','V70','V90','V90 Cross Country','XC40','XC40 Recharge','XC60','XC70','XC90','Other'],
+    'Land Rover': ['Defender','Defender 90','Defender 110','Discovery','Discovery Sport','Freelander','LR2','LR3','LR4','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar','Other'],
+    'Jaguar': ['E-Pace','F-Pace','F-Type','I-Pace','S-Type','X-Type','XE','XF','XJ','XK','Other'],
+    'Porsche': ['718 Boxster','718 Cayman','911','Cayenne','Cayenne Coupe','Macan','Panamera','Taycan','Taycan Cross Turismo','Other'],
+    'Mini': ['Clubman','Convertible','Countryman','Coupe','Hardtop 2 Door','Hardtop 4 Door','Paceman','Roadster','Other'],
+    'Mitsubishi': ['Eclipse','Eclipse Cross','Endeavor','Galant','i-MiEV','Lancer','Lancer Evolution','Mirage','Mirage G4','Montero','Montero Sport','Outlander','Outlander Sport','Outlander PHEV','Other'],
+    'Genesis': ['G70','G80','G90','GV60','GV70','GV80','Other'],
+    'Pontiac': ['Aztek','Bonneville','Firebird','G5','G6','G8','Grand Am','Grand Prix','Montana','Solstice','Torrent','Vibe','Other'],
+    'Saturn': ['Aura','Ion','L-Series','Outlook','Relay','SC','Sky','SL','SW','Vue','Other'],
+    'Scion': ['FR-S','iA','iM','iQ','tC','xA','xB','xD','Other'],
+    'Hummer': ['H1','H2','H3','H3T','EV','EV SUV','Other'],
     'Other': ['Other']
   };
-
-  const ALL_BRANDS = Object.keys(VEHICLE_DATA).sort();
 
   function onVehicleTypeChange() {
     const brand = document.getElementById('b-vtype').value;
