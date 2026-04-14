@@ -226,7 +226,7 @@
 
     <!-- CALENDAR -->
     <div class="panel" id="panel-calendar">
-      <div class="sh"><div class="st">Calendar</div><button class="rbtn" onclick="loadAllAppts().then(renderCalendar)">Refresh</button></div>
+      <div class="sh"><div class="st">Calendar</div><button class="rbtn" onclick="loadAllAppts().then(()=>renderCalendar())">Refresh</button></div>
 
       <div class="cal-nav">
         <button class="cnb" onclick="changeMonth(-1)">←</button>
@@ -598,7 +598,7 @@ function switchTab(name){
   else if(name==='bookings') loadBookings();
   else if(name==='repairs') loadTickets();
   else if(name==='quotes') loadQuotes();
-  else if(name==='calendar') loadAllAppts().then(renderCalendar);
+  else if(name==='calendar') loadAllAppts().then(()=>renderCalendar());
   else if(name==='services') loadServices();
   else if(name==='announce') loadAnnouncements();
   else if(name==='settings') loadHours();
@@ -945,7 +945,7 @@ function renderCalendar(){
     const isSel=dateStr===selectedDate;
     const dayName=DLC[new Date(dateStr+'T00:00:00').getDay()];
     const isClosed=closedDays.includes(dayName);
-    const dayAppts=allAppts.filter(a=>a.booking_date===dateStr&&a.status!=='cancelled');
+    const dayAppts=allAppts.filter(a=>a.booking_date===dateStr&&a.status!=='cancelled').sort((a,b)=>a.start_time>b.start_time?1:-1);
     let cls='cal-day';
     if(isOther) cls+=' other-month';
     if(isToday) cls+=' today';
