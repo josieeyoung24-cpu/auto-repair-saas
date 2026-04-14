@@ -297,19 +297,11 @@
           <label>Vehicle</label>
           <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:4px">
             <select id="b-vtype" onchange="onVehicleTypeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none">
-              <option value="">Type</option>
-              <option>Sedan</option>
-              <option>SUV / Crossover</option>
-              <option>Truck</option>
-              <option>Van / Minivan</option>
-              <option>Coupe</option>
-              <option>Hatchback</option>
-              <option>Wagon</option>
-              <option>Electric / Hybrid</option>
-              <option>Other</option>
+              <option value="">Brand</option>
+              <option>Acura</option><option>Audi</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Mazda</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Porsche</option><option>Ram</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Other</option>
             </select>
             <select id="b-vmake" onchange="onVehicleMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
-              <option value="">Make</option>
+              <option value="">Model</option>
             </select>
             <select id="b-vyear" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);appearance:none" disabled>
               <option value="">Year</option>
@@ -655,6 +647,9 @@
     });
     card.classList.add('show');
     document.getElementById('ready-banner').classList.toggle('show', t.status === 'ready');
+    // Animate steps in and add wrench
+    setTimeout(animateStepsIn, 150);
+    setTimeout(addWraenchIfNeeded, 300);
   }
 
   document.getElementById('status-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupStatus(); });
@@ -997,32 +992,94 @@
   }, { threshold: 0.5 });
   document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
 
-  // ── WRENCH ON IN-REPAIR STATUS ──
-  const _origLookup = lookupStatus;
-  async function lookupStatus() {
-    await _origLookup.apply(this, arguments);
-    // Add wrench icon to in-repair badge if showing
-    setTimeout(() => {
-      const badge = document.getElementById('s-badge');
-      if (badge && badge.textContent.toLowerCase().includes('in repair')) {
-        badge.innerHTML = '<span class="status-wrench">🔧</span>' + badge.textContent;
-      }
-    }, 100);
-  }
 
-  // ── STEP DOTS ANIMATE IN SEQUENCE ──
-  const _origSteps = window._stepsAnimated;
+  // ── WRENCH + STEP ANIMATION (patched cleanly) ──
   function animateStepsIn() {
     ['1','2','3','4'].forEach((n, i) => {
       const dot = document.getElementById('dot-' + n);
-      if (dot) { dot.style.opacity='0'; dot.style.transform='scale(0.5)'; setTimeout(() => { dot.style.transition='opacity 0.3s ease, transform 0.3s ease'; dot.style.opacity='1'; dot.style.transform=''; }, i * 120); }
+      if (dot) {
+        dot.style.opacity = '0';
+        dot.style.transform = 'scale(0.5)';
+        setTimeout(() => {
+          dot.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+          dot.style.opacity = '1';
+          dot.style.transform = '';
+        }, i * 120);
+      }
     });
   }
-  // Patch lookupStatus to animate steps after load
-  const __origLookup = lookupStatus;
-  async function lookupStatus() {
-    await __origLookup.apply(this, arguments);
-    setTimeout(animateStepsIn, 200);
+
+  function addWraenchIfNeeded() {
+    const badge = document.getElementById('s-badge');
+    if (badge && badge.textContent.toLowerCase().includes('in repair') && !badge.querySelector('.status-wrench')) {
+      badge.innerHTML = '<span class="status-wrench">🔧</span>' + badge.textContent;
+    }
+  }
+
+  // ── VEHICLE CASCADE: Brand → Model → Year ──
+  const VEHICLE_DATA = {
+    'Toyota': ['4Runner','Avalon','Camry','Corolla','GR86','Highlander','Land Cruiser','Prius','RAV4','Sequoia','Sienna','Tacoma','Tundra','Venza','Other'],
+    'Honda': ['Accord','CR-V','CR-Z','Civic','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Ridgeline','Other'],
+    'Ford': ['Bronco','Edge','Escape','Expedition','Explorer','F-150','F-250','F-350','Fusion','Maverick','Mustang','Ranger','Taurus','Other'],
+    'Chevrolet': ['Blazer','Colorado','Corvette','Equinox','Impala','Malibu','Silverado 1500','Silverado 2500','Silverado 3500','Suburban','Tahoe','Traverse','Trax','Other'],
+    'Nissan': ['Altima','Armada','Frontier','GT-R','Kicks','Leaf','Maxima','Murano','Pathfinder','Rogue','Sentra','Titan','Versa','Other'],
+    'BMW': ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','M3','M4','M5','X1','X2','X3','X4','X5','X6','X7','Other'],
+    'Mercedes-Benz': ['A-Class','C-Class','E-Class','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','CLA','CLS','Other'],
+    'Subaru': ['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','WRX','Other'],
+    'Audi': ['A3','A4','A5','A6','A7','A8','Q3','Q5','Q7','Q8','TT','R8','e-tron','Other'],
+    'Volkswagen': ['Atlas','Golf','GTI','ID.4','Jetta','Passat','Taos','Tiguan','Touareg','Other'],
+    'Jeep': ['Cherokee','Compass','Gladiator','Grand Cherokee','Renegade','Wrangler','Other'],
+    'Dodge': ['Challenger','Charger','Durango','Journey','Ram 1500','Other'],
+    'Ram': ['1500','2500','3500','ProMaster','ProMaster City','Other'],
+    'GMC': ['Acadia','Canyon','Envoy','Sierra 1500','Sierra 2500','Sierra 3500','Terrain','Yukon','Other'],
+    'Hyundai': ['Accent','Elantra','Ioniq','Ioniq 5','Kona','Palisade','Santa Cruz','Santa Fe','Sonata','Tucson','Veloster','Other'],
+    'Kia': ['Carnival','EV6','Forte','K5','Niro','Seltos','Sorento','Soul','Sportage','Stinger','Telluride','Other'],
+    'Lexus': ['ES','GS','GX','IS','LC','LS','LX','NX','RX','UX','Other'],
+    'Mazda': ['CX-30','CX-5','CX-50','CX-9','Mazda3','Mazda6','MX-5 Miata','Other'],
+    'Tesla': ['Model 3','Model S','Model X','Model Y','Cybertruck','Other'],
+    'Acura': ['ILX','MDX','RDX','TLX','NSX','Other'],
+    'Infiniti': ['Q50','Q60','QX50','QX55','QX60','QX80','Other'],
+    'Cadillac': ['CT4','CT5','Escalade','Escalade ESV','XT4','XT5','XT6','Other'],
+    'Lincoln': ['Aviator','Corsair','Navigator','Nautilus','Other'],
+    'Buick': ['Enclave','Encore','Encore GX','Envision','Other'],
+    'Chrysler': ['300','Pacifica','Voyager','Other'],
+    'Volvo': ['S60','S90','V60','V90','XC40','XC60','XC90','Other'],
+    'Land Rover': ['Defender','Discovery','Discovery Sport','Range Rover','Range Rover Evoque','Range Rover Sport','Other'],
+    'Jaguar': ['E-Pace','F-Pace','F-Type','I-Pace','XE','XF','Other'],
+    'Porsche': ['911','Boxster','Cayenne','Cayman','Macan','Panamera','Taycan','Other'],
+    'Mini': ['Clubman','Convertible','Countryman','Hardtop','Paceman','Other'],
+    'Mitsubishi': ['Eclipse Cross','Mirage','Outlander','Outlander Sport','Other'],
+    'Genesis': ['G70','G80','G90','GV70','GV80','Other'],
+    'Other': ['Other']
+  };
+
+  const ALL_BRANDS = Object.keys(VEHICLE_DATA).sort();
+
+  function onVehicleTypeChange() {
+    const brand = document.getElementById('b-vtype').value;
+    const modelEl = document.getElementById('b-vmake');
+    const yearEl = document.getElementById('b-vyear');
+    modelEl.innerHTML = '<option value="">Model</option>';
+    yearEl.innerHTML = '<option value="">Year</option>';
+    yearEl.disabled = true;
+    if (!brand) { modelEl.disabled = true; return; }
+    (VEHICLE_DATA[brand] || ['Other']).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m; modelEl.appendChild(o);
+    });
+    modelEl.disabled = false;
+  }
+
+  function onVehicleMakeChange() {
+    const model = document.getElementById('b-vmake').value;
+    const yearEl = document.getElementById('b-vyear');
+    yearEl.innerHTML = '<option value="">Year</option>';
+    if (!model) { yearEl.disabled = true; return; }
+    for (let y = new Date().getFullYear() + 1; y >= 1990; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y; yearEl.appendChild(o);
+    }
+    yearEl.disabled = false;
   }
 </script>
 </body>
