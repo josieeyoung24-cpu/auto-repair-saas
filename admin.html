@@ -615,7 +615,7 @@ async function sendQuotePrice(id, name, email, vehicle, service) {
   const low = document.getElementById('qp-low-' + id).value;
   const high = document.getElementById('qp-high-' + id).value;
   if (!low) { alert('Set a price first before emailing the customer.'); return; }
-  const res = await fetch('/.netlify/functions/send-email', {
+  const res = await fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -633,7 +633,7 @@ async function sendQuotePrice(id, name, email, vehicle, service) {
 
 async function sendQuoteEmail(type, name, email, vehicle, service, low, high) {
   if (!email) return;
-  await fetch('/.netlify/functions/send-email', {
+  await fetch('/api/send-email', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ type, customerName: name, customerEmail: email, vehicle, service, priceLow: low, priceHigh: high || low })
@@ -763,7 +763,7 @@ async function confirmBooking(id,name,vehicle,service,phone,email){
   const {error}=await db.from('tickets').insert([{customer_name:name,vehicle,service,status:'checked-in',eta:'',shop_id:SHOP_ID,customer_email:email||''}]);
   if(!error){
     await db.from('bookings').delete().eq('id',id);
-    if(email) fetch('/.netlify/functions/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'confirmed',customerName:name,customerEmail:email,vehicle,service})});
+    if(email) fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'confirmed',customerName:name,customerEmail:email,vehicle,service})});
     toast('Confirmed — ticket created for '+name);
     switchTab('repairs');
   }
@@ -859,7 +859,7 @@ async function updateStatus(id,status){
   toast('Status → '+status.replace('-',' '));
   if(status==='ready'){
     const {data}=await db.from('tickets').select('*').eq('id',id).single();
-    if(data?.customer_email) fetch('/.netlify/functions/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'ready',customerName:data.customer_name,customerEmail:data.customer_email,vehicle:data.vehicle,service:data.service,eta:data.eta})});
+    if(data?.customer_email) fetch('/api/send-email',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({type:'ready',customerName:data.customer_name,customerEmail:data.customer_email,vehicle:data.vehicle,service:data.service,eta:data.eta})});
   }
   loadTickets();
 }
