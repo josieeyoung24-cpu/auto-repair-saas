@@ -375,6 +375,35 @@
     <!-- SETTINGS -->
     <div class="panel" id="panel-settings">
       <div class="sh"><div class="st">Settings</div></div>
+
+      <div class="box">
+        <div class="box-title">Homepage photo or video</div>
+        <div class="box-sub">Add a photo or video to the right side of your homepage. Leave both blank to keep it empty. Video takes priority if both are set.</div>
+        <div class="fg">
+          <div class="ff" style="grid-column:1/-1">
+            <label>Shop photo</label>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+              <input type="text" id="hero-photo-url" placeholder="Paste image URL or upload below" style="flex:1;min-width:200px;padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font)">
+              <label style="padding:8px 14px;background:var(--accent);color:#fff;border-radius:var(--radius);font-size:12px;cursor:pointer;flex-shrink:0;white-space:nowrap">
+                Upload photo<input type="file" accept="image/*" style="display:none" onchange="uploadHeroPhoto(this)">
+              </label>
+            </div>
+          </div>
+          <div class="ff" style="grid-column:1/-1">
+            <label>YouTube video URL</label>
+            <input type="text" id="hero-video-url" placeholder="https://www.youtube.com/watch?v=..." style="padding:9px 12px;border:1px solid var(--border);border-radius:var(--radius);font-size:13px;font-family:var(--font);width:100%">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap">
+          <button class="add-btn" style="margin-top:0" onclick="saveHeroMedia()">Save & publish to site</button>
+          <button class="add-btn" style="margin-top:0;background:#888" onclick="clearHeroMedia()">Clear / remove</button>
+        </div>
+        <div id="hero-preview" style="margin-top:16px;display:none">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Currently showing on site:</div>
+          <div id="hero-preview-content"></div>
+        </div>
+      </div>
+
       <div class="box">
         <div class="box-title">Change admin password</div>
         <div class="box-sub">Update the password used to access this admin panel and the staff login on the customer site.</div>
@@ -1160,8 +1189,67 @@ async function deleteAnn(id){
   toast('Announcement deleted'); loadAnnouncements();
 }
 
+// ── HERO MEDIA ──
+async function loadHeroSettings() {
+  const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
+  if (!data || data.length === 0) return;
+  const s = data[0];
+  if (s.hero_photo_url) document.getElementById('hero-photo-url').value = s.hero_photo_url;
+  if (s.hero_video_url) document.getElementById('hero-video-url').value = s.hero_video_url;
+  showHeroPreview(s.hero_photo_url, s.hero_video_url);
+}
+
+function showHeroPreview(photoUrl, videoUrl) {
+  const preview = document.getElementById('hero-preview');
+  const content = document.getElementById('hero-preview-content');
+  if (videoUrl) {
+    content.innerHTML = `<div style="font-size:13px;color:var(--text)">🎬 Video: <a href="${videoUrl}" target="_blank" style="color:var(--accent)">${videoUrl.substring(0,50)}...</a></div>`;
+    preview.style.display = 'block';
+  } else if (photoUrl) {
+    content.innerHTML = `<img src="${photoUrl}" style="max-width:200px;max-height:120px;border-radius:8px;border:1px solid var(--border);object-fit:cover">`;
+    preview.style.display = 'block';
+  } else {
+    preview.style.display = 'none';
+  }
+}
+
+async function uploadHeroPhoto(input) {
+  const file = input.files[0];
+  if (!file) return;
+  toast('Uploading photo...');
+  const fileName = `${SHOP_ID}/hero-${Date.now()}.${file.name.split('.').pop()}`;
+  const { error } = await db.storage.from('dvi-photos').upload(fileName, file, { upsert: true });
+  if (error) { toast('Upload failed: ' + error.message, '#8b1a1a'); return; }
+  const { data: urlData } = db.storage.from('dvi-photos').getPublicUrl(fileName);
+  document.getElementById('hero-photo-url').value = urlData.publicUrl;
+  toast('Photo uploaded — hit Save to publish', '#16a34a');
+}
+
+async function saveHeroMedia() {
+  const photoUrl = document.getElementById('hero-photo-url').value.trim();
+  const videoUrl = document.getElementById('hero-video-url').value.trim();
+  const { data: existing } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
+  if (existing && existing.length > 0) {
+    await db.from('shop_settings').update({ hero_photo_url: photoUrl, hero_video_url: videoUrl }).eq('shop_id', SHOP_ID);
+  } else {
+    await db.from('shop_settings').insert([{ shop_id: SHOP_ID, hero_photo_url: photoUrl, hero_video_url: videoUrl }]);
+  }
+  toast('Published to homepage!', '#16a34a');
+  showHeroPreview(photoUrl, videoUrl);
+}
+
+async function clearHeroMedia() {
+  if (!confirm('Remove photo/video from homepage?')) return;
+  await db.from('shop_settings').update({ hero_photo_url: '', hero_video_url: '' }).eq('shop_id', SHOP_ID);
+  document.getElementById('hero-photo-url').value = '';
+  document.getElementById('hero-video-url').value = '';
+  document.getElementById('hero-preview').style.display = 'none';
+  toast('Media removed from homepage');
+}
+
 // ── SETTINGS / HOURS ──
 async function loadHours(){
+  loadHeroSettings();
   const el=document.getElementById('hours-list');
   const {data}=await db.from('availability').select('*').eq('shop_id',SHOP_ID).order('id');
   if(!data||data.length===0){el.innerHTML='<div class="empty">No hours found.</div>';return;}
