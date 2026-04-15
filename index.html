@@ -908,8 +908,6 @@
   }
 
   // ── STAFF LOGIN ──
-  const ADMIN_PASSWORD = localStorage.getItem('aurora-admin-pw') || 'aurora2025';
-
   function openAdminModal() {
     const modal = document.getElementById('admin-modal');
     modal.style.display = 'flex';
@@ -922,13 +920,32 @@
     document.getElementById('admin-login-err').style.display = 'none';
   }
 
-  function checkAdminLogin() {
+  async function checkAdminLogin() {
     const pw = document.getElementById('admin-pw').value;
-    if (pw === ADMIN_PASSWORD) {
-      closeAdminModal();
-      window.open('/admin.html?auth=' + btoa(pw), '_blank');
-    } else {
-      document.getElementById('admin-login-err').style.display = 'block';
+    const errEl = document.getElementById('admin-login-err');
+    errEl.style.display = 'none';
+
+    // Check Supabase first (works across all devices), fallback to localStorage
+    try {
+      const { data } = await db.from('shop_settings').select('admin_password').eq('shop_id', SHOP_ID).limit(1);
+      const savedPw = (data && data[0] && data[0].admin_password) ? data[0].admin_password : (localStorage.getItem('aurora-admin-pw') || 'aurora2025');
+      if (pw === savedPw) {
+        // Also sync to localStorage for offline fallback
+        localStorage.setItem('aurora-admin-pw', savedPw);
+        closeAdminModal();
+        window.open('/admin.html?auth=' + btoa(pw), '_blank');
+      } else {
+        errEl.style.display = 'block';
+      }
+    } catch(e) {
+      // Fallback to localStorage if Supabase fails
+      const fallback = localStorage.getItem('aurora-admin-pw') || 'aurora2025';
+      if (pw === fallback) {
+        closeAdminModal();
+        window.open('/admin.html?auth=' + btoa(pw), '_blank');
+      } else {
+        errEl.style.display = 'block';
+      }
     }
   }
 
