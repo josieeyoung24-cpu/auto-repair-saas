@@ -908,7 +908,7 @@
   }
 
   // ── STAFF LOGIN ──
-  const ADMIN_PASSWORD = 'aurora2025';
+  const ADMIN_PASSWORD = localStorage.getItem('aurora-admin-pw') || 'aurora2025';
 
   function openAdminModal() {
     const modal = document.getElementById('admin-modal');
