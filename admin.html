@@ -550,7 +550,7 @@ function startAutoRefresh() {
   }, 30000); // every 30 seconds
 }
 
-function changePassword() {
+async function changePassword() {
   const current = document.getElementById('pw-current').value;
   const newPw = document.getElementById('pw-new').value;
   const confirm = document.getElementById('pw-confirm').value;
@@ -577,12 +577,19 @@ function changePassword() {
     msg.textContent = 'Passwords do not match.';
     return;
   }
+  // Save to localStorage AND Supabase so all devices stay in sync
   localStorage.setItem('aurora-admin-pw', newPw);
+  const { data: existing } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
+  if (existing && existing.length > 0) {
+    await db.from('shop_settings').update({ admin_password: newPw }).eq('shop_id', SHOP_ID);
+  } else {
+    await db.from('shop_settings').insert([{ shop_id: SHOP_ID, admin_password: newPw }]);
+  }
   ['pw-current','pw-new','pw-confirm'].forEach(id => document.getElementById(id).value = '');
   msg.style.display = 'block';
   msg.style.background = '#f0faf4';
   msg.style.color = '#1a6b3a';
-  msg.textContent = 'Password updated successfully. Use the new password next time you log in.';
+  msg.textContent = 'Password updated — works on all devices now.';
 }
 const {createClient}=supabase;
 const db=createClient(SUPABASE_URL,SUPABASE_KEY);
