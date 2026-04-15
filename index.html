@@ -48,7 +48,7 @@
   .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
   .nav-hours { display: block !important; }
   .hero { padding: 88px 40px 72px 40px; background: linear-gradient(160deg, #fff 55%, #fdf0ef 100%); display: flex; align-items: center; justify-content: space-between; gap: 48px; overflow: visible; position: relative; }
-  .hero-content { max-width: 500px; flex-shrink: 0; padding: 48px 56px 48px 16px; border: 2px solid rgba(192,57,43,0.55); border-radius: 14px; position: relative; }
+  .hero-content { max-width: 500px; flex-shrink: 0; padding: 48px 56px 48px 16px; border: 2px solid rgba(192,57,43,0.55); border-radius: 14px; position: relative; z-index: 1; }
   .hero-content::before { content: ''; position: absolute; inset: 10px; border: 1px solid rgba(192,57,43,0.25); border-radius: 8px; pointer-events: none; }
 
   .hero-media { flex: 1; display: none; border-radius: 0; overflow: hidden; box-shadow: none; position: relative; }
@@ -316,7 +316,94 @@
 
 <div id="ann-banner" style="display:none"></div>
 
-<section class="hero">
+<section class="hero" style="position:relative">
+<div style="position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0">
+  <svg width="100%" height="100%" viewBox="0 0 1200 480" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" style="position:absolute;bottom:0;left:0;width:100%;height:100%">
+    <style>
+      .sky-fill { fill: rgba(192,57,43,0.04); stroke: rgba(192,57,43,0.1); stroke-width: 0.8; }
+      .sky-needle { fill: none; stroke: rgba(192,57,43,0.12); stroke-width: 1; }
+      .sky-needle-fill { fill: rgba(192,57,43,0.05); stroke: rgba(192,57,43,0.12); stroke-width: 0.8; }
+      .sky-window { fill: rgba(192,57,43,0.07); stroke: none; }
+      .water { fill: none; stroke: rgba(192,57,43,0.05); stroke-width: 0.7; }
+      .mountain { fill: rgba(192,57,43,0.03); stroke: rgba(192,57,43,0.07); stroke-width: 0.8; }
+    </style>
+    <polygon class="mountain" points="580,280 640,180 700,280"/>
+    <path class="water" d="M0,420 Q200,415 400,422 Q600,428 800,420 Q1000,414 1200,420"/>
+    <path class="water" d="M0,432 Q150,426 350,433 Q550,440 750,432 Q950,426 1200,432"/>
+    <path class="water" d="M0,444 Q200,438 450,445 Q700,452 900,444 Q1100,438 1200,444"/>
+    <rect class="sky-fill" x="200" y="260" width="60" height="160"/>
+    <rect class="sky-fill" x="265" y="240" width="45" height="180"/>
+    <rect class="sky-fill" x="315" y="280" width="55" height="140"/>
+    <rect class="sky-fill" x="375" y="250" width="40" height="170"/>
+    <rect class="sky-fill" x="430" y="270" width="50" height="150"/>
+    <polygon class="sky-fill" points="430,270 480,270 455,250"/>
+    <rect class="sky-fill" x="490" y="220" width="70" height="200"/>
+    <rect class="sky-fill" x="500" y="210" width="50" height="15"/>
+    <rect class="sky-fill" x="510" y="200" width="30" height="14"/>
+    <line class="sky-needle" x1="525" y1="200" x2="525" y2="165"/>
+    <rect class="sky-fill" x="565" y="190" width="60" height="230"/>
+    <rect class="sky-fill" x="573" y="178" width="44" height="16"/>
+    <rect class="sky-fill" x="581" y="166" width="28" height="16"/>
+    <rect class="sky-fill" x="588" y="155" width="14" height="14"/>
+    <line class="sky-needle" x1="595" y1="155" x2="595" y2="118"/>
+    <rect class="sky-fill" x="630" y="200" width="80" height="220"/>
+    <rect class="sky-fill" x="638" y="188" width="64" height="16"/>
+    <rect class="sky-fill" x="646" y="176" width="48" height="16"/>
+    <rect class="sky-fill" x="654" y="165" width="32" height="14"/>
+    <rect class="sky-fill" x="661" y="152" width="18" height="14"/>
+    <rect class="sky-fill" x="665" y="140" width="10" height="14"/>
+    <line class="sky-needle" x1="670" y1="140" x2="670" y2="108"/>
+    <rect class="sky-window" x="638" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="648" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="658" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="668" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="678" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="698" y="210" width="6" height="4"/>
+    <rect class="sky-window" x="638" y="222" width="6" height="4"/>
+    <rect class="sky-window" x="648" y="222" width="6" height="4"/>
+    <rect class="sky-window" x="658" y="222" width="6" height="4"/>
+    <rect class="sky-window" x="668" y="222" width="6" height="4"/>
+    <rect class="sky-window" x="678" y="222" width="6" height="4"/>
+    <rect class="sky-window" x="698" y="222" width="6" height="4"/>
+    <rect class="sky-fill" x="720" y="140" width="50" height="280"/>
+    <rect class="sky-fill" x="728" y="128" width="34" height="16"/>
+    <rect class="sky-fill" x="734" y="115" width="22" height="16"/>
+    <rect class="sky-fill" x="739" y="103" width="12" height="14"/>
+    <line class="sky-needle" x1="745" y1="103" x2="745" y2="70"/>
+    <rect class="sky-window" x="726" y="152" width="6" height="4"/>
+    <rect class="sky-window" x="736" y="152" width="6" height="4"/>
+    <rect class="sky-window" x="746" y="152" width="6" height="4"/>
+    <rect class="sky-window" x="756" y="152" width="6" height="4"/>
+    <rect class="sky-window" x="726" y="164" width="6" height="4"/>
+    <rect class="sky-window" x="736" y="164" width="6" height="4"/>
+    <rect class="sky-window" x="746" y="164" width="6" height="4"/>
+    <rect class="sky-window" x="756" y="164" width="6" height="4"/>
+    <rect class="sky-window" x="726" y="176" width="6" height="4"/>
+    <rect class="sky-window" x="736" y="176" width="6" height="4"/>
+    <rect class="sky-window" x="746" y="176" width="6" height="4"/>
+    <rect class="sky-window" x="756" y="176" width="6" height="4"/>
+    <rect class="sky-fill" x="790" y="230" width="55" height="190"/>
+    <polygon class="sky-fill" points="790,230 845,230 845,210 815,200"/>
+    <rect class="sky-fill" x="850" y="260" width="40" height="160"/>
+    <line class="sky-needle" x1="870" y1="420" x2="870" y2="350"/>
+    <line class="sky-needle" x1="848" y1="420" x2="860" y2="350"/>
+    <line class="sky-needle" x1="892" y1="420" x2="880" y2="350"/>
+    <ellipse class="sky-needle-fill" cx="870" cy="320" rx="36" ry="12"/>
+    <rect class="sky-needle-fill" x="852" y="308" width="36" height="22" rx="2"/>
+    <line class="sky-needle" x1="870" y1="308" x2="870" y2="225"/>
+    <rect class="sky-needle-fill" x="867" y="285" width="6" height="18" rx="1"/>
+    <rect class="sky-window" x="856" y="314" width="4" height="3"/>
+    <rect class="sky-window" x="864" y="314" width="4" height="3"/>
+    <rect class="sky-window" x="872" y="314" width="4" height="3"/>
+    <rect class="sky-window" x="880" y="314" width="4" height="3"/>
+    <rect class="sky-fill" x="960" y="290" width="50" height="130"/>
+    <rect class="sky-fill" x="1015" y="310" width="40" height="110"/>
+    <rect class="sky-fill" x="1060" y="275" width="60" height="145"/>
+    <line class="sky-needle" x1="1090" y1="275" x2="1090" y2="248"/>
+    <rect class="sky-fill" x="1125" y="320" width="45" height="100"/>
+    <line style="fill:none;stroke:rgba(192,57,43,0.1);stroke-width:1.2" x1="0" y1="420" x2="1200" y2="420"/>
+  </svg>
+</div>
   <div class="hero-content">
     <div class="hero-eyebrow" id="hero-eyebrow">Aurora Ave N · Seattle, WA 98133</div>
     <h1>Honest repairs.<br><em>Fair price.</em> Same day.</h1>
