@@ -642,15 +642,25 @@
   </div>
 
   <div class="tab-panel" id="tab-quote">
-    <div class="quote-form">
-      <div class="field"><label>Vehicle make</label>
-        <select id="q-make"><option value="">Select make</option><option>Acura</option><option>Alfa Romeo</option><option>Aston Martin</option><option>Audi</option><option>Bentley</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ferrari</option><option>Fiat</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Lamborghini</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Maserati</option><option>Mazda</option><option>McLaren</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Pontiac</option><option>Porsche</option><option>Ram</option><option>Rolls-Royce</option><option>Saab</option><option>Saturn</option><option>Scion</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Hummer</option><option>Pontiac</option><option>Saturn</option><option>Scion</option><option>Other</option></select>
+    <div class="quote-form" style="grid-template-columns:1fr 1fr 1fr">
+      <div class="field"><label>Make</label>
+        <select id="q-make" onchange="onQuoteMakeChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%">
+          <option value="">Select make</option>
+          <option>Acura</option><option>Audi</option><option>BMW</option><option>Buick</option><option>Cadillac</option><option>Chevrolet</option><option>Chrysler</option><option>Dodge</option><option>Ford</option><option>Genesis</option><option>GMC</option><option>Honda</option><option>Hummer</option><option>Hyundai</option><option>Infiniti</option><option>Jaguar</option><option>Jeep</option><option>Kia</option><option>Land Rover</option><option>Lexus</option><option>Lincoln</option><option>Mazda</option><option>Mercedes-Benz</option><option>Mini</option><option>Mitsubishi</option><option>Nissan</option><option>Pontiac</option><option>Porsche</option><option>Ram</option><option>Saturn</option><option>Scion</option><option>Subaru</option><option>Tesla</option><option>Toyota</option><option>Volkswagen</option><option>Volvo</option><option>Other</option>
+        </select>
       </div>
-      <div class="field"><label>Model year</label>
-        <select id="q-year"><option value="">Select year</option><option>2024</option><option>2023</option><option>2022</option><option>2021</option><option>2020</option><option>2019</option><option>2018</option><option>2017</option><option>2016</option><option>2015 or older</option></select>
+      <div class="field"><label>Model</label>
+        <select id="q-model" onchange="onQuoteModelChange()" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%" disabled>
+          <option value="">Select model</option>
+        </select>
       </div>
-      <div class="field"><label>Service</label>
-        <select id="q-service">
+      <div class="field"><label>Year</label>
+        <select id="q-year" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%" disabled>
+          <option value="">Select year</option>
+        </select>
+      </div>
+      <div class="field" style="grid-column:1/-1"><label>Service</label>
+        <select id="q-service" style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%">
           <option value="" data-low="" data-high="">Select service</option>
           <option data-low="49" data-high="79">Oil change</option>
           <option data-low="120" data-high="220">Brake service</option>
@@ -673,6 +683,7 @@
           <div class="field"><label>Your name</label><input type="text" id="q-name" placeholder="Mike Torres"></div>
           <div class="field"><label>Phone</label><input type="tel" id="q-phone" placeholder="(206) 555-0100"></div>
           <div class="field" style="grid-column:1/-1"><label>Email (optional)</label><input type="email" id="q-email" placeholder="mike@email.com"></div>
+          <div class="field" style="grid-column:1/-1"><label>Notes — describe the problem or any concerns</label><textarea id="q-notes" placeholder="e.g. Hear a grinding noise when braking, check engine light is on, leaking fluid..." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.5"></textarea></div>
         </div>
         <button class="btn btn-primary" onclick="submitQuote()" id="q-submit-btn" style="margin-top:12px">Send quote request</button>
         <div id="q-success" style="display:none;margin-top:12px;padding:12px 16px;background:#f0faf4;border:1px solid #b8e8c8;border-radius:var(--radius);font-size:14px;color:#1a6b3a">Quote request sent! We'll confirm the price and reach out shortly.</div>
@@ -890,14 +901,43 @@
 
   document.getElementById('status-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupStatus(); });
 
+  function onQuoteMakeChange() {
+    const make = document.getElementById('q-make').value;
+    const modelEl = document.getElementById('q-model');
+    const yearEl = document.getElementById('q-year');
+    modelEl.innerHTML = '<option value="">Select model</option>';
+    yearEl.innerHTML = '<option value="">Select year</option>';
+    yearEl.disabled = true;
+    if (!make) { modelEl.disabled = true; return; }
+    (VEHICLE_DATA[make] || ['Other']).forEach(m => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m; modelEl.appendChild(o);
+    });
+    modelEl.disabled = false;
+  }
+
+  function onQuoteModelChange() {
+    const model = document.getElementById('q-model').value;
+    const yearEl = document.getElementById('q-year');
+    yearEl.innerHTML = '<option value="">Select year</option>';
+    if (!model) { yearEl.disabled = true; return; }
+    for (let y = new Date().getFullYear() + 1; y >= 1950; y--) {
+      const o = document.createElement('option');
+      o.value = y; o.textContent = y; yearEl.appendChild(o);
+    }
+    yearEl.disabled = false;
+  }
+
   function getQuote() {
     const make = document.getElementById('q-make').value;
+    const model = document.getElementById('q-model').value;
     const year = document.getElementById('q-year').value;
     const svcEl = document.getElementById('q-service');
     const opt = svcEl.options[svcEl.selectedIndex];
-    if (!make || !year || !opt.dataset.low) { alert('Please select a make, year, and service.'); return; }
+    if (!make || !year || !opt.dataset.low) { alert('Please select a make, model, year, and service.'); return; }
+    const vehicle = [year, make, model].filter(Boolean).join(' ');
     document.getElementById('quote-price').textContent = '$' + opt.dataset.low + ' – $' + opt.dataset.high;
-    document.getElementById('quote-detail').textContent = opt.text + ' · ' + make + ' ' + year + ' · Parts + labor included';
+    document.getElementById('quote-detail').textContent = opt.text + ' · ' + vehicle + ' · Parts + labor included';
     document.getElementById('quote-result').classList.add('show');
     document.getElementById('q-success').style.display = 'none';
     document.getElementById('q-error').style.display = 'none';
@@ -908,21 +948,25 @@
     const phone = document.getElementById('q-phone').value.trim();
     const email = document.getElementById('q-email').value.trim();
     const make = document.getElementById('q-make').value;
+    const model = document.getElementById('q-model').value;
     const year = document.getElementById('q-year').value;
+    const notes = document.getElementById('q-notes').value.trim();
     const svcEl = document.getElementById('q-service');
     const opt = svcEl.options[svcEl.selectedIndex];
     if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
+    const vehicle = [year, make, model].filter(Boolean).join(' ');
     const btn = document.getElementById('q-submit-btn');
     btn.textContent = 'Sending...'; btn.disabled = true;
     const { error } = await db.from('quotes').insert([{
-      name, phone, email, make, year,
+      name, phone, email,
+      make: vehicle,
+      year,
       service: opt.text,
       price_low: opt.dataset.low,
       price_high: opt.dataset.high,
       shop_id: SHOP_ID,
       status: 'pending'
     }]);
-    // Send email to shop
     fetch('/api/send-email', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -931,8 +975,9 @@
         customerName: name,
         customerEmail: email,
         customerPhone: phone,
-        vehicle: make + ' ' + year,
+        vehicle,
         service: opt.text,
+        notes,
         priceLow: opt.dataset.low,
         priceHigh: opt.dataset.high
       })
@@ -942,9 +987,7 @@
       document.getElementById('q-error').style.display = 'block';
     } else {
       document.getElementById('q-success').style.display = 'block';
-      document.getElementById('q-name').value = '';
-      document.getElementById('q-phone').value = '';
-      document.getElementById('q-email').value = '';
+      ['q-name','q-phone','q-email','q-notes'].forEach(id => document.getElementById(id).value = '');
     }
   }
 
