@@ -682,7 +682,7 @@
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:480px">
           <div class="field"><label>Your name</label><input type="text" id="q-name" placeholder="Mike Torres"></div>
           <div class="field"><label>Phone</label><input type="tel" id="q-phone" placeholder="(206) 555-0100"></div>
-          <div class="field" style="grid-column:1/-1"><label>Email (optional)</label><input type="email" id="q-email" placeholder="mike@email.com"></div>
+          <div class="field" style="grid-column:1/-1"><label>Email</label><input type="email" id="q-email" placeholder="mike@email.com"></div>
           <div class="field" style="grid-column:1/-1"><label>Notes — describe the problem or any concerns</label><textarea id="q-notes" placeholder="e.g. Hear a grinding noise when braking, check engine light is on, leaking fluid..." style="padding:11px 14px;border:1px solid var(--border);border-radius:var(--radius);font-size:14px;color:var(--text);background:var(--white);font-family:var(--font-main);width:100%;min-height:90px;resize:vertical;line-height:1.5"></textarea></div>
         </div>
         <button class="btn btn-primary" onclick="submitQuote()" id="q-submit-btn" style="margin-top:12px">Send quote request</button>
@@ -953,7 +953,7 @@
     const notes = document.getElementById('q-notes').value.trim();
     const svcEl = document.getElementById('q-service');
     const opt = svcEl.options[svcEl.selectedIndex];
-    if (!name || !phone) { alert('Please enter your name and phone number.'); return; }
+    if (!name || !phone || !email) { alert('Please enter your name, phone number, and email.'); return; }
     const vehicle = [year, make, model].filter(Boolean).join(' ');
     const btn = document.getElementById('q-submit-btn');
     btn.textContent = 'Sending...'; btn.disabled = true;
