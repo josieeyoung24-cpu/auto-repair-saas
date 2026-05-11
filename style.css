@@ -201,44 +201,80 @@ footer { background: var(--black); color: rgba(255,255,255,0.5); padding: 64px 4
 
 @media (max-width: 768px) {
   .topbar-info { display: none; }
-  nav { top: 0; padding: 0 16px; height: 56px; }
+
+  /* Nav */
+  nav { top: 0; padding: 0 16px; height: 54px; }
   nav::after { height: 2px; }
   .nav-links { display: none; }
-  .nav-phone { font-size: 10px; padding: 7px 12px; }
+  .nav-phone { font-size: 11px; padding: 8px 14px; font-weight: 700; }
+
+  /* Hero - full dark mobile experience */
   .hero { grid-template-columns: 1fr; min-height: auto; }
-  .hero-bg-text { display: none; }
-  .hero-content { padding: 48px 20px 40px; }
-  .hero-content::after, .hero-content::before { display: none; }
+  .hero-bg-text { font-size: 80px; bottom: -4px; opacity: 1; }
+  .hero-content { padding: 52px 20px 44px; }
+  .hero-content::after { top: 12px; left: 12px; right: 12px; bottom: 12px; }
+  .hero-content::before { display: none; }
   .hero-right { display: none; }
-  .hero h1 { font-size: 56px; }
-  .hero p { font-size: 14px; max-width: 100%; }
-  .hero-actions { flex-direction: column; }
-  .hero-actions .btn { width: 100%; text-align: center; padding: 16px; }
-  .features-strip { flex-direction: column; }
-  .feature-item { border-right: none; border-bottom: 1px solid var(--stone); }
-  .tools-section { padding: 48px 16px; }
-  .section-header h2 { font-size: 36px; }
-  .tab-nav { width: 100%; }
-  .tab-btn { flex: 1; text-align: center; padding: 10px 4px; font-size: 9px; }
+  .hero h1 { font-size: 64px; line-height: 0.88; }
+  .hero p { font-size: 14px; max-width: 100%; margin-bottom: 32px; }
+  .hero-actions { flex-direction: column; gap: 10px; }
+  .hero-actions .btn { width: 100%; text-align: center; padding: 16px; font-size: 12px; }
+
+  /* Features strip - 2x2 grid on mobile */
+  .features-strip { display: grid; grid-template-columns: 1fr 1fr; }
+  .feature-item { border-right: 1px solid var(--stone); border-bottom: 1px solid var(--stone); padding: 18px 14px; gap: 10px; }
+  .feature-item:nth-child(2), .feature-item:nth-child(4) { border-right: none; }
+  .feature-item:nth-child(3), .feature-item:nth-child(4) { border-bottom: none; }
+  .feature-icon { width: 32px; height: 32px; flex-shrink: 0; }
+  .feature-label { font-size: 12px; }
+  .feature-sub { font-size: 9px; }
+
+  /* Tools section */
+  .tools-section { padding: 52px 16px; }
+  .section-header h2 { font-size: 38px; }
+  .section-header p { font-size: 13px; }
+  .tab-nav { width: 100%; border-radius: var(--r); }
+  .tab-btn { flex: 1; text-align: center; padding: 11px 4px; font-size: 9px; letter-spacing: 0.06em; }
   .form-grid { grid-template-columns: 1fr; }
   .quote-form { grid-template-columns: 1fr; }
   #svc-checkboxes { grid-template-columns: 1fr !important; }
   .svc-check-label { font-size: 15px !important; padding: 13px 14px !important; }
   #slots-grid { gap: 6px; }
   .slot-btn { padding: 10px 12px; font-size: 11px; }
-  .services-section { padding: 48px 16px; }
+
+  /* Services - single column, cleaner */
+  .services-section { padding: 52px 16px; }
   .services-grid { grid-template-columns: 1fr; }
-  .service-card { border-right: none; }
-  .reviews-section { padding: 48px 16px; }
-  .reviews-grid { grid-template-columns: 1fr; }
-  footer { padding: 48px 16px; grid-template-columns: 1fr; gap: 32px; }
-  .footer-bottom { padding: 14px 16px; flex-direction: column; gap: 6px; text-align: center; }
+  .service-card { border-right: none; padding: 28px 20px; }
+  .service-num { font-size: 40px; }
+  .service-name { font-size: 20px; }
+
+  /* Reviews - single column */
+  .reviews-section { padding: 52px 16px; }
+  .reviews-grid { grid-template-columns: 1fr; gap: 14px; }
+  .review-card { padding: 24px 20px; }
+  .review-quote { font-size: 36px; }
+
+  /* Footer - cleaner stacked */
+  footer { padding: 44px 16px 36px; grid-template-columns: 1fr; gap: 28px; border-top-width: 3px; }
+  .footer-brand { font-size: 20px; }
+  .footer-bottom { padding: 14px 16px; flex-direction: column; gap: 4px; text-align: center; }
+
+  /* Quote result */
   .quote-result { padding: 20px; }
+  .quote-price { font-size: 44px; }
+
+  /* Status search */
   .status-search { flex-direction: column; }
   .status-search input, .status-search button { width: 100%; }
+
   #ann-banner > div { padding: 10px 16px !important; font-size: 13px !important; flex-wrap: wrap; }
 }
+
 @media (max-width: 400px) {
-  .hero h1 { font-size: 44px; }
-  .tab-btn { font-size: 8px; padding: 8px 2px; }
+  .hero h1 { font-size: 52px; }
+  .features-strip { grid-template-columns: 1fr; }
+  .feature-item { border-right: none !important; }
+  .tab-btn { font-size: 8px; padding: 9px 2px; letter-spacing: 0.02em; }
+  .section-header h2 { font-size: 32px; }
 }
