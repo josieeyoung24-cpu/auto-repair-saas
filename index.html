@@ -3,244 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Red Rock Auto Repair — Calgary</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Red Rock Auto Repair — Calgary, AB</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<style>
-  :root {
-    --accent: #111111;
-    --accent-red: #c0392b;
-    --white: #ffffff;
-    --off: #f7f7f5;
-    --border: #e8e8e4;
-    --muted: #888880;
-    --text: #111111;
-    --radius: 10px;
-    --radius-lg: 16px;
-    --font-main: 'DM Sans', sans-serif;
-    --font-mono: 'DM Mono', monospace;
-  }
-
-  /* PAGE LOADER */
-  #page-loader { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.4s ease; }
-  #page-loader.hidden { opacity: 0; pointer-events: none; }
-  .loader-road { width: 280px; height: 3px; background: #e8e8e4; border-radius: 2px; position: relative; overflow: hidden; margin-bottom: 20px; }
-  .loader-road::after { content: ''; position: absolute; top: 0; left: -100%; width: 60%; height: 100%; background: linear-gradient(90deg, transparent, #111, transparent); animation: road-shine 1.5s ease-in-out infinite; }
-  @keyframes road-shine { to { left: 200%; } }
-  .loader-car { font-size: 26px; display: block; animation: drive 1s linear forwards; }
-  @keyframes drive { 0% { transform: scaleX(-1); left: -30px; } 100% { transform: scaleX(-1); left: 310px; } }
-  .loader-text { font-size: 13px; color: var(--muted); font-family: var(--font-mono); letter-spacing: .08em; }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: var(--font-main); background: var(--white); color: var(--text); font-size: 15px; line-height: 1.6; -webkit-font-smoothing: antialiased; }
-  a { text-decoration: none; color: inherit; }
-  /* TWO-BAR HEADER */
-  .topbar-info { background: #1c1c1c; color: rgba(255,255,255,0.85); font-size: 12px; padding: 0 40px; height: 44px; display: flex; align-items: center; position: sticky; top: 0; z-index: 101; }
-  .topbar-info-inner { display: flex; align-items: center; gap: 0; width: 100%; }
-  .topbar-item { display: flex; align-items: center; gap: 6px; color: rgba(255,255,255,0.8); font-size: 12px; white-space: nowrap; font-weight: 400; letter-spacing: 0.02em; }
-  .topbar-item:hover { color: #fff; }
-  .topbar-divider { width: 1px; height: 14px; background: rgba(255,255,255,0.2); margin: 0 20px; flex-shrink: 0; }
-  nav { position: sticky; top: 44px; z-index: 100; background: var(--white); border-bottom: 1px solid var(--border); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 72px; box-shadow: 0 2px 16px rgba(0,0,0,0.07); }
-  nav::after { display: none; }
-  .nav-logo { font-size: 18px; font-weight: 700; letter-spacing: -0.5px; }
-  .nav-links { display: flex; gap: 28px; list-style: none; }
-  .nav-links a { font-size: 14px; color: var(--muted); cursor: pointer; font-weight: 500; }
-  .nav-links a:hover { color: var(--accent-red); }
-  .nav-phone { font-family: var(--font-mono); font-size: 13px; font-weight: 500; background: var(--off); padding: 8px 16px; border-radius: var(--radius); border: 1px solid var(--border); }
-  .nav-hours { display: block !important; }
-  .hero { padding: 88px 40px 72px 40px; background: linear-gradient(160deg, #fff 55%, #fdf0ef 100%); display: flex; align-items: center; justify-content: space-between; gap: 48px; overflow: visible; position: relative; }
-  .hero-content { max-width: 500px; flex-shrink: 0; padding: 48px 56px 48px 16px; border: 2px solid rgba(192,57,43,0.55); border-radius: 14px; position: relative; z-index: 1; }
-  .hero-content::before { content: ''; position: absolute; inset: 10px; border: 1px solid rgba(192,57,43,0.25); border-radius: 8px; pointer-events: none; }
-
-  .hero-media { flex: 1; display: none; border-radius: 0; overflow: hidden; box-shadow: none; position: relative; }
-  .hero-media.show { display: block; }
-  .hero-media img { width: 100%; height: 420px; object-fit: cover; display: block; }
-  .hero-media iframe { width: 100%; height: 420px; border: none; display: block; }
-  .slide { display: none; position: relative; }
-  .slide.active { display: block; }
-  .slide-arrow { position: absolute; top: 50%; transform: translateY(-50%); background: rgba(0,0,0,0.4); color: #fff; border: none; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; z-index: 2; display: flex; align-items: center; justify-content: center; transition: background .2s; }
-  .slide-arrow:hover { background: rgba(0,0,0,0.7); }
-  .slide-arrow.prev { left: 10px; }
-  .slide-arrow.next { right: 10px; }
-  .slide-dots { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; z-index: 2; }
-  .slide-dot { width: 8px; height: 8px; border-radius: 50%; background: rgba(255,255,255,0.5); cursor: pointer; border: none; transition: background .2s; }
-  .slide-dot.active { background: #fff; }
-  .hero-eyebrow { font-family: var(--font-mono); font-size: 12px; color: var(--accent-red); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-  .hero-eyebrow::before { content: ''; display: inline-block; width: 20px; height: 2px; background: var(--accent-red); border-radius: 1px; }
-  .hero h1 { font-size: clamp(38px, 5vw, 56px); font-weight: 300; line-height: 1.08; letter-spacing: -2px; margin-bottom: 22px; }
-  .hero h1 em { font-style: normal; font-weight: 500; }
-  .hero p { font-size: 16px; color: var(--muted); margin-bottom: 36px; max-width: 480px; line-height: 1.7; }
-  .hero-actions { display: flex; gap: 12px; flex-wrap: wrap; }
-  .btn { padding: 12px 24px; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.15s; font-family: var(--font-main); border: none; }
-  /* ── MICRO-ANIMATIONS & QUIRKS ── */
-
-  /* Book button subtle pulse */
-  @keyframes btn-pulse { 0%,100%{ box-shadow:0 0 0 0 rgba(192,57,43,0.4); } 50%{ box-shadow:0 0 0 8px rgba(192,57,43,0); } }
-  .btn-primary { background: var(--accent-red); color: var(--white); animation: btn-pulse 3s ease-in-out infinite; }
-  .btn-primary:hover { background: #a93226; animation: none; box-shadow: 0 4px 16px rgba(192,57,43,0.3); }
-  .btn-primary:disabled { background: #999; cursor: not-allowed; animation: none; }
-
-  /* Service checkbox hover bounce */
-  @keyframes checkbox-bounce { 0%,100%{ transform:scale(1); } 50%{ transform:scale(1.03); } }
-  .svc-check-label:hover { animation: checkbox-bounce 0.3s ease; border-color: #111 !important; }
-  .svc-check-label:has(input:checked) { background: #f7f7f5 !important; border-color: #111 !important; font-weight: 500 !important; }
-
-  /* Nav gradient line */
-  nav::after { content:''; position:absolute; bottom:0; left:0; right:0; height:2px; background: linear-gradient(90deg, transparent, var(--accent-red), transparent); opacity:0; transition: opacity 0.3s; }
-  nav.scrolled::after { opacity: 1; }
-
-  /* Scroll reveal */
-  .reveal { opacity:0; transform:translateY(24px); transition: opacity 0.6s ease, transform 0.6s ease; }
-  .reveal.visible { opacity:1; transform:translateY(0); }
-
-  /* Step dots animate in */
-  .step-dot { transition: background 0.4s ease, border-color 0.4s ease, transform 0.3s ease; }
-  .step-dot.active { transform: scale(1.15); }
-  .step-dot.done { transform: scale(1); }
-
-  /* Wrench spin on in-repair */
-  @keyframes wrench-spin { 0%,100%{ transform:rotate(-20deg); } 50%{ transform:rotate(20deg); } }
-  .status-wrench { display:inline-block; animation: wrench-spin 1s ease-in-out infinite; margin-right:4px; }
-
-  /* Slot button hover */
-  .slot-btn { padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all .15s; font-family: var(--font-main); }
-  .slot-btn:hover { border-color: var(--accent-red); color: var(--accent-red); transform: translateY(-1px); }
-  .slot-btn.selected { background: var(--accent-red); color: var(--white); border-color: var(--accent-red); }
-  .btn-secondary { background: var(--white); color: var(--text); border: 1px solid var(--border); }
-  .btn-secondary:hover { background: var(--off); }
-  .trust-bar { background: var(--accent-red); display: grid; grid-template-columns: repeat(4, 1fr); }
-  .trust-item { padding: 32px 40px; border-right: 1px solid rgba(255,255,255,0.15); }
-  .trust-item:last-child { border-right: none; }
-  .trust-num { font-size: 32px; font-weight: 700; letter-spacing: -1px; color: #fff; }
-  .trust-label { font-size: 12px; color: rgba(255,255,255,0.7); margin-top: 4px; text-transform: uppercase; letter-spacing: 0.06em; font-weight: 500; }
-  .tools-section { padding: 72px 40px; display: flex; flex-direction: column; align-items: center; background: #f8f8f6; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .section-header { margin-bottom: 36px; text-align: center; width: 100%; }
-  .section-header h2::after { content: ''; display: block; width: 48px; height: 3px; background: var(--accent-red); border-radius: 2px; margin: 12px auto 0; }
-  .section-header h2 { font-size: 30px; font-weight: 600; letter-spacing: -0.8px; margin-bottom: 8px; }
-  .section-header p { font-size: 14px; color: var(--muted); }
-  .tab-nav { display: flex; gap: 4px; margin-bottom: 28px; background: var(--off); padding: 4px; border-radius: var(--radius); width: fit-content; margin-left: auto; margin-right: auto; }
-  .tab-btn { padding: 8px 18px; border-radius: 7px; font-size: 13px; font-weight: 500; cursor: pointer; border: none; background: transparent; color: var(--muted); font-family: var(--font-main); }
-  .tab-btn.active { background: var(--white); color: var(--accent-red); border: 1px solid var(--border); border-bottom: 2px solid var(--accent-red); font-weight: 600; }
-  .slot-btn.selected { background: var(--accent-red); color: var(--white); border-color: var(--accent-red); }
-  .tab-panel { display: none; width: 100%; max-width: 640px; }
-  .tab-panel.active { display: block; width: 100%; max-width: 640px; }
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; max-width: 600px; }
-  .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label { font-size: 12px; font-weight: 500; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; font-family: var(--font-mono); }
-  .field input, .field select { padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--white); font-family: var(--font-main); width: 100%; appearance: none; }
-  .field input:focus, .field select:focus { outline: none; border-color: var(--accent); }
-  .field input::placeholder { color: #bbb; }
-  .svc-check-label { font-size: 14px !important; font-weight: 400 !important; color: var(--text) !important; text-transform: none !important; letter-spacing: 0 !important; font-family: var(--font-main) !important; display: flex !important; align-items: center !important; gap: 10px !important; padding: 11px 14px !important; border: 1px solid var(--border) !important; border-radius: var(--radius) !important; cursor: pointer !important; }
-  .svc-check-label input[type="checkbox"] { width: 16px !important; height: 16px !important; flex-shrink: 0 !important; cursor: pointer !important; appearance: auto !important; }
-  #svc-checkboxes input[type="checkbox"] { width: 16px !important; height: 16px !important; min-width: 16px !important; padding: 0 !important; border: 1px solid #999 !important; border-radius: 3px !important; appearance: auto !important; -webkit-appearance: auto !important; }
-  .msg { display: none; margin-top: 16px; padding: 14px 18px; border-radius: var(--radius); font-size: 14px; }
-  .msg.show { display: block; }
-  .msg-success { background: #f0faf4; border: 1px solid #b8e8c8; color: #1a6b3a; }
-  .msg-error { background: #fff0f0; border: 1px solid #f5c0c0; color: #8b1a1a; }
-  .status-search { display: flex; gap: 10px; max-width: 480px; margin-bottom: 24px; }
-  .status-search input { flex: 1; padding: 11px 14px; border: 1px solid var(--border); border-radius: var(--radius); font-size: 14px; color: var(--text); background: var(--white); font-family: var(--font-main); }
-  .status-search input:focus { outline: none; border-color: var(--accent); }
-  .status-search button { padding: 11px 22px; background: var(--accent); color: var(--white); border: none; border-radius: var(--radius); font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--font-main); white-space: nowrap; }
-  .status-card { display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 560px; }
-  .status-card.show { display: block; }
-  .status-vehicle { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-  .status-vehicle-name { font-size: 16px; font-weight: 500; }
-  .status-vehicle-sub { font-size: 13px; color: var(--muted); margin-top: 2px; }
-  .status-badge { font-family: var(--font-mono); font-size: 11px; padding: 5px 10px; border-radius: 6px; background: #fff8e1; color: #8a6000; border: 1px solid #f0d070; font-weight: 500; text-transform: capitalize; }
-  .status-badge.ready { background: #f0faf4; color: #1a6b3a; border-color: #b8e8c8; }
-  @keyframes pulse-green { 0%,100%{ box-shadow: 0 0 0 0 rgba(34,197,94,0.4); } 50%{ box-shadow: 0 0 0 12px rgba(34,197,94,0); } }
-  .ready-banner { display: none; margin-top: 20px; background: #16a34a; color: #fff; border-radius: var(--radius-lg); padding: 22px 24px; text-align: center; animation: pulse-green 2s ease-in-out infinite; }
-  .ready-banner.show { display: block; }
-  .ready-banner-title { font-size: 22px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 6px; }
-  .ready-banner-sub { font-size: 14px; opacity: 0.85; margin-bottom: 16px; }
-  .ready-banner-phone { display: inline-block; background: #fff; color: #16a34a; font-weight: 500; font-size: 15px; padding: 10px 24px; border-radius: var(--radius); font-family: var(--font-mono); }
-  .progress-steps { display: flex; align-items: flex-start; margin-bottom: 24px; position: relative; }
-  .progress-steps::before { content: ''; position: absolute; top: 14px; left: 14px; right: 14px; height: 1px; background: var(--border); }
-  .progress-fill { position: absolute; top: 14px; left: 14px; height: 1px; background: var(--accent); transition: width 0.5s ease; }
-  .step { flex: 1; text-align: center; position: relative; z-index: 1; }
-  .step-dot { width: 28px; height: 28px; border-radius: 50%; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; background: var(--white); border: 1px solid var(--border); color: var(--muted); }
-  .step-dot.done { background: var(--accent); border-color: var(--accent); color: var(--white); }
-  .step-dot.active { background: var(--white); border: 2px solid var(--accent); color: var(--accent); font-weight: 700; }
-  .step-label { font-size: 12px; color: var(--muted); }
-  .step-label.active { color: var(--text); font-weight: 500; }
-  .step-label.done { color: var(--text); }
-  .status-note { background: var(--off); border-radius: var(--radius); padding: 14px 16px; font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .status-note strong { color: var(--text); }
-  .status-not-found { display: none; font-size: 14px; color: var(--muted); padding: 16px 0; }
-  .status-not-found.show { display: block; }
-  .slot-btn { padding: 9px 16px; border-radius: var(--radius); font-size: 13px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: var(--white); color: var(--text); transition: all .15s; font-family: var(--font-main); }
-  .slot-btn:hover { background: var(--off); border-color: var(--accent); }
-  .slot-btn.selected { background: var(--accent); color: var(--white); border-color: var(--accent); }
-  .quote-form { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; max-width: 600px; margin-bottom: 20px; }
-  .quote-result { display: none; border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 24px; max-width: 480px; margin-top: 8px; }
-  .quote-result.show { display: block; }
-  .quote-price { font-size: 36px; font-weight: 300; letter-spacing: -1px; margin-bottom: 6px; }
-  .quote-detail { font-size: 13px; color: var(--muted); margin-bottom: 16px; }
-  .quote-fine { font-size: 12px; color: var(--muted); border-top: 1px solid var(--border); padding-top: 14px; font-family: var(--font-mono); }
-  .services-section { padding: 72px 40px 80px; background: #f8f8f6; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
-  .services-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-top: 32px; background: transparent; }
-  .service-card { background: var(--white); border: 1px solid var(--border); border-left: 4px solid var(--accent-red); border-radius: 12px; padding: 28px 24px; transition: all 0.2s; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-  .service-card::after { content: ''; position: absolute; inset: 6px; border: 1px solid rgba(192,57,43,0.08); border-radius: 8px; pointer-events: none; }
-  .service-card:hover { border-left-color: var(--accent-red); box-shadow: 0 6px 24px rgba(0,0,0,0.08); transform: translateY(-2px); }
-
-  .service-name { font-size: 16px; font-weight: 600; margin-bottom: 8px; color: var(--text); letter-spacing: -0.2px; }
-  .service-desc { font-size: 13px; color: var(--muted); margin-bottom: 16px; line-height: 1.5; }
-  .service-price { font-family: var(--font-mono); font-size: 14px; font-weight: 600; color: var(--accent-red); border-top: 1px solid var(--border); padding-top: 14px; margin-top: 4px; display: block; }
-  .reviews-section { padding: 72px 40px; background: #f8f8f6; border-top: 1px solid var(--border); }
-  .reviews-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 28px; }
-  .review-card { border: 1px solid var(--border); border-left: 4px solid var(--accent-red); border-radius: var(--radius-lg); padding: 28px; background: var(--white); box-shadow: 0 2px 12px rgba(0,0,0,0.04); transition: box-shadow 0.2s, transform 0.2s; }
-  .review-stars { color: #f5a623; font-size: 15px; margin-bottom: 12px; letter-spacing: 2px; }
-  .review-text { font-size: 14px; line-height: 1.7; margin-bottom: 16px; color: #333; font-style: italic; }
-  .review-author { font-size: 12px; color: var(--muted); font-family: var(--font-mono); font-weight: 500; }
-  footer { border-top: 1px solid var(--border); padding: 36px 40px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 40px; }
-  .footer-brand { font-size: 16px; font-weight: 500; letter-spacing: -0.3px; margin-bottom: 8px; }
-  .footer-tagline { font-size: 13px; color: var(--muted); line-height: 1.6; }
-  .footer-heading { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 12px; }
-  .footer-info { font-size: 13px; line-height: 2; }
-  .footer-bottom { border-top: 1px solid var(--border); padding: 18px 40px; display: flex; justify-content: space-between; }
-  .footer-bottom-text { font-size: 12px; color: var(--muted); font-family: var(--font-mono); }
-  @media (max-width: 768px) {
-    .topbar-info { display: none; }
-    nav { top: 0; padding: 0 16px; height: 60px; }
-    .nav-links { display: none; }
-    .nav-phone { font-size: 12px; padding: 6px 12px; }
-    .hero { padding: 40px 16px 32px; grid-template-columns: 1fr; }
-    .hero-media { display: none !important; }
-    .nav-hours { display: none !important; }
-    .hero h1 { font-size: 32px; letter-spacing: -1px; }
-    .hero p { font-size: 15px; }
-    .hero-actions { flex-direction: column; }
-    .hero-actions .btn { width: 100%; text-align: center; padding: 14px; font-size: 15px; }
-    .trust-bar { grid-template-columns: repeat(2, 1fr); }
-    .trust-item { padding: 16px; }
-    .trust-num { font-size: 22px; }
-    .tools-section { padding: 32px 16px; }
-    .section-header h2 { font-size: 22px; }
-    .tab-nav { width: 100%; justify-content: stretch; }
-    .tab-btn { flex: 1; text-align: center; padding: 8px 8px; font-size: 12px; }
-    .form-grid { grid-template-columns: 1fr; }
-    .quote-form { grid-template-columns: 1fr; }
-    #svc-checkboxes { grid-template-columns: 1fr !important; }
-    .svc-check-label { font-size: 15px !important; padding: 13px 14px !important; }
-    #slots-grid { gap: 6px; }
-    .slot-btn { padding: 10px 14px; font-size: 13px; }
-    .services-section, .reviews-section { padding: 0 16px 40px; }
-    .services-grid { grid-template-columns: 1fr; }
-    .service-card { padding: 18px; }
-    .reviews-grid { grid-template-columns: 1fr; }
-    footer { padding: 32px 16px; grid-template-columns: 1fr; gap: 24px; }
-    .footer-bottom { padding: 14px 16px; flex-direction: column; gap: 6px; text-align: center; }
-    .quote-result { padding: 16px; }
-    .status-search { flex-direction: column; }
-    .status-search input, .status-search button { width: 100%; }
-    .btn { padding: 13px 20px; font-size: 14px; }
-    #ann-banner > div { padding: 10px 16px !important; font-size: 13px !important; flex-wrap: wrap; }
-  }
-  @media (max-width: 400px) {
-    .hero h1 { font-size: 28px; }
-    .trust-bar { grid-template-columns: 1fr 1fr; }
-    .tab-btn { font-size: 11px; padding: 7px 6px; }
-  }
-</style>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
 
@@ -263,35 +28,35 @@
     </span>
     <div style="position:absolute;bottom:8px;left:0;right:0;height:2px;background:#e8e8e4;border-radius:2px"></div>
   </div>
-  <div class="loader-text" style="margin-top:14px;text-align:center">Red Rock Auto Repair</div>
+  <div class="loader-text">Red Rock Auto Repair</div>
 </div>
 
 <!-- TOP BAR -->
 <div class="topbar-info">
   <div class="topbar-info-inner">
     <a href="tel:4032871125" class="topbar-item">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.0 2.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14.92z"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.0 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.128.96.336 1.897.616 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.913.28 1.85.487 2.81.616A2 2 0 0122 14.92z"/></svg>
       (403) 287-1125
     </a>
     <span class="topbar-divider"></span>
     <span class="topbar-item">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
-      5011A 11 St SE, Calgary, AB T2H 1M7
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      5011A 11 St SE, Calgary, AB
     </span>
     <span class="topbar-divider"></span>
     <span class="topbar-item" id="nav-hours">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       Mon–Fri 8am–5pm · Sat–Sun Closed
     </span>
   </div>
 </div>
 
 <!-- MAIN NAV -->
-<nav>
-  <div class="nav-logo" style="display:flex;align-items:center;gap:8px">
-    <svg width="22" height="14" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
-      <rect x="6" y="8" width="32" height="12" rx="3" fill="#c0392b"/>
-      <path d="M10 8 L14 2 L30 2 L34 8" fill="#c0392b" stroke="#a93226" stroke-width="1"/>
+<nav id="main-nav">
+  <div class="nav-logo">
+    <svg id="nav-car-svg" width="24" height="16" viewBox="0 0 44 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="transform:scaleX(-1)">
+      <rect x="6" y="8" width="32" height="12" rx="3" fill="#d63031"/>
+      <path d="M10 8 L14 2 L30 2 L34 8" fill="#d63031" stroke="#b71c1c" stroke-width="1"/>
       <circle cx="13" cy="20" r="4" fill="#111"/>
       <circle cx="13" cy="20" r="2" fill="#555"/>
       <circle cx="31" cy="20" r="4" fill="#111"/>
@@ -301,45 +66,69 @@
       <rect x="34" y="12" width="4" height="3" rx="1" fill="#ffd54f"/>
       <rect x="6" y="12" width="4" height="3" rx="1" fill="#ef5350" opacity="0.7"/>
     </svg>
-    Red Rock Auto Repair
+    Red Rock Auto
   </div>
   <ul class="nav-links">
     <li><a href="#services">Services</a></li>
     <li><a href="#reviews">Reviews</a></li>
-    <li><a href="#tools">Contact</a></li>
+    <li><a href="#tools">Book / Track</a></li>
   </ul>
   <div style="display:flex;align-items:center;gap:10px">
-    <button class="btn btn-secondary" style="padding:9px 18px;font-size:13px" onclick="openTab('status');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Track my repair</button>
-    <button class="btn btn-primary" style="padding:9px 18px;font-size:13px;animation:none" onclick="openTab('book');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Book appointment</button>
+    <a href="tel:4032871125" class="nav-phone">(403) 287-1125</a>
   </div>
 </nav>
 
 <div id="ann-banner" style="display:none"></div>
 
+<!-- HERO -->
 <section class="hero">
-
+  <div class="hero-bg-text">Red Rock</div>
   <div class="hero-content">
-    <div class="hero-eyebrow" id="hero-eyebrow">11 St SE · Calgary, AB T2H 1M7</div>
-    <h1>Trusted repairs.<br><em>44 years</em> strong.</h1>
-    <p>Calgary's most trusted independent auto shop since 1982. Domestic and import repairs, honest pricing, and we always call before we touch your car.</p>
+    <div class="hero-eyebrow" id="hero-eyebrow">Calgary, AB · Est. 1982</div>
+    <h1>Trusted<br>Repairs.<br><em>44 Years</em></h1>
+    <p>Calgary's most trusted independent auto shop. Domestic and import repairs — honest pricing, no surprises, no dealer markups.</p>
     <div class="hero-actions">
-      <button class="btn btn-primary" onclick="openTab('book')">Book an appointment</button>
-      <button class="btn btn-secondary" onclick="openTab('status')">Track my repair →</button>
+      <button class="btn btn-primary" onclick="openTab('book');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Book appointment</button>
+      <button class="btn btn-secondary" onclick="openTab('status');document.getElementById('tools').scrollIntoView({behavior:'smooth'})">Track my repair</button>
     </div>
   </div>
-  <div class="hero-media" id="hero-media"></div>
+  <div class="hero-right">
+    <div class="hero-media" id="hero-media"></div>
+    <div class="hero-right-inner">
+      <div class="hero-stat-grid">
+        <div class="hero-stat"><div class="hero-stat-num" data-count="4.8" data-suffix="★">4.8★</div><div class="hero-stat-label">Google rating</div></div>
+        <div class="hero-stat"><div class="hero-stat-num" data-count="44" data-suffix="+">44+</div><div class="hero-stat-label">Years in business</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">Free</div><div class="hero-stat-label">Estimates</div></div>
+        <div class="hero-stat"><div class="hero-stat-num">Same</div><div class="hero-stat-label">Day service</div></div>
+      </div>
+    </div>
+  </div>
 </section>
 
-<div class="trust-bar reveal">
-  <div class="trust-item"><div class="trust-num" data-count="4.8" data-suffix="★">4.8★</div><div class="trust-label">Google reviews</div></div>
-  <div class="trust-item"><div class="trust-num" data-count="44" data-suffix="+ yrs">44+ yrs</div><div class="trust-label">In business</div></div>
-  <div class="trust-item"><div class="trust-num">Way less</div><div class="trust-label">Than the dealer</div></div>
-  <div class="trust-item"><div class="trust-num">Same day</div><div class="trust-label">Most repairs</div></div>
+<!-- FEATURES STRIP -->
+<div class="features-strip">
+  <div class="feature-item">
+    <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+    <div><span class="feature-label">44 Years Experience</span><span class="feature-sub">Est. 1982 in Calgary</span></div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+    <div><span class="feature-label">Same Day Service</span><span class="feature-sub">Most repairs done fast</span></div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg></div>
+    <div><span class="feature-label">Fair Pricing</span><span class="feature-sub">Way less than the dealer</span></div>
+  </div>
+  <div class="feature-item">
+    <div class="feature-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8 19.79 19.79 0 01.0 2.18 2 2 0 012 0h3a2 2 0 012 1.72c.128.96.336 1.897.616 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.913.28 1.85.487 2.81.616A2 2 0 0122 14.92z"/></svg></div>
+    <div><span class="feature-label">We Call First</span><span class="feature-sub">No surprises, ever</span></div>
+  </div>
 </div>
 
 <section class="tools-section" id="tools">
   <div class="section-header">
-    <h2>What can we help with?</h2>
+    <div class="section-label">Get started</div>
+    <h2>How can we help?</h2>
     <p>Book an appointment, track your repair, or get an instant estimate.</p>
   </div>
   <div class="tab-nav">
@@ -520,7 +309,7 @@
 </section>
 
 <section class="services-section" id="services">
-  <div class="section-header"><h2>Common services</h2><p>Transparent pricing on every job — no surprises.</p><div style="width:48px;height:3px;background:var(--accent-red);border-radius:2px;margin:14px auto 0"></div></div>
+  <div class="section-header"><div class="section-label">What we fix</div><h2>Common services</h2><p>Transparent pricing — we always call before we start.</p></div>
   <div class="services-grid" id="services-grid">
     <div class="service-card"><div class="service-name">Oil change</div><div class="service-desc">Conventional, synthetic blend, or full synthetic</div><div class="service-price">From $49</div></div>
     <div class="service-card"><div class="service-name">Brake service</div><div class="service-desc">Pads, rotors, calipers — full inspection included</div><div class="service-price">$120 – $220</div></div>
@@ -532,14 +321,14 @@
 </section>
 
 <section class="reviews-section" id="reviews">
-  <div class="section-header"><h2>What customers say</h2><p>4.8 stars on Google — real customers, real words.</p></div>
+  <div class="section-header"><div class="section-label">Reputation</div><h2>What customers say</h2><p>4.8 stars on Google — 44 years of trust.</p></div>
   <div class="reviews-grid">
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Kelly at Red Rock Auto Repair is a stand up guy who stands behind his work. He never promises more than he can deliver. A great local business!"</div><div class="review-author">Yelp Reviewer · verified customer</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"My rating is completely biased, I've been around this shop since I was a kid. Which really states all you need to know. 25+ years running and still going strong. Keep it up guys!"</div><div class="review-author">Lark B · 1 month ago</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Fair prices, super knowledgeable staff. A trustworthy place."</div><div class="review-author">Google Reviewer · verified customer</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"The owners past Ray, Bill to present Kelly and their teams have always provided great service and sound safety prioritized advice to our family and business vehicles — earning our loyalty for the past 38 years."</div><div class="review-author">Long-time customer · 38 years</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"Great prices and service. Takes the time to explain what went wrong and gives you recommendations for the future."</div><div class="review-author">Google Reviewer · verified customer</div></div>
-    <div class="review-card"><div class="review-stars">★★★★★</div><div class="review-text">"It's hard to find an honest mechanic, but look no further than these guys."</div><div class="review-author">Google Reviewer · verified customer</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"Kelly at Red Rock Auto Repair is a stand up guy who stands behind his work. He never promises more than he can deliver. A great local business!"</div><div class="review-author">Yelp Reviewer · verified customer</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"My rating is completely biased, I've been around this shop since I was a kid. Which really states all you need to know. 25+ years running and still going strong. Keep it up guys!"</div><div class="review-author">Lark B · 1 month ago</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"Fair prices, super knowledgeable staff. A trustworthy place."</div><div class="review-author">Google Reviewer · verified customer</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"The owners past Ray, Bill to present Kelly and their teams have always provided great service and sound safety prioritized advice to our family and business vehicles — earning our loyalty for the past 38 years."</div><div class="review-author">Long-time customer · 38 years</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"Great prices and service. Takes the time to explain what went wrong and gives you recommendations for the future."</div><div class="review-author">Google Reviewer · verified customer</div></div>
+    <div class="review-card"><div class="review-quote">"</div><div class="review-stars">★★★★★</div><div class="review-text">"It's hard to find an honest mechanic, but look no further than these guys."</div><div class="review-author">Google Reviewer · verified customer</div></div>
   </div>
 </section>
 
@@ -590,790 +379,6 @@
   </div>
 </div>
 
-<script>
-  const SUPABASE_URL = 'https://jmksxvvbgxqcijrbdwos.supabase.co';
-  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
-  const SHOP_ID = 'red-rock-auto';
-  const { createClient } = supabase;
-  const db = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-  function openTab(name) {
-    document.querySelectorAll('.tab-btn').forEach((btn, i) => {
-      btn.classList.toggle('active', ['book','status','quote'][i] === name);
-    });
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + name).classList.add('active');
-    document.getElementById('tools').scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  async function submitBooking() {
-    const first = document.getElementById('b-first').value.trim();
-    const last = document.getElementById('b-last').value.trim();
-    const phone = document.getElementById('b-phone').value.trim();
-    const email = document.getElementById('b-email').value.trim();
-    const vtype = document.getElementById('b-vtype').value;
-    const vmake = document.getElementById('b-vmake').value;
-    const vyear = document.getElementById('b-vyear').value;
-    const vehicle = [vyear, vmake, vtype].filter(Boolean).join(' ') || '';
-    const checkedServices = getSelectedServices();
-    const service = checkedServices.map(cb => cb.value).join(', ');
-    const date = document.getElementById('b-date').value;
-    const timeVal = document.getElementById('b-time').value;
-    const notes = document.getElementById('b-notes').value.trim();
-    if (!first || !phone || checkedServices.length === 0) { alert('Please fill in your name, phone, and select at least one service.'); return; }
-    if (!date && timeVal !== 'call-to-confirm') { alert('Please select a date and time slot.'); return; }
-    if (!timeVal) { alert('Please select a time slot.'); return; }
-    const isCallToConfirm = timeVal === 'call-to-confirm';
-    const [startTime, endTime] = isCallToConfirm ? ['', ''] : timeVal.split('|');
-    const btn = document.getElementById('book-btn');
-    btn.textContent = 'Submitting...'; btn.disabled = true;
-
-    // Save booking
-    const { error } = await db.from('bookings').insert([{
-      name: first + ' ' + last, phone, email, vehicle, service, date,
-      notes, shop_id: SHOP_ID
-    }]);
-    if (error) {
-      btn.textContent = 'Confirm appointment'; btn.disabled = false;
-      document.getElementById('book-error').classList.add('show');
-      return;
-    }
-
-    // Block the time slot immediately (skip if call-to-confirm)
-    if (!isCallToConfirm) {
-      await db.from('appointments').insert([{
-        booking_date: date, start_time: startTime, end_time: endTime,
-        service, customer_name: first + ' ' + last, shop_id: SHOP_ID, status: 'pending'
-      }]);
-    }
-
-    fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: 'booking', customerName: first + ' ' + last, customerEmail: email, customerPhone: phone, vehicle, service, date: date + ' at ' + formatTime(startTime), notes })
-    });
-
-    document.getElementById('book-form-wrap').style.display = 'none';
-    const details = document.getElementById('book-success-details');
-    details.innerHTML =
-      (vehicle ? '<div><span style="opacity:.7">Vehicle</span>&nbsp;&nbsp;' + vehicle + '</div>' : '') +
-      '<div><span style="opacity:.7">Service</span>&nbsp;&nbsp;' + service + '</div>' +
-      '<div><span style="opacity:.7">Date</span>&nbsp;&nbsp;' + (isCallToConfirm ? 'We will call to schedule' : date + ' at ' + formatTime(startTime)) + '</div>' +
-      '<div><span style="opacity:.7">Phone</span>&nbsp;&nbsp;' + phone + '</div>' +
-      (email ? '<div><span style="opacity:.7">Email</span>&nbsp;&nbsp;' + email + '</div>' : '') +
-      (notes ? '<div style="margin-top:6px;padding-top:6px;border-top:1px solid rgba(255,255,255,0.2)"><span style="opacity:.7">Notes</span>&nbsp;&nbsp;' + notes + '</div>' : '');
-    document.getElementById('book-success-screen').style.display = 'block';
-    btn.textContent = 'Confirm appointment'; btn.disabled = false;
-  }
-
-  function resetBookingForm() {
-    ['b-first','b-last','b-phone','b-email','b-notes'].forEach(id => document.getElementById(id).value = '');
-    document.getElementById('b-vtype').value = '';
-    document.getElementById('b-vmake').innerHTML = '<option value="">Make</option>';
-    document.getElementById('b-vmake').disabled = true;
-    document.getElementById('b-vyear').innerHTML = '<option value="">Year</option>';
-    document.getElementById('b-vyear').disabled = true;
-    document.querySelectorAll('#svc-checkboxes input').forEach(cb => cb.checked = false);
-    document.getElementById('b-date').value = '';
-    document.getElementById('b-time').value = '';
-    document.getElementById('slot-picker').style.display = 'none';
-    document.getElementById('slots-wrap').style.display = 'none';
-    document.getElementById('book-form-wrap').style.display = 'block';
-    document.getElementById('book-success-screen').style.display = 'none';
-  }
-
-  // Set min date to tomorrow
-  const d = new Date(); d.setDate(d.getDate() + 1);
-  const minDate = d.toISOString().split('T')[0];
-  document.getElementById('b-date').min = minDate;
-
-  async function lookupStatus() {
-    const val = document.getElementById('status-input').value.trim();
-    if (!val) { alert('Enter your name to look up your repair.'); return; }
-    const card = document.getElementById('status-card');
-    const notFound = document.getElementById('status-not-found');
-    card.classList.remove('show'); notFound.classList.remove('show');
-    const { data, error } = await db.from('tickets').select('*')
-      .eq('shop_id', SHOP_ID).ilike('customer_name', '%' + val + '%')
-      .order('created_at', { ascending: false }).limit(1);
-    if (error || !data || data.length === 0) { notFound.classList.add('show'); return; }
-    const t = data[0];
-    const steps = { 'checked-in': 1, 'diagnosing': 2, 'in-repair': 3, 'ready': 4 };
-    const cur = steps[t.status] || 1;
-    const fills = [0, 0, 33, 66, 100];
-    document.getElementById('s-vehicle').textContent = t.vehicle || 'Your vehicle';
-    document.getElementById('s-sub').textContent = t.customer_name + ' · #AAR-' + t.id;
-    document.getElementById('s-badge').textContent = (t.status || 'checked in').replace('-', ' ');
-    document.getElementById('s-badge').className = 'status-badge' + (t.status === 'ready' ? ' ready' : '');
-    document.getElementById('progress-fill').style.width = fills[cur] + '%';
-    document.getElementById('s-note').innerHTML = '<strong>' + (t.service || 'Service in progress') + '</strong>' +
-      (t.eta ? ' · Est. ready: ' + t.eta : '') + '. We\'ll call you when it\'s done.';
-
-    // Show inspection photo if uploaded
-    const photoEl = document.getElementById('s-photo');
-    const photoImg = document.getElementById('s-photo-img');
-    if (t.photo_url) {
-      photoImg.src = t.photo_url;
-      photoEl.style.display = 'block';
-      const noteEl = document.getElementById('s-photo-note');
-      if (noteEl) noteEl.textContent = t.photo_note ? '"' + t.photo_note + '"' : '';
-    } else {
-      photoEl.style.display = 'none';
-    }
-
-    ['1','2','3','4'].forEach(n => {
-      const s = parseInt(n);
-      const dot = document.getElementById('dot-' + n);
-      const lbl = document.getElementById('lbl-' + n);
-      dot.className = 'step-dot' + (s < cur ? ' done' : s === cur ? ' active' : '');
-      dot.textContent = s < cur ? '✓' : n;
-      lbl.className = 'step-label' + (s < cur ? ' done' : s === cur ? ' active' : '');
-    });
-    card.classList.add('show');
-    document.getElementById('ready-banner').classList.toggle('show', t.status === 'ready');
-    // Animate steps in and add wrench
-    setTimeout(animateStepsIn, 150);
-    setTimeout(addWraenchIfNeeded, 300);
-  }
-
-  document.getElementById('status-input').addEventListener('keydown', e => { if (e.key === 'Enter') lookupStatus(); });
-
-  function onQuoteMakeChange() {
-    const make = document.getElementById('q-make').value;
-    const modelEl = document.getElementById('q-model');
-    const yearEl = document.getElementById('q-year');
-    modelEl.innerHTML = '<option value="">Select model</option>';
-    yearEl.innerHTML = '<option value="">Select year</option>';
-    yearEl.disabled = true;
-    if (!make) { modelEl.disabled = true; return; }
-    (VEHICLE_DATA[make] || ['Other']).forEach(m => {
-      const o = document.createElement('option');
-      o.value = m; o.textContent = m; modelEl.appendChild(o);
-    });
-    modelEl.disabled = false;
-  }
-
-  function onQuoteModelChange() {
-    const model = document.getElementById('q-model').value;
-    const yearEl = document.getElementById('q-year');
-    yearEl.innerHTML = '<option value="">Select year</option>';
-    if (!model) { yearEl.disabled = true; return; }
-    for (let y = new Date().getFullYear() + 1; y >= 1950; y--) {
-      const o = document.createElement('option');
-      o.value = y; o.textContent = y; yearEl.appendChild(o);
-    }
-    yearEl.disabled = false;
-  }
-
-  function getQuote() {
-    const make = document.getElementById('q-make').value;
-    const model = document.getElementById('q-model').value;
-    const year = document.getElementById('q-year').value;
-    const svcEl = document.getElementById('q-service');
-    const opt = svcEl.options[svcEl.selectedIndex];
-    if (!make || !year || !opt.dataset.low) { alert('Please select a make, model, year, and service.'); return; }
-    const vehicle = [year, make, model].filter(Boolean).join(' ');
-    document.getElementById('quote-price').textContent = '$' + opt.dataset.low + ' – $' + opt.dataset.high;
-    document.getElementById('quote-detail').textContent = opt.text + ' · ' + vehicle + ' · Parts + labor included';
-    document.getElementById('quote-result').classList.add('show');
-    document.getElementById('q-success').style.display = 'none';
-    document.getElementById('q-error').style.display = 'none';
-  }
-
-  async function submitQuote() {
-    const name = document.getElementById('q-name').value.trim();
-    const phone = document.getElementById('q-phone').value.trim();
-    const email = document.getElementById('q-email').value.trim();
-    const make = document.getElementById('q-make').value;
-    const model = document.getElementById('q-model').value;
-    const year = document.getElementById('q-year').value;
-    const notes = document.getElementById('q-notes').value.trim();
-    const svcEl = document.getElementById('q-service');
-    const opt = svcEl.options[svcEl.selectedIndex];
-    if (!name || !phone || !email) { alert('Please enter your name, phone number, and email.'); return; }
-    const vehicle = [year, make, model].filter(Boolean).join(' ');
-    const btn = document.getElementById('q-submit-btn');
-    btn.textContent = 'Sending...'; btn.disabled = true;
-    const { error } = await db.from('quotes').insert([{
-      name, phone, email,
-      make: vehicle,
-      year,
-      service: opt.text,
-      price_low: opt.dataset.low,
-      price_high: opt.dataset.high,
-      shop_id: SHOP_ID,
-      status: 'pending'
-    }]);
-    fetch('/api/send-email', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        type: 'quote',
-        customerName: name,
-        customerEmail: email,
-        customerPhone: phone,
-        vehicle,
-        service: opt.text,
-        notes,
-        priceLow: opt.dataset.low,
-        priceHigh: opt.dataset.high
-      })
-    });
-    btn.textContent = 'Send quote request'; btn.disabled = false;
-    if (error) {
-      document.getElementById('q-error').style.display = 'block';
-    } else {
-      document.getElementById('q-success').style.display = 'block';
-      ['q-name','q-phone','q-email','q-notes'].forEach(id => document.getElementById(id).value = '');
-    }
-  }
-
-  const DAYS = ['sunday','monday','tuesday','wednesday','thursday','friday','saturday'];
-  const SERVICE_DURATION = { 'Oil change':60,'Brake service':120,'Tire rotation':45,'Engine diagnostic':90,'AC service':90,'Transmission service':120,'Other / not sure':60 };
-
-  function getSelectedServices() {
-    return [...document.querySelectorAll('#svc-checkboxes input:checked')];
-  }
-
-  function onServiceCheck() {
-    const checked = getSelectedServices();
-    const picker = document.getElementById('slot-picker');
-    const otherOnly = checked.length > 0 && checked.every(cb => cb.value === 'Other / not sure');
-    const hasOther = checked.some(cb => cb.value === 'Other / not sure');
-    const hasKnown = checked.some(cb => cb.value !== 'Other / not sure');
-
-    if (checked.length === 0) {
-      picker.style.display = 'none';
-      return;
-    }
-
-    // If ONLY "Other / not sure" is selected — no slot picker, just a call note
-    if (otherOnly) {
-      picker.style.display = 'block';
-      document.getElementById('b-date').style.display = 'none';
-      document.getElementById('slots-wrap').style.display = 'none';
-      document.getElementById('b-time').value = 'call-to-confirm';
-      let callNote = document.getElementById('other-call-note');
-      if (!callNote) {
-        callNote = document.createElement('div');
-        callNote.id = 'other-call-note';
-        callNote.style.cssText = 'background:#f7f7f5;border:1px solid #e8e8e4;border-radius:10px;padding:14px 16px;font-size:14px;color:#888880;margin-top:8px';
-        callNote.textContent = 'Our team will call you to discuss the service and schedule a time that works. Just fill in your details below and submit.';
-        picker.appendChild(callNote);
-      }
-      callNote.style.display = 'block';
-      return;
-    }
-
-    // Otherwise show normal date/slot picker
-    const callNote = document.getElementById('other-call-note');
-    if (callNote) callNote.style.display = 'none';
-    document.getElementById('b-date').style.display = '';
-    picker.style.display = 'block';
-    document.getElementById('slots-wrap').style.display = 'none';
-    document.getElementById('b-date').value = '';
-    document.getElementById('b-time').value = '';
-  }
-
-  // Keep onServiceChange as alias for compatibility
-  function onServiceChange() { onServiceCheck(); }
-
-  async function loadTimeSlots() {
-    const dateVal = document.getElementById('b-date').value;
-    const checked = getSelectedServices();
-    if (!dateVal || checked.length === 0) return;
-
-    const date = new Date(dateVal + 'T00:00:00');
-    const dayName = DAYS[date.getDay()];
-    // Total duration = sum of all selected services
-    const duration = checked.reduce((sum, cb) => sum + (parseInt(cb.dataset.duration) || 60), 0);
-
-    const slotsWrap = document.getElementById('slots-wrap');
-    const slotsGrid = document.getElementById('slots-grid');
-    const slotsEmpty = document.getElementById('slots-empty');
-    slotsGrid.innerHTML = '<span style="font-size:13px;color:var(--muted)">Loading...</span>';
-    slotsWrap.style.display = 'block';
-    slotsEmpty.style.display = 'none';
-
-    // Get availability for this day
-    const { data: avail } = await db.from('availability')
-      .select('*').eq('shop_id', SHOP_ID).eq('day_of_week', dayName).single();
-
-    if (!avail || avail.is_closed === 'true') {
-      slotsGrid.innerHTML = '';
-      slotsEmpty.textContent = 'We\'re closed on this day. Please pick another date.';
-      slotsEmpty.style.display = 'block';
-      return;
-    }
-
-    // Get existing appointments for this date
-    const { data: appts } = await db.from('appointments')
-      .select('*').eq('shop_id', SHOP_ID).eq('booking_date', dateVal).neq('status','cancelled');
-
-    // Generate slots every 30 minutes within open hours
-    const slots = [];
-    const [openH, openM] = avail.open_time.split(':').map(Number);
-    const [closeH, closeM] = avail.close_time.split(':').map(Number);
-    const openMins = openH * 60 + openM;
-    const closeMins = closeH * 60 + closeM;
-
-    for (let m = openMins; m + duration <= closeMins; m += 30) {
-      const endM = m + duration;
-      const startStr = `${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
-      const endStr = `${String(Math.floor(endM/60)).padStart(2,'0')}:${String(endM%60).padStart(2,'0')}`;
-
-      // Check if this slot overlaps any existing appointment
-      const taken = (appts || []).some(a => {
-        const aStart = a.start_time.slice(0,5);
-        const aEnd = a.end_time.slice(0,5);
-        const aStartM = parseInt(aStart.split(':')[0])*60 + parseInt(aStart.split(':')[1]);
-        const aEndM = parseInt(aEnd.split(':')[0])*60 + parseInt(aEnd.split(':')[1]);
-        return m < aEndM && endM > aStartM;
-      });
-
-      if (!taken) slots.push({ start: startStr, end: endStr });
-    }
-
-    if (slots.length === 0) {
-      slotsGrid.innerHTML = '';
-      slotsEmpty.textContent = 'No available slots on this day. Please pick another date.';
-      slotsEmpty.style.display = 'block';
-      return;
-    }
-
-    slotsEmpty.style.display = 'none';
-    slotsGrid.innerHTML = slots.map(s => {
-      const label = formatTime(s.start) + ' – ' + formatTime(s.end);
-      return `<button class="slot-btn" onclick="selectSlot(this,'${s.start}','${s.end}')">${formatTime(s.start)}</button>`;
-    }).join('');
-    document.getElementById('b-time').value = '';
-  }
-
-  function formatTime(t) {
-    const [h, m] = t.split(':').map(Number);
-    const ampm = h >= 12 ? 'PM' : 'AM';
-    const h12 = h % 12 || 12;
-    return `${h12}:${String(m).padStart(2,'0')} ${ampm}`;
-  }
-
-  function selectSlot(btn, start, end) {
-    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('selected'));
-    btn.classList.add('selected');
-    document.getElementById('b-time').value = start + '|' + end;
-  }
-
-  // ── STAFF LOGIN ──
-  function openAdminModal() {
-    const modal = document.getElementById('admin-modal');
-    modal.style.display = 'flex';
-    setTimeout(() => document.getElementById('admin-pw').focus(), 100);
-  }
-
-  function closeAdminModal() {
-    document.getElementById('admin-modal').style.display = 'none';
-    document.getElementById('admin-pw').value = '';
-    document.getElementById('admin-login-err').style.display = 'none';
-  }
-
-  async function checkAdminLogin() {
-    const pw = document.getElementById('admin-pw').value;
-    const errEl = document.getElementById('admin-login-err');
-    errEl.style.display = 'none';
-
-    // Check Supabase first (works across all devices), fallback to localStorage
-    try {
-      const { data } = await db.from('shop_settings').select('admin_password').eq('shop_id', SHOP_ID).limit(1);
-      const savedPw = (data && data[0] && data[0].admin_password) ? data[0].admin_password : (localStorage.getItem('aurora-admin-pw') || 'aurora2025');
-      if (pw === savedPw) {
-        // Also sync to localStorage for offline fallback
-        localStorage.setItem('aurora-admin-pw', savedPw);
-        closeAdminModal();
-        window.open('/admin.html?auth=' + btoa(pw), '_blank');
-      } else {
-        errEl.style.display = 'block';
-      }
-    } catch(e) {
-      // Fallback to localStorage if Supabase fails
-      const fallback = localStorage.getItem('aurora-admin-pw') || 'aurora2025';
-      if (pw === fallback) {
-        closeAdminModal();
-        window.open('/admin.html?auth=' + btoa(pw), '_blank');
-      } else {
-        errEl.style.display = 'block';
-      }
-    }
-  }
-
-  // Close modal on background click
-  document.getElementById('admin-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeAdminModal();
-  });
-
-  // Hide page loader when ready
-  window.addEventListener('load', () => {
-    setTimeout(() => {
-      const loader = document.getElementById('page-loader');
-      loader.classList.add('hidden');
-      setTimeout(() => loader.style.display = 'none', 400);
-    }, 900);
-  });
-
-  // Load nav hours dynamically from availability table
-  async function loadNavHours() {
-    const { data } = await db.from('availability').select('*').eq('shop_id', SHOP_ID).order('id');
-    if (!data || data.length === 0) {
-      document.getElementById('nav-hours').style.display = 'block';
-      return;
-    }
-    const order = ['monday','tuesday','wednesday','thursday','friday','saturday','sunday'];
-    const sorted = [...data].sort((a,b) => order.indexOf(a.day_of_week) - order.indexOf(b.day_of_week));
-
-    function fmt(t) {
-      if (!t) return '';
-      const [h,m] = t.split(':').map(Number);
-      return `${h%12||12}${m?':'+String(m).padStart(2,'0'):''}${h>=12?'pm':'am'}`;
-    }
-
-    // Group weekdays
-    const weekdays = sorted.filter(d => ['monday','tuesday','wednesday','thursday','friday'].includes(d.day_of_week) && d.is_closed !== 'true');
-    const sat = sorted.find(d => d.day_of_week === 'saturday');
-    const sun = sorted.find(d => d.day_of_week === 'sunday');
-
-    let line1 = '', line2 = '';
-    if (weekdays.length > 0) {
-      const w = weekdays[0];
-      line1 = `Mon–Fri ${fmt(w.open_time)}–${fmt(w.close_time)}`;
-    }
-    const satText = sat && sat.is_closed !== 'true' ? `Sat ${fmt(sat.open_time)}–${fmt(sat.close_time)}` : 'Sat Closed';
-    const sunText = sun && sun.is_closed !== 'true' ? `Sun ${fmt(sun.open_time)}–${fmt(sun.close_time)}` : 'Sun Closed';
-    line2 = `${satText} · ${sunText}`;
-
-    const el = document.getElementById('nav-hours');
-    el.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> ${line1} · ${line2}`;
-  }
-  // ── BRAND COLORS ──
-  // Pre-fetch color immediately so loader car recolors before animation ends
-  (async function preloadColor() {
-    try {
-      const res = await fetch(`${SUPABASE_URL}/rest/v1/shop_settings?shop_id=eq.${SHOP_ID}&select=brand_color,car_color&limit=1`, {
-        headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
-      });
-      const data = await res.json();
-      if (!data || !data[0]) return;
-      const s = data[0];
-      const carColor = s.car_color || s.brand_color;
-      if (carColor) {
-        // Recolor loader car SVG body parts
-        document.querySelectorAll('#loader-car-svg rect, #loader-car-svg path').forEach(el => {
-          const fill = el.getAttribute('fill');
-          if (fill && !['#111','#555','#90caf9','#ffd54f','#ef5350'].includes(fill)) {
-            el.setAttribute('fill', carColor);
-            if (el.tagName === 'path') el.setAttribute('stroke', carColor);
-          }
-        });
-      }
-    } catch(e) {}
-  })();
-
-  async function loadBrandColors() {
-    const { data } = await db.from('shop_settings').select('brand_color,car_color').eq('shop_id', SHOP_ID).limit(1);
-    if (!data || data.length === 0) return;
-    const s = data[0];
-
-    if (s.brand_color && s.brand_color !== '') {
-      // Override every CSS usage of the accent red
-      const style = document.createElement('style');
-      const c = s.brand_color;
-      // Simple darken for hover
-      const hex = c.replace('#','');
-      const r = Math.max(0, parseInt(hex.slice(0,2),16) - 25);
-      const g = Math.max(0, parseInt(hex.slice(2,4),16) - 25);
-      const b = Math.max(0, parseInt(hex.slice(4,6),16) - 25);
-      const dark = '#' + [r,g,b].map(x=>x.toString(16).padStart(2,'0')).join('');
-      style.textContent = `:root { --accent-red: ${c} !important; }
-        .btn-primary { background: ${c} !important; }
-        .btn-primary:hover { background: ${dark} !important; }
-        .trust-bar { background: ${c} !important; }
-        .nav-links a:hover { color: ${c} !important; }
-        .tab-btn.active { color: ${c} !important; border-bottom-color: ${c} !important; }
-        .service-card { border-left-color: ${c} !important; }
-        .review-card { border-left-color: ${c} !important; }
-        .service-price { color: ${c} !important; }
-        .slot-btn:hover { border-color: ${c} !important; color: ${c} !important; }
-        .slot-btn.selected { background: ${c} !important; border-color: ${c} !important; }
-        .hero-eyebrow { color: ${c} !important; }
-        .hero-eyebrow::before { background: ${c} !important; }
-        .section-header h2::after { background: ${c} !important; }
-        nav { border-bottom-color: ${c} !important; }`;
-      document.head.appendChild(style);
-    }
-
-    if (s.car_color && s.car_color !== '') {
-      const carColor = s.car_color;
-      // Recolor nav logo car
-      document.querySelectorAll('.nav-logo svg rect, .nav-logo svg path').forEach(el => {
-        const fill = el.getAttribute('fill');
-        if (fill && !['#111','#555','#90caf9','#ffd54f','#ef5350'].includes(fill)) {
-          el.setAttribute('fill', carColor);
-          if (el.tagName === 'path') el.setAttribute('stroke', carColor);
-        }
-      });
-      // Recolor loader car
-      document.querySelectorAll('#loader-car-svg rect, #loader-car-svg path').forEach(el => {
-        const fill = el.getAttribute('fill');
-        if (fill && !['#111','#555','#90caf9','#ffd54f','#ef5350'].includes(fill)) {
-          el.setAttribute('fill', carColor);
-          if (el.tagName === 'path') el.setAttribute('stroke', carColor);
-        }
-      });
-    }
-  }
-  loadBrandColors();
-
-  loadNavHours();
-  // ── HERO SLIDESHOW ──
-  let slideIndex = 0;
-  let slideTimer = null;
-
-  async function loadHeroMedia() {
-    const { data } = await db.from('shop_settings').select('*').eq('shop_id', SHOP_ID).limit(1);
-    if (!data || data.length === 0) return;
-    const s = data[0];
-    const el = document.getElementById('hero-media');
-
-    if (s.hero_video_url) {
-      let embedUrl = s.hero_video_url;
-      const ytMatch = s.hero_video_url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/)([^&\s]+)/);
-      if (ytMatch) embedUrl = `https://www.youtube.com/embed/${ytMatch[1]}?autoplay=1&mute=1&loop=1&playlist=${ytMatch[1]}&controls=0`;
-      el.innerHTML = `<iframe src="${embedUrl}" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-      el.classList.add('show');
-      return;
-    }
-
-    let photos = [];
-    if (s.hero_photos) { try { photos = JSON.parse(s.hero_photos) || []; } catch(e) {} }
-    if (!photos.length && s.hero_photo_url) photos = [s.hero_photo_url];
-    if (!photos.length) return;
-
-    if (photos.length === 1) {
-      el.innerHTML = `<img src="${photos[0]}" alt="Red Rock Auto Repair" style="width:100%;height:420px;object-fit:cover;display:block">`;
-      el.classList.add('show');
-      return;
-    }
-
-    el.innerHTML = `<div style="position:relative">
-      ${photos.map((p, i) => `<div class="slide${i===0?' active':''}"><img src="${p}" alt="Shop photo" style="width:100%;height:420px;object-fit:cover;display:block"></div>`).join('')}
-      <button class="slide-arrow prev" onclick="changeSlide(-1)">&#8249;</button>
-      <button class="slide-arrow next" onclick="changeSlide(1)">&#8250;</button>
-      <div class="slide-dots">${photos.map((_,i) => `<button class="slide-dot${i===0?' active':''}" onclick="goSlide(${i})"></button>`).join('')}</div>
-    </div>`;
-    el.classList.add('show');
-    slideTimer = setInterval(() => changeSlide(1), 6000);
-  }
-
-  function changeSlide(dir) {
-    const slides = document.querySelectorAll('.slide');
-    const dots = document.querySelectorAll('.slide-dot');
-    if (!slides.length) return;
-    slides[slideIndex].classList.remove('active');
-    if(dots[slideIndex]) dots[slideIndex].classList.remove('active');
-    slideIndex = (slideIndex + dir + slides.length) % slides.length;
-    slides[slideIndex].classList.add('active');
-    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
-  }
-
-  function goSlide(i) {
-    const slides = document.querySelectorAll('.slide');
-    const dots = document.querySelectorAll('.slide-dot');
-    slides[slideIndex].classList.remove('active');
-    if(dots[slideIndex]) dots[slideIndex].classList.remove('active');
-    slideIndex = i;
-    slides[slideIndex].classList.add('active');
-    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
-    clearInterval(slideTimer);
-    slideTimer = setInterval(() => changeSlide(1), 6000);
-  }
-
-  loadHeroMedia();
-
-  // Wake up Supabase immediately on page load so first action is instant
-  db.from('bookings').select('id').limit(1).then(() => console.log('Supabase ready'));
-
-  // Load services into quote dropdown from Supabase (falls back to defaults)
-  async function loadQuoteServices() {
-    const { data } = await db.from('services').select('*')
-      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id');
-    const select = document.getElementById('q-service');
-    if (!data || data.length === 0) return; // keep hardcoded defaults
-    select.innerHTML = '<option value="" data-low="" data-high="">Select service</option>' +
-      data.map(s => `<option data-low="${s.price_low}" data-high="${s.price_high||s.price_low}">${s.name}</option>`).join('');
-  }
-  loadQuoteServices();
-
-  // Load announcements banner
-  async function loadBanner() {
-    const { data } = await db.from('announcements').select('*')
-      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id', { ascending: false });
-    const banner = document.getElementById('ann-banner');
-    if (!data || data.length === 0) { banner.style.display = 'none'; return; }
-    const colors = {
-      info: { bg: '#e8f0fe', border: '#93b4f5', text: '#1a3a8b' },
-      promo: { bg: '#f0faf4', border: '#6fcf97', text: '#1a6b3a' },
-      warning: { bg: '#fff8e1', border: '#f0d070', text: '#7a5500' }
-    };
-    banner.innerHTML = data.map(a => {
-      const c = colors[a.type] || colors.info;
-      return `<div style="background:${c.bg};border-bottom:1px solid ${c.border};padding:12px 40px;font-size:14px;color:${c.text};display:flex;align-items:center;gap:10px">
-        <span style="font-weight:500">${a.type === 'promo' ? 'Special offer' : a.type === 'warning' ? 'Notice' : 'Info'}:</span>
-        <span>${a.messages}</span>
-      </div>`;
-    }).join('');
-    banner.style.display = 'block';
-  }
-  loadBanner();
-
-  // Load services from Supabase — falls back to hardcoded if none added yet
-  async function loadServicesGrid() {
-    const { data } = await db.from('services').select('*')
-      .eq('shop_id', SHOP_ID).eq('active', 'true').order('id');
-    if (!data || data.length === 0) return; // keep hardcoded defaults
-    const grid = document.getElementById('services-grid');
-    grid.innerHTML = data.map(s => `
-      <div class="service-card">
-        <div class="service-name">${s.name}</div>
-        <div class="service-desc">${s.duration_mins} min service</div>
-        <div class="service-price">${s.price_low && s.price_high && s.price_low !== s.price_high ? '$'+s.price_low+' – $'+s.price_high : s.price_low ? 'From $'+s.price_low : 'Call for pricing'}</div>
-      </div>`).join('');
-  }
-  loadServicesGrid();
-
-  // ── NAV SCROLL EFFECT ──
-  window.addEventListener('scroll', () => {
-    document.querySelector('nav').classList.toggle('scrolled', window.scrollY > 10);
-  });
-
-  // ── SCROLL REVEAL ──
-  const revealObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
-  }, { threshold: 0.15 });
-  document.querySelectorAll('.trust-bar, .tools-section, .services-section, .reviews-section').forEach(el => {
-    el.classList.add('reveal');
-    revealObserver.observe(el);
-  });
-
-  // ── COUNT UP ANIMATION ──
-  const countObserver = new IntersectionObserver((entries) => {
-    entries.forEach(e => {
-      if (!e.isIntersecting) return;
-      const el = e.target;
-      const target = parseFloat(el.dataset.count);
-      const suffix = el.dataset.suffix || '';
-      if (!target) return;
-      let start = 0;
-      const duration = 1200;
-      const step = 16;
-      const increment = target / (duration / step);
-      const timer = setInterval(() => {
-        start += increment;
-        if (start >= target) { el.textContent = target + suffix; clearInterval(timer); }
-        else { el.textContent = (target % 1 === 0 ? Math.floor(start) : start.toFixed(1)) + suffix; }
-      }, step);
-      countObserver.unobserve(el);
-    });
-  }, { threshold: 0.5 });
-  document.querySelectorAll('[data-count]').forEach(el => countObserver.observe(el));
-
-
-  // ── WRENCH + STEP ANIMATION (patched cleanly) ──
-  function animateStepsIn() {
-    ['1','2','3','4'].forEach((n, i) => {
-      const dot = document.getElementById('dot-' + n);
-      if (dot) {
-        dot.style.opacity = '0';
-        dot.style.transform = 'scale(0.5)';
-        setTimeout(() => {
-          dot.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
-          dot.style.opacity = '1';
-          dot.style.transform = '';
-        }, i * 120);
-      }
-    });
-  }
-
-  function addWraenchIfNeeded() {
-    const badge = document.getElementById('s-badge');
-    if (badge && badge.textContent.toLowerCase().includes('in repair') && !badge.querySelector('.status-wrench')) {
-      badge.innerHTML = '<span class="status-wrench">🔧</span>' + badge.textContent;
-    }
-  }
-
-  // ── VEHICLE CASCADE: Brand → Model → Year ──
-  const VEHICLE_DATA = {
-    'Toyota': ['4Runner','Avalon','C-HR','Camry','Celica','Corolla','Corolla Cross','Crown','Echo','FJ Cruiser','GR86','GR Corolla','GR Supra','Highlander','Land Cruiser','Matrix','MR2','Prius','Prius C','Prius Prime','Prius V','RAV4','RAV4 Prime','Sequoia','Sienna','Solara','Supra','Tacoma','Tercel','Tundra','Venza','Yaris','Other'],
-    'Honda': ['Accord','Civic','Clarity','CR-V','CR-V Hybrid','CR-Z','Element','Fit','HR-V','Insight','Odyssey','Passport','Pilot','Prologue','Ridgeline','S2000','Other'],
-    'Ford': ['Bronco','Bronco Sport','Edge','Escape','Expedition','Explorer','F-150','F-150 Lightning','F-250','F-350','F-450','Flex','Focus','Fusion','Maverick','Mustang','Mustang Mach-E','Ranger','Taurus','Transit','Transit Connect','Other'],
-    'Chevrolet': ['Blazer','Bolt EV','Bolt EUV','Camaro','Colorado','Corvette','Equinox','Equinox EV','Express','HHR','Impala','Malibu','Monte Carlo','Silverado 1500','Silverado 2500HD','Silverado 3500HD','Sonic','Spark','Suburban','Tahoe','Traverse','Trax','Volt','Other'],
-    'Nissan': ['370Z','Altima','Armada','Cube','Frontier','GT-R','Juke','Kicks','Leaf','Maxima','Murano','Pathfinder','Quest','Rogue','Rogue Sport','Sentra','Titan','Titan XD','Versa','Xterra','Z','Other'],
-    'BMW': ['1 Series','2 Series','3 Series','4 Series','5 Series','6 Series','7 Series','8 Series','i3','i4','i7','i8','iX','M2','M3','M4','M5','M6','M8','X1','X2','X3','X3M','X4','X4M','X5','X5M','X6','X6M','X7','Z3','Z4','Other'],
-    'Mercedes-Benz': ['A-Class','AMG GT','C-Class','CLA','CLS','E-Class','EQB','EQC','EQE','EQS','G-Class','GLA','GLB','GLC','GLE','GLS','S-Class','SL','SLC','SLK','Sprinter','Other'],
-    'Subaru': ['Ascent','BRZ','Crosstrek','Forester','Impreza','Legacy','Outback','SVX','Tribeca','WRX','WRX STI','XV Crosstrek','Other'],
-    'Audi': ['A3','A4','A5','A6','A7','A8','e-tron','e-tron GT','Q3','Q4 e-tron','Q5','Q7','Q8','R8','RS3','RS4','RS5','RS6','RS7','S3','S4','S5','S6','S7','S8','SQ5','SQ7','SQ8','TT','TT RS','TTS','Other'],
-    'Volkswagen': ['Arteon','Atlas','Atlas Cross Sport','Beetle','CC','EOS','Golf','Golf Alltrack','Golf GTI','Golf R','Golf SportWagen','ID.4','ID.Buzz','Jetta','Jetta GLI','Passat','Taos','Tiguan','Touareg','Other'],
-    'Jeep': ['Cherokee','Commander','Compass','Gladiator','Grand Cherokee','Grand Cherokee L','Grand Cherokee 4xe','Grand Wagoneer','Patriot','Renegade','Wagoneer','Wrangler','Wrangler 4xe','Other'],
-    'Dodge': ['Challenger','Charger','Dart','Durango','Grand Caravan','Journey','Neon','Nitro','Viper','Other'],
-    'Ram': ['1500','1500 Classic','2500','3500','4500','5500','ProMaster','ProMaster City','Other'],
-    'GMC': ['Acadia','Canyon','Envoy','Envoy XL','Jimmy','Safari','Sierra 1500','Sierra 2500HD','Sierra 3500HD','Sonoma','Terrain','Yukon','Yukon XL','Other'],
-    'Hyundai': ['Accent','Azera','Elantra','Elantra GT','Elantra N','Entourage','Ioniq','Ioniq 5','Ioniq 6','Kona','Kona Electric','Nexo','Palisade','Santa Cruz','Santa Fe','Santa Fe Sport','Sonata','Sonata Hybrid','Tiburon','Tucson','Tucson Hybrid','Veloster','Veloster N','Other'],
-    'Kia': ['Cadenza','Carnival','EV6','EV9','Forte','K5','K900','Niro','Niro EV','Optima','Rio','Rondo','Sedona','Seltos','Sorento','Soul','Soul EV','Sportage','Stinger','Telluride','Other'],
-    'Lexus': ['CT','ES','ES Hybrid','GS','GS Hybrid','GX','IS','IS F','LC','LC Hybrid','LFA','LS','LS Hybrid','LX','NX','NX Hybrid','RC','RC F','RX','RX Hybrid','RZ','UX','UX Hybrid','Other'],
-    'Mazda': ['CX-3','CX-30','CX-5','CX-50','CX-9','CX-90','Mazda2','Mazda3','Mazda5','Mazda6','MX-5 Miata','MX-30','RX-7','RX-8','Tribute','Other'],
-    'Tesla': ['Cybertruck','Model 3','Model S','Model X','Model Y','Roadster','Other'],
-    'Acura': ['ILX','Integra','MDX','NSX','RDX','RLX','RSX','TL','TLX','TSX','ZDX','Other'],
-    'Infiniti': ['EX','FX','G Coupe','G Sedan','JX','M','Q40','Q45','Q50','Q60','Q70','QX30','QX50','QX55','QX56','QX60','QX70','QX80','Other'],
-    'Cadillac': ['ATS','ATS-V','CT4','CT4-V','CT5','CT5-V','CTS','CTS-V','DeVille','DTS','Eldorado','Escalade','Escalade ESV','Escalade EXT','ELR','Lyriq','SRX','STS','XT4','XT5','XT6','XTS','Other'],
-    'Lincoln': ['Aviator','Continental','Corsair','MKC','MKS','MKT','MKX','MKZ','Navigator','Navigator L','Nautilus','Town Car','Zephyr','Other'],
-    'Buick': ['Cascada','Century','Enclave','Encore','Encore GX','Envision','Envoy','LaCrosse','LeSabre','Lucerne','Regal','Regal TourX','Rendezvous','Terraza','Verano','Other'],
-    'Chrysler': ['200','300','300C','Aspen','Crossfire','Pacifica','Pacifica Hybrid','PT Cruiser','Sebring','Town & Country','Voyager','Other'],
-    'Volvo': ['C30','C40 Recharge','C70','S40','S60','S60 Cross Country','S80','S90','V40','V50','V60','V60 Cross Country','V70','V90','V90 Cross Country','XC40','XC40 Recharge','XC60','XC70','XC90','Other'],
-    'Land Rover': ['Defender','Defender 90','Defender 110','Discovery','Discovery Sport','Freelander','LR2','LR3','LR4','Range Rover','Range Rover Evoque','Range Rover Sport','Range Rover Velar','Other'],
-    'Jaguar': ['E-Pace','F-Pace','F-Type','I-Pace','S-Type','X-Type','XE','XF','XJ','XK','Other'],
-    'Porsche': ['718 Boxster','718 Cayman','911','Cayenne','Cayenne Coupe','Macan','Panamera','Taycan','Taycan Cross Turismo','Other'],
-    'Mini': ['Clubman','Convertible','Countryman','Coupe','Hardtop 2 Door','Hardtop 4 Door','Paceman','Roadster','Other'],
-    'Mitsubishi': ['Eclipse','Eclipse Cross','Endeavor','Galant','i-MiEV','Lancer','Lancer Evolution','Mirage','Mirage G4','Montero','Montero Sport','Outlander','Outlander Sport','Outlander PHEV','Other'],
-    'Genesis': ['G70','G80','G90','GV60','GV70','GV80','Other'],
-    'Pontiac': ['Aztek','Bonneville','Firebird','G5','G6','G8','Grand Am','Grand Prix','Montana','Solstice','Torrent','Vibe','Other'],
-    'Saturn': ['Aura','Ion','L-Series','Outlook','Relay','SC','Sky','SL','SW','Vue','Other'],
-    'Scion': ['FR-S','iA','iM','iQ','tC','xA','xB','xD','Other'],
-    'Hummer': ['H1','H2','H3','H3T','EV','EV SUV','Other'],
-    'Other': ['Other']
-  };
-
-  function onVehicleTypeChange() {
-    const brand = document.getElementById('b-vtype').value;
-    const modelEl = document.getElementById('b-vmake');
-    const yearEl = document.getElementById('b-vyear');
-    modelEl.innerHTML = '<option value="">Model</option>';
-    yearEl.innerHTML = '<option value="">Year</option>';
-    yearEl.disabled = true;
-    if (!brand) { modelEl.disabled = true; return; }
-    (VEHICLE_DATA[brand] || ['Other']).forEach(m => {
-      const o = document.createElement('option');
-      o.value = m; o.textContent = m; modelEl.appendChild(o);
-    });
-    modelEl.disabled = false;
-  }
-
-  function onVehicleMakeChange() {
-    const model = document.getElementById('b-vmake').value;
-    const yearEl = document.getElementById('b-vyear');
-    yearEl.innerHTML = '<option value="">Year</option>';
-    if (!model) { yearEl.disabled = true; return; }
-    for (let y = new Date().getFullYear() + 1; y >= 1950; y--) {
-      const o = document.createElement('option');
-      o.value = y; o.textContent = y; yearEl.appendChild(o);
-    }
-    yearEl.disabled = false;
-  }
-</script>
+<script src="app.js"></script>
 </body>
 </html>
