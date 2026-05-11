@@ -2,8 +2,8 @@ export default async function handler(req, res) {
   const RESEND_KEY = 're_NdQSmbr8_DLAEADNqhzyWTUYrfamsqzHz';
   const SUPABASE_URL = 'https://jmksxvvbgxqcijrbdwos.supabase.co';
   const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Impta3N4dnZiZ3hxY2lqcmJkd29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzU5MjEzMzIsImV4cCI6MjA5MTQ5NzMzMn0.Lu6zdmKHX5lOwHWKC9C2qJEqf6qGM28ItMsstBoV5AI';
-  const SHOP_ID = 'aurora-auto-repair';
-  const FROM = 'Aurora Auto Repair <onboarding@resend.dev>';
+  const SHOP_ID = 'red-rock-auto';
+  const FROM = 'Red Rock Auto Repair <onboarding@resend.dev>';
 
   const dbHeaders = {
     'apikey': SUPABASE_KEY,
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       const timeStr = `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`;
       try {
         const ok = await sendEmail(a.customer_email,
-          `Reminder: Your appointment is tomorrow at ${timeStr} — Aurora Auto Repair`,
+          `Reminder: Your appointment is tomorrow at ${timeStr} — Red Rock Auto Repair`,
           `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
             <div style="background:#c0392b;border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
               <h2 style="color:#fff;font-size:22px;font-weight:500;margin-bottom:8px">See you tomorrow!</h2>
@@ -58,7 +58,7 @@ export default async function handler(req, res) {
               <tr><td style="padding:10px 0;color:#888">Name</td><td style="padding:10px 0">${a.customer_name||'—'}</td></tr>
             </table>
             <div style="margin-top:20px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
-              Need to reschedule? Call us at <strong>(206) 367-8833</strong><br>10712 Aurora Ave N, Seattle WA 98133
+              Need to reschedule? Call us at <strong>(403) 287-1125</strong><br>5011A 11 St SE, Calgary, AB T2H 1M7
             </div>
           </div>`);
         if (ok) sent++;
@@ -79,17 +79,17 @@ export default async function handler(req, res) {
       const firstName = (b.name || '').split(' ')[0] || 'there';
       try {
         const ok = await sendEmail(b.email,
-          `Time for your next oil change — Aurora Auto Repair`,
+          `Time for your next oil change — Red Rock Auto Repair`,
           `<div style="font-family:sans-serif;max-width:500px;margin:0 auto;padding:24px">
             <h2 style="font-size:20px;font-weight:500;margin-bottom:8px">Hi ${firstName}!</h2>
             <p style="color:#555;font-size:14px;line-height:1.6;margin-bottom:20px">
               It's been about 6 months since your last oil change${b.vehicle?' on your <strong>'+b.vehicle+'</strong>':''}.
               Most manufacturers recommend an oil change every 5,000–7,500 miles or 6 months.
             </p>
-            <a href="https://aurora-auto-repair.vercel.app/#tools"
+            <a href="https://red-rock-auto.vercel.app/#tools"
                style="display:inline-block;background:#c0392b;color:#fff;padding:12px 24px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:500">Book now</a>
             <div style="margin-top:24px;padding:16px;background:#f7f7f5;border-radius:8px;font-size:13px;color:#555">
-              <strong>Aurora Auto Repair</strong><br>10712 Aurora Ave N, Seattle WA 98133<br>(206) 367-8833
+              <strong>Red Rock Auto Repair</strong><br>5011A 11 St SE, Calgary, AB T2H 1M7<br>(403) 287-1125
             </div>
           </div>`);
         if (ok) sent++;
